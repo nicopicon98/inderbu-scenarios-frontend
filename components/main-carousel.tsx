@@ -58,6 +58,9 @@ export function MainCarousel() {
         <div className="container mx-auto px-4 relative">
           <CarouselPrevious className="absolute left-4 z-20" />
           <CarouselNext className="absolute right-4 z-20" />
+          <h3>
+            This is the new content
+          </h3>
         </div>
       </Carousel>
     </div>
