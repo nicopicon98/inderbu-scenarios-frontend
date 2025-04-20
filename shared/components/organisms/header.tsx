@@ -11,9 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
 import { LoginModal } from "@/shared/components/organisms/login-modal";
 import { useAuth } from "@/shared/contexts/auth-context";
+import { Button } from "@/shared/ui/button";
 
 
 export function Header() {

@@ -15,6 +15,13 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'inderbu.gov.co',
+        pathname: '/wp-content/uploads/**',
+      },
+    ],
   },
   experimental: {
     webpackBuildWorker: true,

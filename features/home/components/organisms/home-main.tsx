@@ -1,12 +1,23 @@
+'use client';
+
 import { MainCarousel } from "@/shared/components/organisms/main-carousel";
-import { SubHeader } from "@/shared/components/organisms/sub-header";
+import { ActivityArea, Neighborhood } from "../../types/filters.types";
 import { Pagination } from "@/shared/components/organisms/pagination";
+import { SubHeader } from "@/shared/components/organisms/sub-header";
 import { Header } from "@/shared/components/organisms/header";
 import FiltersSection from "./filters-section";
 import FacilityGrid from "./facility-grid";
 import Footer from "./footer";
 
-export default function HomeMain() {
+interface HomeMainProps {
+  initialActivityAreas?: ActivityArea[];
+  initialNeighborhoods?: Neighborhood[];
+}
+
+export default function HomeMain({
+  initialActivityAreas,
+  initialNeighborhoods,
+}: HomeMainProps) {
   return (
     <main className="min-h-screen flex flex-col w-full">
       <Header />
@@ -21,7 +32,10 @@ export default function HomeMain() {
           del INDER Medellín.
         </p>
 
-        <FiltersSection />
+        <FiltersSection
+          initialActivityAreas={initialActivityAreas!}
+          initialNeighborhoods={initialNeighborhoods!}
+        />
         <FacilityGrid />
 
         <Pagination currentPage={1} totalPages={42} />
