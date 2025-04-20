@@ -40,12 +40,16 @@ export default function FiltersSection({
 
   // Encuentra el nombre del área seleccionada
   const selectedActivityArea = filters.activityArea
-    ? activityAreas.find((activityArea: ActivityArea) => activityArea.id === filters.activityArea)?.name
+    ? activityAreas.find(
+        (activityArea: ActivityArea) => activityArea.id === filters.activityArea
+      )?.name
     : "Todas las áreas de interés";
 
   // Encuentra el nombre del barrio seleccionado
   const selectedNeighborhood = filters.neighborhood
-    ? neighborhoods.find((neighborhood: Neighborhood) => neighborhood.id === filters.neighborhood)?.name
+    ? neighborhoods.find(
+        (neighborhood: Neighborhood) => neighborhood.id === filters.neighborhood
+      )?.name
     : "Todos los barrios";
 
   const handleSearch = () => {
@@ -88,7 +92,7 @@ export default function FiltersSection({
         </label>
         <div className="relative">
           <div
-            className="flex items-center border rounded-md p-2 bg-gray-100 cursor-pointer"
+            className="flex items-center border border-gray-300 rounded-md p-2 bg-gray-100 cursor-pointer"
             onClick={() =>
               setShowActivityAreasDropdown(!showActivityAreasDropdown)
             }
@@ -109,7 +113,7 @@ export default function FiltersSection({
           </div>
 
           {showActivityAreasDropdown && (
-            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border overflow-auto max-h-60">
+            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border  border-gray-300 overflow-auto max-h-60">
               <div
                 className="p-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => {
@@ -143,7 +147,7 @@ export default function FiltersSection({
         </label>
         <div className="relative">
           <div
-            className="flex items-center border rounded-md p-2 bg-gray-100 cursor-pointer"
+            className="flex items-center border border-gray-300 rounded-md p-2 bg-gray-100 cursor-pointer"
             onClick={() =>
               setShowNeighborhoodsDropdown(!showNeighborhoodsDropdown)
             }
@@ -164,7 +168,7 @@ export default function FiltersSection({
           </div>
 
           {showNeighborhoodsDropdown && (
-            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border overflow-auto max-h-60">
+            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-300 overflow-auto max-h-60">
               <div
                 className="p-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => {

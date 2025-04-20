@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
 import { MainCarousel } from "@/shared/components/organisms/main-carousel";
-import { ActivityArea, Neighborhood } from "../../types/filters.types";
+import {
+  ActivityArea,
+  Neighborhood,
+  SubScenario,
+} from "../../types/filters.types";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { SubHeader } from "@/shared/components/organisms/sub-header";
 import { Header } from "@/shared/components/organisms/header";
@@ -12,11 +16,13 @@ import Footer from "./footer";
 interface HomeMainProps {
   initialActivityAreas?: ActivityArea[];
   initialNeighborhoods?: Neighborhood[];
+  subScenarios?: SubScenario[];
 }
 
 export default function HomeMain({
   initialActivityAreas,
   initialNeighborhoods,
+  subScenarios = [],
 }: HomeMainProps) {
   return (
     <main className="min-h-screen flex flex-col w-full">
@@ -36,7 +42,7 @@ export default function HomeMain({
           initialActivityAreas={initialActivityAreas!}
           initialNeighborhoods={initialNeighborhoods!}
         />
-        <FacilityGrid />
+        <FacilityGrid subScenarios={subScenarios} />
 
         <Pagination currentPage={1} totalPages={42} />
       </div>

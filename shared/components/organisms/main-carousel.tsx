@@ -10,11 +10,19 @@ import {
   CarouselPrevious,
 } from "@/shared/ui/carousel";
 import { slides } from "@/mock-data/slides";
+import Autoplay from "embla-carousel-autoplay";
 
 export function MainCarousel() {
   return (
     <div className="w-full relative">
-      <Carousel className="w-full">
+      <Carousel
+        className="w-full"
+        plugins={[
+          Autoplay({
+            delay: 2000,
+          }),
+        ]}
+      >
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id} className="p-0">

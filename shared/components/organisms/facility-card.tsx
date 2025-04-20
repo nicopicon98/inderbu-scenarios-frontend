@@ -1,39 +1,61 @@
-import Image from "next/image"
+// shared/components/organisms/facility-card.tsx
+
+import Link from "next/link";
+import Image from "next/image";
+import { SubScenario } from "@/features/home/types/filters.types";
 
 interface FacilityCardProps {
-  title: string
-  type: string
-  email: string
-  phone: string
-  location: string
+  subScenario: SubScenario;
 }
 
-export function FacilityCard({ title, type, email, phone, location }: FacilityCardProps) {
+export function FacilityCard({ subScenario }: FacilityCardProps) {
+  const {
+    id,
+    name,
+    hasCost,
+    numberOfSpectators,
+    numberOfPlayers,
+    recommendations,
+    scenario,
+    activityArea,
+    fieldSurfaceType,
+  } = subScenario;
+
   return (
-    <div className="border rounded-md overflow-hidden shadow-sm bg-white h-full">
-      <div className="bg-teal-500 p-8 flex justify-center items-center">
-        <Image src="/field-icon.svg" alt="Campo deportivo" width={100} height={100} className="text-white" />
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-xl font-bold text-teal-500 mb-2">{title}</h3>
-        <p className="text-gray-500 text-sm mb-4">{type}</p>
-
-        <div className="space-y-2 text-sm">
-          <div>
-            <span className="font-medium">Correo:</span> {email}
-          </div>
-          <div>
-            <span className="font-medium">Teléfono:</span> {phone}
-          </div>
-          <div>
-            <span className="font-medium">Ubicación:</span> {location}
-          </div>
+    <Link href={`/scenario/${id}`} className="block h-full">
+      <div className="border border-gray-300 rounded-md overflow-hidden shadow-sm bg-white h-full hover:shadow-md transition">
+        <div className="relative w-full aspect-video bg-teal-500">
+          {/* 2. Image en modo fill + object‑cover */}
+          <Image
+            src="https://inderbu.gov.co/escenarios/content/fields/57/12770.jpg"
+            alt={name}
+            fill
+            style={{ objectFit: "cover" }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
         </div>
 
-        <div className="block mt-4 text-teal-500 hover:underline">Conoce más</div>
-      </div>
-    </div>
-  )
-}
+        {/* Contenido */}
+        <div className="p-4 flex flex-col h-full">
+          <h3 className="text-xl font-bold text-teal-600 mb-1">{name}</h3>
+          <p className="text-gray-500 text-sm mb-4">
+            {activityArea.name} &bull; {fieldSurfaceType.name}
+          </p>
 
+          <div className="text-gray-700 text-sm flex-1 space-y-1 mb-4">
+            <p>
+              <span className="font-medium">Dirección:</span> {scenario.address}
+              , {scenario.neighborhood.name}
+            </p>
+          </div>
+
+          <div className="mt-auto">
+            <span className="text-teal-600 hover:underline font-medium">
+              Conoce más →
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}

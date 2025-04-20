@@ -76,7 +76,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800">
         <DialogHeader>
           <DialogTitle>Iniciar Sesión</DialogTitle>
           <DialogDescription>Ingresa tus credenciales para acceder a tu cuenta</DialogDescription>
@@ -90,6 +90,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="text-gray-700 dark:text-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1"
                 placeholder="correo@ejemplo.com"
                 required
               />
@@ -101,15 +102,25 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="text-gray-700 dark:text-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1"
                 required
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="cursor-pointer"
+              >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+            >
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </DialogFooter>

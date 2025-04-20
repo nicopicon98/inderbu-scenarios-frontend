@@ -15,7 +15,6 @@ import { LoginModal } from "@/shared/components/organisms/login-modal";
 import { useAuth } from "@/shared/contexts/auth-context";
 import { Button } from "@/shared/ui/button";
 
-
 export function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -28,11 +27,7 @@ export function Header() {
   return (
     <div className="bg-blue-600 text-white py-2">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link 
-          href="https://www.gov.co" 
-          className="font-bold"
-          target="_blank"
-          >
+        <Link href="https://www.gov.co" className="font-bold" target="_blank">
           <Image
             src="https://inderbu.gov.co/wp-content/uploads/2022/09/logo_gov_co.png"
             alt="gov.co"
@@ -50,7 +45,7 @@ export function Header() {
             <>
               <Button
                 variant="outline"
-                className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100 mr-2"
+                className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100 mr-2 cursor-pointer"
               >
                 <BookIcon className="mr-2 h-4 w-4" />
                 Mis reservas
@@ -59,17 +54,20 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100"
+                    className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100 cursor-pointer"
                   >
                     <User className="mr-2 h-4 w-4" />
                     {user?.email}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent
+                  align="end"
+                  className="bg-white dark:bg-gray-800 text-black dark:text-white"
+                >
                   {/* If user.role = 1, which means is a super-admin, then allow user to go to dashboard */}
                   {user?.role === 1 && (
                     <Link href="/admin">
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Panel de Control
                       </DropdownMenuItem>
@@ -78,7 +76,7 @@ export function Header() {
                   {/* If user.role = 2, which is admin, then allow user to go to dashboard */}
                   <DropdownMenuItem
                     onClick={logout}
-                    className="text-red-600 cursor-pointer"
+                    className="text-red-600 cursor-pointer hover:bg-gray-100"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Cerrar Sesión
@@ -89,7 +87,7 @@ export function Header() {
           ) : (
             <Button
               variant="outline"
-              className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100"
+              className="text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-100 cursor-pointer"
               onClick={() => setIsLoginModalOpen(true)}
             >
               <User className="mr-2 h-4 w-4" />

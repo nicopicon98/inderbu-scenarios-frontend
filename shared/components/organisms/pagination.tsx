@@ -45,7 +45,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-1">
-      <Button variant="outline" size="sm" disabled={currentPage === 1} className="px-3">
+      <Button variant="outline" size="sm" disabled={currentPage === 1} className="px-3 border-gray-300" >
         Anterior
       </Button>
 
@@ -55,7 +55,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
             key={index}
             variant={currentPage === page ? "default" : "outline"}
             size="sm"
-            className={`w-8 h-8 p-0 ${currentPage === page ? "bg-lime-500 hover:bg-lime-600" : ""}`}
+            className={`w-8 h-8 p-0 border-gray-300 ${currentPage === page ? "bg-lime-500 hover:bg-lime-600" : ""}`}
           >
             {page}
           </Button>
@@ -66,7 +66,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
         ),
       )}
 
-      <Button variant="outline" size="sm" disabled={currentPage === totalPages} className="px-3">
+      <Button variant="outline" size="sm" disabled={currentPage === totalPages} className="px-3 border-gray-300">
         Siguiente
       </Button>
     </div>

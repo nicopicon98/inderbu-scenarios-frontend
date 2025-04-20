@@ -1,6 +1,7 @@
 import {
   getActivityAreas,
   getNeighborhoods,
+  getSubScenarios,
 } from "@/features/home/api/home.service";
 import HomeMain from "@/features/home/components/organisms/home-main";
 import {
@@ -19,11 +20,17 @@ export default async function HomePage() {
     neighborhoodsPromise,
   ]);
 
+  const { data: subScenarios, meta } = await getSubScenarios({
+    limit: 12,
+  });
+
+  console.log(subScenarios);
 
   return (
     <HomeMain
       initialActivityAreas={activityAreas}
       initialNeighborhoods={neighborhoods}
+      subScenarios={subScenarios}
     />
   );
 }

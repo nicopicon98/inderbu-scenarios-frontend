@@ -1,25 +1,17 @@
 import { FacilityCard } from "@/shared/components/organisms/facility-card";
-import Link from "next/link";
+import { SubScenario } from "@/features/home/types/filters.types";
 
-const facilities = [
-  {
-    id: "bolera-suramericana",
-    title:
-      "Bolera Suramericana Unidad Deportiva de Belén Andrés Escobar Saldarriaga",
-    type: "BOLERA / UNIDAD DEPORTIVA",
-    email: "atencion.ciudadano@inder.gov.co",
-    phone: "3699000",
-    location: "Rosales",
-  },
-];
+interface FacilityGridProps {
+  subScenarios: SubScenario[];
+}
 
-export default function FacilityGrid() {
+export default function FacilityGrid({ subScenarios }: FacilityGridProps) {
+  if (subScenarios.length === 0) return <p className="text-center py-8">No hay escenarios disponibles.</p>;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      {facilities.map((f) => (
-        <Link href={`/scenario/${f.id}`} key={f.id}>
-          <FacilityCard {...f} />
-        </Link>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {subScenarios.map((sub) => (
+        <FacilityCard key={sub.id} subScenario={sub} />
       ))}
     </div>
   );

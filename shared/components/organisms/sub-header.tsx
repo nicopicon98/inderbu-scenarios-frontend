@@ -26,7 +26,7 @@ export function SubHeader() {
             <input
               type="text"
               placeholder="Buscar en la sede electrónica"
-              className="border border-green-500 rounded-l-full py-2 px-4 w-48 md:w-64 text-sm focus:outline-none text-gray-700"
+              className="border border-green-500 rounded-l-full py-2 px-4 w-48 md:w-64 text-sm focus:outline-hidden text-gray-700"
             />
             <button className="bg-black text-white rounded-r-full p-2 h-full">
               <Search className="h-5 w-5" />

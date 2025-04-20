@@ -1,4 +1,8 @@
-import { ActivityArea, Neighborhood } from "../types/filters.types";
+import {
+  ActivityArea,
+  Neighborhood,
+  SubScenario,
+} from "../types/filters.types";
 
 export async function getActivityAreas(): Promise<ActivityArea[]> {
   try {
@@ -62,4 +66,37 @@ export async function getNeighborhoods(): Promise<Neighborhood[]> {
     console.error("Failed to fetch neighborhoods:", error);
     return [];
   }
+}
+
+export interface SubScenarioList {
+  data: SubScenario[];
+  meta: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+interface ISubScenarioParams {
+  scenarioId?: number;
+  page?: number;
+  limit?: number;
+}
+
+export async function getSubScenarios({
+  scenarioId = 0,
+  page = 1,
+  limit = 10
+}: ISubScenarioParams = {}): Promise<SubScenarioList> {
+  const url = new URL("http://localhost:3001/sub-scenarios");
+  url.searchParams.set("scenarioId", scenarioId.toString() == "0" ? "" : scenarioId.toString());
+  url.searchParams.set("page", page.toString());
+  url.searchParams.set("limit", limit.toString());
+
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to load sub-scenarios: ${res.status}`);
+  }
+  return (await res.json()) as SubScenarioList;
 }
