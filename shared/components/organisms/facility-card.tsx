@@ -1,5 +1,3 @@
-// shared/components/organisms/facility-card.tsx
-
 import Link from "next/link";
 import Image from "next/image";
 import { SubScenario } from "@/features/home/types/filters.types";
@@ -31,7 +29,7 @@ export function FacilityCard({ subScenario }: FacilityCardProps) {
             alt={name}
             fill
             style={{ objectFit: "cover" }}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            // sizes="(max-width: 640px) 50vw, (max-width: 1024px) 10vw, 13vw"
           />
         </div>
 

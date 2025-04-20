@@ -14,7 +14,12 @@ export interface FiltersState {
   searchQuery: string;
 }
 
-// /features/home/types/filters.types.ts
+export interface MetaDto {
+  page: number;
+  limit: number;
+  totalPages: number;
+  totalItems: number;
+}
 
 export interface SubScenario {
   id: number;
@@ -32,4 +37,3 @@ export interface SubScenario {
   activityArea: { id: number; name: string };
   fieldSurfaceType: { id: number; name: string };
 }
-

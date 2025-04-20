@@ -20,17 +20,15 @@ export default async function HomePage() {
     neighborhoodsPromise,
   ]);
 
-  const { data: subScenarios, meta } = await getSubScenarios({
-    limit: 12,
-  });
-
-  console.log(subScenarios);
+  const { data: initialSubScenarios, meta: initialMeta } =
+    await getSubScenarios({ page: 1, limit: 6 });
 
   return (
     <HomeMain
       initialActivityAreas={activityAreas}
       initialNeighborhoods={neighborhoods}
-      subScenarios={subScenarios}
+      initialSubScenarios={initialSubScenarios}
+      initialMeta={initialMeta}
     />
   );
 }

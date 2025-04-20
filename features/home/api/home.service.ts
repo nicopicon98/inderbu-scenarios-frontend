@@ -82,21 +82,33 @@ interface ISubScenarioParams {
   scenarioId?: number;
   page?: number;
   limit?: number;
+  search?: string;
+  activityAreaId?: number;
+  neighborhoodId?: number;
 }
 
 export async function getSubScenarios({
   scenarioId = 0,
   page = 1,
-  limit = 10
+  limit = 10,
+  search = "",
+  activityAreaId = 0,
+  neighborhoodId = 0,
 }: ISubScenarioParams = {}): Promise<SubScenarioList> {
   const url = new URL("http://localhost:3001/sub-scenarios");
   url.searchParams.set("scenarioId", scenarioId.toString() == "0" ? "" : scenarioId.toString());
+  url.searchParams.set("search", search);
+  url.searchParams.set("activityAreaId", activityAreaId.toString() == "0" ? "" : activityAreaId.toString());
+  url.searchParams.set("neighborhoodId", neighborhoodId.toString() == "0" ? "" : neighborhoodId.toString());
+  // Set default values for page and limit if not provided
   url.searchParams.set("page", page.toString());
   url.searchParams.set("limit", limit.toString());
-
+  console.log(url.toString());
   const res = await fetch(url.toString(), { cache: "no-store" });
+  const resJson = await res.json();
+  console.log(resJson.data);
   if (!res.ok) {
     throw new Error(`Failed to load sub-scenarios: ${res.status}`);
   }
-  return (await res.json()) as SubScenarioList;
+  return (resJson) as SubScenarioList;
 }

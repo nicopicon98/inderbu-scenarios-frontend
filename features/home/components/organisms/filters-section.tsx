@@ -6,15 +6,22 @@ import { Search, ChevronDown } from "lucide-react";
 
 import { ActivityArea, Neighborhood } from "../../types/filters.types";
 import { useHomeFilters } from "../../hooks/use-home-filters.hook";
+import { getSubScenarios } from "../../api/home.service";
 
 interface FiltersSectionProps {
   initialActivityAreas: ActivityArea[];
   initialNeighborhoods: Neighborhood[];
+  onFiltersChange: (filters: {
+    activityAreaId?: number;
+    neighborhoodId?: number;
+    searchQuery?: string;
+  }) => void;
 }
 
 export default function FiltersSection({
   initialActivityAreas,
   initialNeighborhoods,
+  onFiltersChange,
 }: FiltersSectionProps) {
   const {
     activityAreas,
@@ -27,10 +34,6 @@ export default function FiltersSection({
     initialActivityAreas,
     initialNeighborhoods,
   });
-
-  // mostrar actividades y barrios
-  console.log("activityAreas", activityAreas);
-  console.log("neighborhoods", neighborhoods);
 
   const [searchValue, setSearchValue] = useState("");
   const [showActivityAreasDropdown, setShowActivityAreasDropdown] =
@@ -130,6 +133,13 @@ export default function FiltersSection({
                   onClick={() => {
                     updateActivityArea(area.id);
                     setShowActivityAreasDropdown(false);
+                    // Make a call to the API to get the sub-scenarios of the selected area
+                    onFiltersChange({
+                      activityAreaId: Number(area.id),
+                      neighborhoodId: Number(filters.neighborhood),
+                      searchQuery: filters.searchQuery,
+                    });
+                    console.log(filters);
                   }}
                 >
                   {area.name}
@@ -157,6 +167,7 @@ export default function FiltersSection({
               <button
                 className="text-gray-400 hover:text-gray-600"
                 onClick={(e) => {
+                  console.log(e);
                   e.stopPropagation();
                   updateNeighborhood(null);
                 }}
@@ -185,6 +196,12 @@ export default function FiltersSection({
                   onClick={() => {
                     updateNeighborhood(neighborhood.id);
                     setShowNeighborhoodsDropdown(false);
+                    // Make a call to the API to get the sub-scenarios of the selected area
+                    onFiltersChange({
+                      activityAreaId: Number(filters.activityArea),
+                      neighborhoodId: Number(neighborhood.id),
+                      searchQuery: filters.searchQuery,
+                    });
                   }}
                 >
                   {neighborhood.name}
@@ -206,8 +223,21 @@ export default function FiltersSection({
             className="flex-1 border rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             placeholder="Buscar escenario"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onChange={(e) => {
+              setSearchValue(e.target.value)
+              // Actualiza el valor de búsqueda en el estado de los filtros
+              updateSearchQuery(e.target.value);
+              // Debouncer para evitar llamadas excesivas a la API
+              const debounceTimeout = setTimeout(() => {
+                onFiltersChange({
+                  activityAreaId: Number(filters.activityArea),
+                  neighborhoodId: Number(filters.neighborhood),
+                  searchQuery: e.target.value,
+                });
+              }, 300); // Espera 300ms antes de hacer la llamada a la API
+              return () => clearTimeout(debounceTimeout); // Limpia el timeout si el componente se desmonta o si cambia el valor
+            }}
+            onKeyUp={handleKeyPress}
           />
           <Button
             className="rounded-l-none bg-teal-500 hover:bg-teal-600"
