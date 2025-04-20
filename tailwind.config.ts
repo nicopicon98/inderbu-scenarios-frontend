@@ -1,12 +1,15 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    // App Router
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    // Componentes compartidos (shadcn, tu UI, etc.)
+    "./shared/components/**/*.{js,ts,jsx,tsx}",
+    // Otras carpetas con TSX/JSX donde uses clases Tailwind
+    "./features/**/*.{js,ts,jsx,tsx}",
+    "./core/**/*.{js,ts,jsx,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
@@ -76,7 +79,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default config
-
+export default config;
