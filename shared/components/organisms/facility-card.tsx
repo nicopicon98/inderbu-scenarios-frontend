@@ -36,24 +36,22 @@ export function FacilityCard({ subScenario }: FacilityCardProps) {
         </div>
 
         {/* Contenido */}
-        <div className="p-4 flex flex-col h-full">
-          <h3 className="text-xl font-bold text-teal-600 mb-1">{name}</h3>
+        <div className="p-4 flex flex-col">
+          <h3 className="text-l font-bold text-teal-600 mb-1">{name}</h3>
           <p className="text-gray-500 text-sm mb-4">
             {activityArea.name} &bull; {fieldSurfaceType.name}
           </p>
 
-          <div className="text-gray-700 text-sm flex-1 space-y-1 mb-4">
+          <div className="text-gray-700 text-sm flex-1 space-y-4 mb-4">
             <p>
               <span className="font-medium">Dirección:</span> {scenario.address}
               , {scenario.neighborhood.name}
             </p>
           </div>
 
-          <div className="mt-auto">
-            <span className="text-teal-600 hover:underline font-medium">
-              Conoce más →
-            </span>
-          </div>
+          <span className="text-teal-600 hover:underline font-medium text-sm">
+            Conoce más →
+          </span>
         </div>
       </div>
     </Link>
