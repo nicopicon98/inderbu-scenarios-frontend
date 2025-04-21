@@ -234,7 +234,7 @@ export default function FiltersSection({
                   neighborhoodId: Number(filters.neighborhood),
                   searchQuery: e.target.value,
                 });
-              }, 300); // Espera 300ms antes de hacer la llamada a la API
+              },500); // Espera 300ms antes de hacer la llamada a la API
               return () => clearTimeout(debounceTimeout); // Limpia el timeout si el componente se desmonta o si cambia el valor
             }}
             onKeyUp={handleKeyPress}
