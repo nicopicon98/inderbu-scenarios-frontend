@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 
 interface User {
   email: string;
-  role?: number; // Optional, only if you want to store user role
+  role?: number;
 }
 
 interface AuthContextType {

@@ -1,28 +1,107 @@
 "use client";
 
 import { useState } from "react";
-import { FiCalendar, FiCheck, FiClock, FiGrid, FiMapPin, FiTag, FiUser, FiUsers } from "react-icons/fi";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/shared/contexts/auth-context";
+import {
+  FiCalendar,
+  FiCheck,
+  FiClock,
+  FiGrid,
+  FiMapPin,
+  FiTag,
+  FiUser,
+  FiUsers,
+  FiLoader,
+} from "react-icons/fi";
 
 import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { SimpleCarousel } from "@/shared/components/organisms/simple-carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { LoginModal } from "@/shared/components/organisms/login-modal";
 import { ScenarioWithRelations } from "../../api/scenario.service";
+import { createReservation } from "../../api/reservation.service";
 import { Recommendations } from "./recommendations";
-import { Button } from "@/shared/ui/button";
 import { getTodayLocalISO } from "@/lib/utils";
+import { Button } from "@/shared/ui/button";
 
 interface ScenarioDetailProps {
   subScenario: ScenarioWithRelations;
 }
 
 export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
-  const today = getTodayLocalISO()
-  const [date, setDate] = useState<string>(today)
+  const today = getTodayLocalISO();
+  const [date, setDate] = useState<string>(today);
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add a refresh trigger
+  const { toast } = useToast();
+  const { isAuthenticated, login } = useAuth();
+
+  const handleLoginSuccess = (email: string, role: number, token: string) => {
+    login(email, role, token);
+    // After successful login, we can continue with the reservation process
+    handleReservationProcess();
+  };
+
+  const handleReservationProcess = async () => {
+    if (!selectedTimeSlotId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Por favor selecciona un horario para reservar",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        subScenarioId: subScenario.id,
+        timeSlotId: selectedTimeSlotId,
+        reservationDate: date,
+      };
+
+      const reservation = await createReservation(payload);
+      
+      toast({
+        title: "Reserva exitosa",
+        description: "¡Reserva realizada con éxito!",
+        variant: "default",
+      });
+      
+      // Reset selection after successful reservation
+      setSelectedTimeSlotId(null);
+      
+      // Increment the refresh trigger to force the TimeSlots component to refresh
+      setRefreshTrigger(prev => prev + 1);
+      
+    } catch (error) {
+      console.error("Error creating reservation:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo completar la reserva. Por favor intenta nuevamente.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReservationSubmit = () => {
+    if (!isAuthenticated) {
+      // If not authenticated, open the login modal
+      setIsLoginModalOpen(true);
+    } else {
+      // If already authenticated, proceed with reservation
+      handleReservationProcess();
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-
       {/* Imagen e información */}
       <div className="lg:col-span-2 space-y-6">
         <div className="relative bg-teal-500 rounded-lg overflow-hidden h-[300px]">
@@ -31,7 +110,7 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Información del esubscenario</CardTitle>
+            <CardTitle>Información del escenario</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -87,7 +166,9 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
                 <h3 className="text-base font-medium text-gray-700 flex items-center gap-1">
                   <FiTag className="text-teal-600" /> Costo
                 </h3>
-                <p className="text-gray-600 text-sm pt-1">0 COP</p>
+                <p className="text-gray-600 text-sm pt-1">
+                  {subScenario.hasCost ? "Con costo" : "Gratuito"}
+                </p>
               </div>
             </div>
 
@@ -97,29 +178,65 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
       </div>
 
       {/* Panel de reserva */}
-     {/* Panel de reserva */}
-     <div className="lg:col-span-1 space-y-6">
-        <div>
-          <h3 className="text-lg font-medium flex items-center gap-2">
-            <FiCalendar className="text-teal-600" />
-            Selecciona una fecha
-          </h3>
-          <SimpleCalendar selectedDate={date} onDateChange={setDate} />
-        </div>
+      <div className="lg:col-span-1 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Reserva tu espacio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Selecciona una fecha y horario para reservar esta instalación.
+            </p>
+            <div>
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <FiCalendar className="text-teal-600" />
+                Selecciona una fecha
+              </h3>
+              <SimpleCalendar selectedDate={date} onDateChange={setDate} />
+            </div>
 
-        <div>
-          <h3 className="text-lg font-medium flex items-center gap-2">
-            <FiClock className="text-teal-600" />
-            Horarios disponibles
-          </h3>
-          <TimeSlots subScenarioId={subScenario.id} date={date} />
-        </div>
+            <div className="mt-4">
+              <h3 className="text-lg font-medium flex items-center gap-2 pb-2">
+                <FiClock className="text-teal-600" />
+                Horarios disponibles
+              </h3>
+              <TimeSlots 
+                subScenarioId={subScenario.id} 
+                date={date} 
+                onSelectTimeSlot={setSelectedTimeSlotId}
+                selectedTimeSlotId={selectedTimeSlotId}
+                refreshTrigger={refreshTrigger}  // Add the refresh trigger
+              />
+            </div>
 
-        <Button className="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white cursor-pointer flex items-center justify-center gap-2">
-          <FiCheck className="h-5 w-5 mr-2" />
-          Confirmar reserva
-        </Button>
+            <Button 
+              className="w-full mt-6 bg-teal-600 hover:bg-teal-700 text-white cursor-pointer flex items-center justify-center gap-2"
+              onClick={handleReservationSubmit}
+              disabled={!selectedTimeSlotId || isSubmitting}
+            >
+              {isSubmitting ? (
+                <FiLoader className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <FiCheck className="h-5 w-5 mr-2" />
+              )}
+              {isSubmitting ? "Procesando..." : "Confirmar reserva"}
+            </Button>
+
+            {!selectedTimeSlotId && (
+              <p className="text-sm text-gray-500 mt-2 text-center">
+                Selecciona un horario disponible para continuar
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }

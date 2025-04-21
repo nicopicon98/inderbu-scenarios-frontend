@@ -95,10 +95,10 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
           value={months[currentMonth]}
           onValueChange={(v) => setCurrentMonth(months.indexOf(v))}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] cursor-pointer hover:bg-gray-100">
             <SelectValue placeholder={months[currentMonth]} />
           </SelectTrigger>
-          <SelectContent className="cursor-pointer hover:bg-gray-100">
+          <SelectContent className="bg-white rounded-md border border-gray-200">
             {months.map((m, i) => (
               <SelectItem key={i} value={m} className="cursor-pointer hover:bg-gray-100">
                 {m}
@@ -111,10 +111,10 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
           value={String(currentYear)}
           onValueChange={(v) => setCurrentYear(Number(v))}
         >
-          <SelectTrigger className="w-[100px]">
+          <SelectTrigger className="w-[100px] cursor-pointer hover:bg-gray-100">
             <SelectValue placeholder={String(currentYear)} />
           </SelectTrigger>
-          <SelectContent className="cursor-pointer hover:bg-gray-100">
+          <SelectContent className="bg-white rounded-md border border-gray-200">
             {years.map((y) => (
               <SelectItem key={y} value={String(y)} className="cursor-pointer hover:bg-gray-100">
                 {y}
