@@ -19,12 +19,12 @@ import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots"
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { SimpleCarousel } from "@/shared/components/organisms/simple-carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { LoginModal } from "@/shared/components/organisms/login-modal";
 import { ScenarioWithRelations } from "../../api/scenario.service";
 import { createReservation } from "../../api/reservation.service";
 import { Recommendations } from "./recommendations";
 import { getTodayLocalISO } from "@/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { AuthModal } from "@/shared/components/organisms/auth-modal";
 
 interface ScenarioDetailProps {
   subScenario: ScenarioWithRelations;
@@ -232,7 +232,7 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
       </div>
 
       {/* Login Modal */}
-      <LoginModal
+      <AuthModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
