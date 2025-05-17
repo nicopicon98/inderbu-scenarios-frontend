@@ -1,3 +1,8 @@
+import ReservationService from "@/services/reservation.service";
+
+// URL base del API
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
 export async function createReservation(payload: {
   subScenarioId: number;
   timeSlotId: number;
@@ -5,17 +10,11 @@ export async function createReservation(payload: {
 }) {
   console.log("Creating reservation with payload:", payload);
   
-  // Simulación de la creación de una reserva
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: Math.floor(Math.random() * 1000),
-        subScenarioId: payload.subScenarioId,
-        timeSlotId: payload.timeSlotId,
-        reservationDate: payload.reservationDate,
-        status: "active",
-        createdAt: new Date().toISOString()
-      });
-    }, 1000);
-  });
+  try {
+    // Llamada real al API para crear la reserva
+    return await ReservationService.createReservation(payload);
+  } catch (error) {
+    console.error("Error creating reservation:", error);
+    throw error;
+  }
 }

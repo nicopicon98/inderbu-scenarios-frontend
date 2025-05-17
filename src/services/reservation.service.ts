@@ -1,5 +1,5 @@
 // Definir la URL base del API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Tipos
 export interface CreateReservationDto {
@@ -72,8 +72,8 @@ const ReservationService = {
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
-      return response.json();
+      const responseToJson = await response.json();
+      return responseToJson.data;
     } catch (error) {
       console.error('Error getting available timeslots:', error);
       throw error;
@@ -87,7 +87,7 @@ const ReservationService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify(reservationData)
       });
@@ -127,17 +127,19 @@ const ReservationService = {
   // Obtener todas las reservas (admin)
   getAllReservations: async (): Promise<ReservationDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/admin/reservations`, {
+      const response = await fetch(`${API_URL}/reservations`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
+
+      console.log({responseFromBackend: response});
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
-      return response.json();
+      const responseToJson = await response.json();
+      return responseToJson.data
     } catch (error) {
       console.error('Error getting all reservations:', error);
       // Para desarrollo, retornamos datos de ejemplo si la API no está disponible

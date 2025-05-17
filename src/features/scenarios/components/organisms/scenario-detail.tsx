@@ -40,6 +40,8 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
   const { toast } = useToast();
   const { isAuthenticated, login } = useAuth();
 
+  console.log({subScenario});
+
   const handleLoginSuccess = (email: string, role: number, token: string) => {
     login(email, role, token);
     // After successful login, we can continue with the reservation process
@@ -64,7 +66,9 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
         reservationDate: date,
       };
 
-      const reservation = await createReservation(payload);
+      console.log({infoCreateReservation: payload})
+
+      await createReservation(payload);
       
       toast({
         title: "Reserva exitosa",

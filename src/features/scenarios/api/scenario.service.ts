@@ -1,68 +1,87 @@
 import { SubScenario } from "@/features/home/types/filters.types";
 import { TimeSlot } from "@/features/reservations/types/reservation.types";
+import ScenarioService from "@/services/scenario.service";
+import ReservationService, { TimeslotResponseDto } from "@/services/reservation.service";
+
+// Definir la URL base del API
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export interface ScenarioWithRelations extends SubScenario {
   // Aquí se pueden agregar más campos específicos para un escenario completo
 }
 
-export async function fetchScenarioById(id: string): Promise<ScenarioWithRelations> {
-  // Simulación de una API para obtener detalles de un escenario
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id,
-        name: "Cancha de Fútbol Principal",
-        description: "Cancha profesional de fútbol con grama sintética",
-        hasCost: false,
-        numberOfPlayers: 22,
-        numberOfSpectators: 100,
-        recommendations: "Traer calzado deportivo adecuado. No se permite el ingreso con alimentos. Respetar las señalizaciones.",
-        activityArea: { id: "1", name: "Deportes" },
-        neighborhood: { id: "1", name: "Centro" },
-        fieldSurfaceType: { id: "1", name: "Grama Sintética" },
-        scenario: {
-          id: 1,
-          name: "Complejo Deportivo Principal",
-          address: "Calle 45 #23-45",
-          neighborhood: { id: "1", name: "Centro" }
-        },
-        address: "Calle 45 #23-45",
-        imageUrl: "https://via.placeholder.com/300x200/FF5733/FFFFFF?text=Cancha+de+Futbol",
-      });
-    }, 500);
-  });
+export async function fetchScenarioById(
+  id: string
+): Promise<ScenarioWithRelations> {
+  // Usar el servicio real para obtener datos del backend
+  const response = await fetch(`${API_URL}/sub-scenarios/${id}`);
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+
+  const { data } = await response.json();
+  console.log({ subscenario: data });
+  // Convertir la respuesta del backend al formato que espera el frontend
+  return {
+    id: data.id,
+    name: data.name,
+    hasCost: data.hasCost || false,
+    numberOfPlayers: data.numberOfPlayers || 0,
+    numberOfSpectators: data.numberOfSpectators || 0,
+    recommendations:
+      data.recommendations || "No hay recomendaciones disponibles.",
+    activityArea: data.activityArea || { id: "1", name: "Deportes" },
+    fieldSurfaceType: data.fieldSurfaceType || { id: "1", name: "Normal" },
+    scenario: {
+      id: data.scenario?.id || 0,
+      name: data.scenario?.name || "Escenario sin nombre",
+      address: data.scenario?.address || "Sin dirección",
+      neighborhood: data.scenario?.neighborhood || { id: "1", name: "Centro" },
+    },
+  };
 }
 
 export async function fetchTimeSlots(
   subScenarioId: string | number,
   date: string
 ): Promise<{ timeSlots: TimeSlot[]; bookedSlots: number[] }> {
-  // Simulación de una API para obtener horarios disponibles
-  console.log(`Fetching time slots for sub-scenario ${subScenarioId} on ${date}`);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generar horarios de ejemplo
-      const timeSlots: TimeSlot[] = [
-        { id: 1, startTime: "08:00", endTime: "10:00", dayOfWeek: 1 },
-        { id: 2, startTime: "10:00", endTime: "12:00", dayOfWeek: 1 },
-        { id: 3, startTime: "14:00", endTime: "16:00", dayOfWeek: 1 },
-        { id: 4, startTime: "16:00", endTime: "18:00", dayOfWeek: 1 },
-        { id: 5, startTime: "18:00", endTime: "20:00", dayOfWeek: 1 },
-      ];
-      
-      // Simulación de horarios ya reservados
-      // Diferentes para diferentes fechas para simular un comportamiento real
-      const day = new Date(date).getDate();
-      let bookedSlots: number[] = [];
-      
-      if (day % 2 === 0) {
-        bookedSlots = [1, 3]; // Para días pares
-      } else {
-        bookedSlots = [2, 5]; // Para días impares
-      }
-      
-      resolve({ timeSlots, bookedSlots });
-    }, 800);
-  });
+  console.log(
+    `Fetching time slots for sub-scenario ${subScenarioId} on ${date}`
+  );
+
+  const availableTimeslots = await ReservationService.getAvailableTimeSlots(
+    Number(subScenarioId),
+    date
+  );
+
+  console.log({availableTimeslots});
+
+  // Obtener todos los timeslots para poder mostrar los reservados y disponibles
+  const allTimeSlots = await fetch(
+    `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`
+  );
+
+  if (!allTimeSlots.ok) {
+    throw new Error(`Error ${allTimeSlots.status}: ${allTimeSlots.statusText}`);
+  }
+
+  const {data} = await allTimeSlots.json();
+
+  // Crear el arreglo de timeslots con el formato esperado
+  const timeSlots: TimeSlot[] = data.map((slot: any) => ({
+    id: slot.id,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    dayOfWeek: new Date(date).getDay(),
+  }));
+
+  // Crear la lista de slots reservados (los que no están disponibles)
+  const bookedSlots = timeSlots
+    .filter(
+      (slot) => !availableTimeslots.find((a) => a.id === slot.id && a.available)
+    )
+    .map((slot) => slot.id);
+
+  return { timeSlots, bookedSlots };
 }

@@ -64,7 +64,7 @@ export function TimeSlots({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {timeSlots.map((slot) => {
         const isBooked = bookedSlots.includes(slot.id);
         const isSelected = selectedTimeSlotId === slot.id;
@@ -88,9 +88,6 @@ export function TimeSlots({
             <div className="flex items-center w-full">
               <span className="font-medium">
                 {slot.startTime} - {slot.endTime}
-              </span>
-              <span className="ml-auto text-xs font-medium">
-                {isBooked ? "Reservado" : isSelected ? "Seleccionado" : "Disponible"}
               </span>
             </div>
           </Button>

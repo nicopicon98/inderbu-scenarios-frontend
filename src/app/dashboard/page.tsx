@@ -209,6 +209,7 @@ export default function ReservationsPage() {
       try {
         // Cargar reservaciones
         const reservationsData = await ReservationService.getAllReservations();
+        console.log(reservationsData)
         setReservations(reservationsData);
         setFilteredReservations(reservationsData);
 
@@ -762,6 +763,7 @@ export default function ReservationsPage() {
               </div>
             )}
 
+            {/* Listado de reservas */}
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
