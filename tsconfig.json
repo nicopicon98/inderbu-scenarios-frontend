@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    /* La carpeta /src es ahora la raíz lógica de los imports */
+    "baseUrl": "./src",
+
+    /* Opciones estándar de Next/TypeScript */
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "target": "ES6",
@@ -13,21 +17,25 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
+
+    /* Aliases relativos a /src */
     "paths": {
-      "@/*": ["./*"],
-      "@/features/*": ["./features/*"],
-      "@/shared/*": ["./shared/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/core/*": ["./core/*"],
-      "@/config/*": ["./config/*"],
-      "@/server/*": ["./server/*"]
+      "@/*":            ["*"],
+      "@/features/*":   ["features/*"],
+      "@/shared/*":     ["shared/*"],
+      "@/lib/*":        ["lib/*"],
+      "@/core/*":       ["core/*"],
+      "@/config/*":     ["config/*"],
+      "@/server/*":     ["server/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+
+  /* Hace que el análisis de TS comience dentro de /src */
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.{ts,tsx}",
+    ".next/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
