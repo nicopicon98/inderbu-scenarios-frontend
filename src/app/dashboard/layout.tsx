@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarProvider } from "@/shared/components/layout/simple-sidebar";
 import { ProtectedRouteProvider } from "@/shared/providers/protected-route-provider";
 
 export default function DashboardLayout({
@@ -9,7 +10,7 @@ export default function DashboardLayout({
 }>) {
   return (
     <ProtectedRouteProvider adminOnly={true}>
-      {children}
+      <SidebarProvider>{children}</SidebarProvider>
     </ProtectedRouteProvider>
   );
 }

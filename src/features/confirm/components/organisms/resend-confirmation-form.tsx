@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, Loader2 } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { Button } from '@/shared/ui/button';
 
 interface Props {
   initialEmail?: string;

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/shared/contexts/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+
+import { useAuth } from "@/shared/contexts/auth-context";
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;
@@ -14,36 +15,27 @@ export function ProtectedRouteProvider({
   children,
   adminOnly = false,
 }: ProtectedRouteProviderProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // We need to wait for the authentication check to complete
-    const checkAuth = async () => {
-      // Adding a small delay to ensure auth state is properly loaded
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // Esperar a que el AuthProvider termine su chequeo inicial
+    if (!authReady) return;
 
-      if (!isAuthenticated) {
-        // Redirect to home if not authenticated
-        router.replace("/");
-        return;
-      }
+    if (!isAuthenticated) {
+      router.replace("/");
+      return;
+    }
 
-      if (adminOnly && user?.role !== 1) {
-        // Redirect to home if not admin (role 1)
-        router.replace("/");
-        return;
-      }
+    if (adminOnly && user?.role !== 1) {
+      router.replace("/dashboard");
+      return;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authReady, isAuthenticated, user, adminOnly]);
 
-      setIsCheckingAuth(false);
-    };
-
-    checkAuth();
-  }, [isAuthenticated, user, router, adminOnly, pathname]);
-
-  if (isCheckingAuth) {
+  if (!authReady) {
+    // Spinner mientras el contexto revisa el token
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-blue-600" />

@@ -56,3 +56,8 @@ body {
     --ring: 172 70% 40%;
   }
 }
+
+/* Global styles */
+* {
+  border-color: hsl(var(--border));
+}
