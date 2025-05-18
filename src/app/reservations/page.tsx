@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { Header } from "@/shared/components/organisms/header";
 import { SubHeader } from "@/shared/components/organisms/sub-header";
-import { getUserReservations } from "@/features/reservations/api/reservation.service";
 import { Reservation } from "@/features/reservations/types/reservation.types";
 import { useAuth } from "@/shared/contexts/auth-context";
 import { Card } from "@/shared/ui/card";
 import { Loader2 } from "lucide-react";
-import { ReservationItem } from "@/features/reservations/components/reservation-item";
+import { ReservationItem } from "@/features/reservations/components/organisms/reservation-item";
 import Footer from "@/features/home/components/organisms/footer";
+import ReservationService from "@/services/reservation.service";
 
 export default function ReservationsPage() {
   const { token } = useAuth();
@@ -21,7 +21,7 @@ export default function ReservationsPage() {
       try {
         if (token) {
           setIsLoading(true);
-          const data = await getUserReservations();
+          const data = await ReservationService.getAllReservations();
           setReservations(data);
         }
       } catch (error) {

@@ -29,6 +29,7 @@ export interface CreateReservationDto {
   subScenarioId: number;
   timeSlotId: number;
   reservationDate: string;
+  comments?: string;
 }
 
 export interface CreateReservationResponseDto {
@@ -38,12 +39,14 @@ export interface CreateReservationResponseDto {
   userId: number;
   timeSlotId: number;
   reservationStateId: number;
+  comments?: string;
 }
 
 export interface ReservationDto {
   id: number;
   reservationDate: string;
   createdAt: string;
+  comments?: string;
   subScenario: {
     id: number;
     name: string;
@@ -118,7 +121,7 @@ const ReservationService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(reservationData),
       });
@@ -162,7 +165,7 @@ const ReservationService = {
   getAllReservations: async (): Promise<ReservationDto[]> => {
     const response = await fetch(`${API_URL}/reservations`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 

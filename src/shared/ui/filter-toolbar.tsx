@@ -6,7 +6,7 @@ import { Input } from "@/shared/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { Search } from "lucide-react"
 
-interface FilterOption {
+export interface FilterOption {
   id: string
   label: string
   type: "text" | "select" | "date"

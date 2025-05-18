@@ -28,9 +28,15 @@ export interface SubScenarioDto {
 // Servicio de escenarios
 const ScenarioService = {
   // Obtener todos los escenarios
-  getAllScenarios: async (): Promise<ScenarioDto[]> => {
+  getAllScenarios: async (search?: string): Promise<ScenarioDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/scenarios`);
+      let url = `${API_URL}/scenarios`;
+      // Si hay un término de búsqueda, añadirlo como parámetro
+      if (search) {
+        url += `?search=${encodeURIComponent(search)}`;
+      }
+      
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -76,14 +82,22 @@ const ScenarioService = {
     }
   },
 
-  // Obtener subescenarios por ID de escenario
-  getSubScenariosByScenarioId: async (
-    scenarioId: number
-  ): Promise<SubScenarioDto[]> => {
+  // Buscar subescenarios con filtro de escenario
+  searchSubScenarios: async (scenarioId?: number, page: number = 1, limit: number = 10, search?: string): Promise<any> => {
     try {
-      const response = await fetch(
-        `${API_URL}/scenarios/${scenarioId}/sub-scenarios`
-      );
+      let url = `${API_URL}/sub-scenarios?page=${page}&limit=${limit}`;
+      if (scenarioId) {
+        url += `&scenarioId=${scenarioId}`;
+      }
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -91,12 +105,8 @@ const ScenarioService = {
 
       return response.json();
     } catch (error) {
-      console.error(
-        `Error getting subscenarios for scenario ${scenarioId}:`,
-        error
-      );
-      // Para desarrollo, retornamos datos de ejemplo si la API no está disponible
-      throw new Error(`Error ${error}`);
+      console.error("Error searching sub-scenarios:", error);
+      throw error;
     }
   },
 
