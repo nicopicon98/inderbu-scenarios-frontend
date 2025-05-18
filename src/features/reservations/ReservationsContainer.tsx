@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Filter } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -9,14 +10,37 @@ import { StatsGrid } from "./components/molecules/StatsGrid";
 import { FiltersCard } from "./components/molecules/FiltersCard";
 import { ReservationsTable } from "./components/organisms/ReservationsTable";
 import { ReservationDto } from "@/services/reservation.service";
-import { EditReservationDrawer } from "./components/organisms/EditReservationDrawer";
+import { ReservationDetailsModal } from "./components/organisms/ReservationDetailsModal";
 import { CreateReservationModal } from "./components/organisms/CreateReservationModal";
 
 export const ReservationsContainer = () => {
-  const { reservations, isLoading, stats } = useReservations();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const { 
+    reservations, 
+    isLoading, 
+    stats, 
+    refetch, 
+    page, 
+    pageSize, 
+    totalReservations, 
+    changePage 
+  } = useReservations();
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState<ReservationDto | null>(null);
+  const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
+
+  // Si la URL no tiene paramétros de paginación, añadirlos al cargar
+  useEffect(() => {
+    if (!searchParams.has('page') && !searchParams.has('pageSize')) {
+      // Solo actualizar la URL si realmente no hay paramétros
+      const params = new URLSearchParams();
+      params.set('page', '1');
+      params.set('pageSize', '7');
+      router.replace(`/dashboard?${params.toString()}`);
+    }
+  }, [router, searchParams]);
 
   return (
     <section className="space-y-6">
@@ -40,11 +64,22 @@ export const ReservationsContainer = () => {
       <ReservationsTable
         reservations={reservations}
         isLoading={isLoading}
-        onEdit={setEditing}
+        onEdit={setViewingDetails}
+        page={page}
+        pageSize={pageSize}
+        totalItems={totalReservations}
+        onPageChange={changePage}
       />
 
-      <EditReservationDrawer reservation={editing} onClose={() => setEditing(null)}/>
-      <CreateReservationModal open={creating} onClose={() => setCreating(false)}/>
+      <ReservationDetailsModal reservation={viewingDetails} onClose={() => setViewingDetails(null)}/>
+      <CreateReservationModal 
+        open={creating} 
+        onClose={() => setCreating(false)}
+        onSuccess={() => {
+          refetch();
+          setCreating(false);
+        }}
+      />
     </section>
   );
 };

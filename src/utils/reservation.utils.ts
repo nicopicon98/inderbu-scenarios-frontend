@@ -22,6 +22,14 @@ export const reservationStateIds: Record<string, number> = {
   'CANCELADA': 4
 };
 
+// Mapeo inverso de ID a estado
+export const reservationStateById: Record<number, "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA"> = {
+  1: "PENDIENTE",
+  2: "CONFIRMADA",
+  3: "RECHAZADA",
+  4: "CANCELADA"
+};
+
 // Utilidad para mapear estados entre backend y frontend
 export function mapReservationState(backendState: string): string {
   return reservationStateMap[backendState] || 'pending';

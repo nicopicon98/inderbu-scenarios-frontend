@@ -42,6 +42,11 @@ export interface CreateReservationResponseDto {
   comments?: string;
 }
 
+export interface ReservationStateDto {
+  id: number;
+  state: string;
+}
+
 export interface ReservationDto {
   id: number;
   reservationDate: string;
@@ -116,12 +121,17 @@ const ReservationService = {
   createReservation: async (
     reservationData: CreateReservationDto
   ): Promise<CreateReservationResponseDto> => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("No se encontró un token de autenticación");
+    }
+    console.log({ reservationData });
     try {
       const response = await fetch(`${API_URL}/reservations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(reservationData),
       });
@@ -130,7 +140,7 @@ const ReservationService = {
         const errorData = await response.json().catch(() => null);
         throw new Error(
           errorData?.message ||
-            `Error ${response.status}: ${response.statusText}`
+          `Error ${response.status}: ${response.statusText}`
         );
       }
 
@@ -146,7 +156,7 @@ const ReservationService = {
     try {
       const response = await fetch(`${API_URL}/users/${userId}/reservations`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
 
@@ -165,7 +175,7 @@ const ReservationService = {
   getAllReservations: async (): Promise<ReservationDto[]> => {
     const response = await fetch(`${API_URL}/reservations`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
     });
 
@@ -190,20 +200,46 @@ const ReservationService = {
 
     return reservations;
   },
+  // Obtener todos los estados de reserva disponibles
+  getAllReservationStates: async (): Promise<ReservationStateDto[]> => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        throw new Error("No se encontró un token de autenticación");
+      }
 
-  // Actualizar estado de reserva
+      const response = await fetch(`${API_URL}/reservations/states`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const states = await response.json();
+      return states.data;
+    } catch (error) {
+      console.error("Error fetching reservation states:", error);
+      throw error;
+    }
+  },
+
+  // Método legacy para compatibilidad con código existente
   updateReservationState: async (
     reservationId: number,
     stateId: number
   ): Promise<ReservationDto> => {
+    // Let's print both reservationId and stateId
+    console.log({ reservationId, stateId });
     try {
       const response = await fetch(
-        `${API_URL}/admin/reservations/${reservationId}/state`,
+        `${API_URL}/reservations/${reservationId}/state`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },
           body: JSON.stringify({ stateId }),
         }

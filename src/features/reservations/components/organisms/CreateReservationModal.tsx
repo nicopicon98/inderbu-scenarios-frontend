@@ -26,22 +26,24 @@ import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
 interface CreateReservationModalProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 export const CreateReservationModal = ({
   open,
   onClose,
+  onSuccess,
 }: CreateReservationModalProps) => {
   /* ---------- catálogos ---------- */
   const [users, setUsers] = useState<UserDto[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioDto[]>([]);
   const [subScenarios, setSubScenarios] = useState<SubScenarioDto[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlotDto[]>([]);
-  
+
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [scenarioSearchTerm, setScenarioSearchTerm] = useState("");
   const [subScenarioSearchTerm, setSubScenarioSearchTerm] = useState("");
-  
+
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingScenarios, setLoadingScenarios] = useState(false);
   const [loadingSubScenarios, setLoadingSubScenarios] = useState(false);
@@ -72,7 +74,7 @@ export const CreateReservationModal = ({
       if (!term || term.length < 2) {
         return;
       }
-      
+
       setLoadingUsers(true);
       try {
         const response = await UserService.searchUsers(term);
@@ -97,7 +99,7 @@ export const CreateReservationModal = ({
       if (!term || term.length < 2) {
         return;
       }
-      
+
       setLoadingScenarios(true);
       try {
         // Ajustar para usar los parámetros de búsqueda de la API
@@ -121,13 +123,13 @@ export const CreateReservationModal = ({
   const debouncedSubScenarioSearch = useCallback(
     debounce(async (term: string, scenarioId?: number) => {
       if (!scenarioId) return;
-      
+
       setLoadingSubScenarios(true);
       try {
         const response = await ScenarioService.searchSubScenarios(
-          scenarioId, 
-          1, 
-          10, 
+          scenarioId,
+          1,
+          10,
           term
         );
         setSubScenarios(response.data);
@@ -186,7 +188,7 @@ export const CreateReservationModal = ({
   // Efecto para la búsqueda de subescenarios
   useEffect(() => {
     if (!newReservation.scenarioId) return;
-    
+
     const scenarioId = parseInt(newReservation.scenarioId);
     if (subScenarioSearchTerm.length >= 2) {
       debouncedSubScenarioSearch(subScenarioSearchTerm, scenarioId);
@@ -333,7 +335,13 @@ export const CreateReservationModal = ({
         comments: comments || undefined,
       });
       toast({ title: "Éxito", description: "Reserva creada correctamente." });
-      onClose();
+      
+      // Llamar al callback de éxito si existe
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (err: any) {
       toast({
         title: "Error",
@@ -385,13 +393,13 @@ export const CreateReservationModal = ({
           </h3>
           <div className="space-y-1">
             <Label className="text-xs font-medium">Cliente*</Label>
-            
+
             {/* Select con búsqueda integrada para USUARIOS */}
-            <Select 
+            <Select
               value={newReservation.clientId}
               onValueChange={(v) => {
                 setNewReservation({ ...newReservation, clientId: v });
-                const user = users.find(u => u.id.toString() === v);
+                const user: UserDto | undefined = users.find(u => u.id.toString() === v);
                 if (user) setSelectedUser(user);
               }}
               onOpenChange={(open) => {
@@ -401,16 +409,15 @@ export const CreateReservationModal = ({
               }}
             >
               <SelectTrigger className="bg-white h-8 text-xs">
-                {newReservation.clientId && selectedUser ? (
-                  // Mostrar información del usuario seleccionado sin guión
-                  <div className="flex items-center text-xs">
+                <SelectValue placeholder="Buscar cliente…" />
+                {selectedUser && (
+                  <span className="flex items-center text-xs absolute inset-y-0 left-2 pointer-events-none">
                     <UserRound className="w-3 h-3 mr-1.5 text-teal-600" />
                     {selectedUser.first_name} {selectedUser.last_name}
-                  </div>
-                ) : (
-                  <SelectValue placeholder="Buscar cliente por nombre, email o DNI..." />
+                  </span>
                 )}
               </SelectTrigger>
+
               <SelectContent className="max-h-60">
                 <div className="px-2 py-1.5 sticky top-0 bg-white z-10 border-b">
                   <div className="relative">
@@ -418,9 +425,11 @@ export const CreateReservationModal = ({
                     <Input
                       type="text"
                       className="bg-white h-7 text-xs pl-7 pr-7"
-                      placeholder="Buscar por nombre, email o DNI..."
+                      placeholder="Buscar por nombre o email..."
                       value={userSearchTerm}
-                      onChange={(e) => setUserSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setUserSearchTerm(e.target.value)
+                      }}
                       // Evitar que el Select se cierre al escribir
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -429,7 +438,7 @@ export const CreateReservationModal = ({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="max-h-40 overflow-y-auto py-1">
                   {users.length > 0 ? (
                     users.slice(0, 5).map((u) => (
@@ -446,8 +455,8 @@ export const CreateReservationModal = ({
                       {userSearchTerm.length < 2
                         ? "Ingresa al menos 2 caracteres para buscar"
                         : loadingUsers
-                        ? "Buscando usuarios..."
-                        : "No se encontraron usuarios"}
+                          ? "Buscando usuarios..."
+                          : "No se encontraron usuarios"}
                     </div>
                   )}
                 </div>
@@ -477,16 +486,16 @@ export const CreateReservationModal = ({
                 }}
               >
                 <SelectTrigger className="bg-white h-8 text-xs">
-                {newReservation.scenarioId && selectedScenario ? (
+                  {newReservation.scenarioId && selectedScenario ? (
                     // Mostrar información del escenario seleccionado sin formato preestablecido
-                  <div className="flex items-center text-xs">
-                    <Building className="w-3 h-3 mr-1.5 text-teal-600" />
-                    {selectedScenario.name}
-                  </div>
-                ) : (
-                  <SelectValue placeholder="Seleccione..." />
-                )}
-              </SelectTrigger>
+                    <div className="flex items-center text-xs">
+                      <Building className="w-3 h-3 mr-1.5 text-teal-600" />
+                      {selectedScenario.name}
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Seleccione..." />
+                  )}
+                </SelectTrigger>
                 <SelectContent className="max-h-60">
                   <div className="px-2 py-1.5 sticky top-0 bg-white z-10 border-b">
                     <div className="relative">
@@ -504,7 +513,7 @@ export const CreateReservationModal = ({
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="max-h-40 overflow-y-auto py-1">
                     {scenarios.length > 0 ? (
                       scenarios.map((s) => (
@@ -540,16 +549,16 @@ export const CreateReservationModal = ({
                 }}
               >
                 <SelectTrigger className="bg-white h-8 text-xs">
-                {newReservation.subScenarioId && selectedSubScenario ? (
+                  {newReservation.subScenarioId && selectedSubScenario ? (
                     // Mostrar información del subescenario seleccionado sin formato preestablecido
-                  <div className="flex items-center text-xs">
-                    <MapPin className="w-3 h-3 mr-1.5 text-teal-600" />
-                    {selectedSubScenario.name}
-                  </div>
-                ) : (
-                  <SelectValue placeholder="Seleccione..." />
-                )}
-              </SelectTrigger>
+                    <div className="flex items-center text-xs">
+                      <MapPin className="w-3 h-3 mr-1.5 text-teal-600" />
+                      {selectedSubScenario.name}
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Seleccione..." />
+                  )}
+                </SelectTrigger>
                 <SelectContent className="max-h-60">
                   <div className="px-2 py-1.5 sticky top-0 bg-white z-10 border-b">
                     <div className="relative">
@@ -568,7 +577,7 @@ export const CreateReservationModal = ({
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="max-h-40 overflow-y-auto py-1">
                     {subScenarios.length > 0 ? (
                       // Limite de 10 subescenarios mostrados a la vez
@@ -585,8 +594,8 @@ export const CreateReservationModal = ({
                         {!newReservation.scenarioId
                           ? "Seleccione un escenario primero"
                           : loadingSubScenarios
-                          ? "Cargando subescenarios..."
-                          : "No se encontraron subescenarios"}
+                            ? "Cargando subescenarios..."
+                            : "No se encontraron subescenarios"}
                       </div>
                     )}
                   </div>
@@ -624,16 +633,16 @@ export const CreateReservationModal = ({
                 }}
               >
                 <SelectTrigger className="bg-white h-8 text-xs">
-                {newReservation.timeSlotId && selectedTimeSlot ? (
+                  {newReservation.timeSlotId && selectedTimeSlot ? (
                     // Mostrar información del horario seleccionado
-                  <div className="flex items-center text-xs">
-                    <Clock className="w-3 h-3 mr-1.5 text-teal-600" />
-                    {selectedTimeSlot.startTime} - {selectedTimeSlot.endTime}
-                  </div>
-                ) : (
-                  <SelectValue placeholder="Seleccione..." />
-                )}
-              </SelectTrigger>
+                    <div className="flex items-center text-xs">
+                      <Clock className="w-3 h-3 mr-1.5 text-teal-600" />
+                      {selectedTimeSlot.startTime} - {selectedTimeSlot.endTime}
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Seleccione..." />
+                  )}
+                </SelectTrigger>
                 <SelectContent className="max-h-60">
                   <div className="max-h-40 overflow-y-auto py-1">
                     {availableTimeSlots

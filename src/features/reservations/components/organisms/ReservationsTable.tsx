@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { DataTable } from "@/shared/ui/data-table";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { StatusBadge } from "@/shared/ui/status-badge";
+import { useState, useEffect } from "react";
+import { FileEdit, MoreHorizontal } from "lucide-react";
+
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,23 +11,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { FileEdit, MoreHorizontal } from "lucide-react";
-
+import { DataTable } from "@/shared/ui/data-table";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
 import type { ReservationDto } from "@/services/reservation.service";
-import { mapReservationState, formatDate } from "@/utils/reservation.utils";
+import { formatDate, reservationStateById } from "@/utils/reservation.utils";
 
 interface ReservationsTableProps {
   reservations: ReservationDto[];
   isLoading: boolean;
   onEdit: (reservation: ReservationDto) => void;
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
 }
 
 export const ReservationsTable = ({
   reservations,
   isLoading,
   onEdit,
+  page,
+  pageSize,
+  totalItems,
+  onPageChange,
 }: ReservationsTableProps) => {
-  const [page, setPage] = useState(1);
+  const [localReservations, setLocalReservations] = useState<ReservationDto[]>([]);
+  
+  // Actualizar el estado local cuando las props cambian
+  useEffect(() => {
+    setLocalReservations(reservations);
+  }, [reservations]);
 
   const columns = [
     {
@@ -77,14 +91,14 @@ export const ReservationsTable = ({
     },
     {
       id: "created",
-      header: "Creado",
+      header: "Fecha de creación",
       cell: (row: ReservationDto) => (
         <span>{row.createdAt ? formatDate(row.createdAt) : "N/A"}</span>
       ),
     },
     {
       id: "date",
-      header: "Reserva",
+      header: "Fecha de reserva",
       cell: (row: ReservationDto) => <span>{formatDate(row.reservationDate)}</span>,
     },
     {
@@ -101,11 +115,45 @@ export const ReservationsTable = ({
     {
       id: "status",
       header: "Estado",
-      cell: (row: ReservationDto) => (
-        <StatusBadge
-          status={mapReservationState(row.reservationState?.state || "PENDIENTE")}
-        />
-      ),
+      cell: (row: ReservationDto) => {
+        const currentStatusId = row.reservationState?.id || 1;
+        
+        return (
+          <ClickableStatusBadge
+            statusId={currentStatusId}
+            reservationId={row.id}
+            reservationInfo={{
+              userEmail: row.user?.email,
+              date: formatDate(row.reservationDate)
+            }}
+            onStatusChange={(newStatusId) => {
+              // Actualizar localmente el estado sin necesidad de recargar toda la tabla
+              const updatedReservations = [...localReservations];
+              const reservationIndex = updatedReservations.findIndex(r => r.id === row.id);
+              
+              if (reservationIndex !== -1) {
+                if (updatedReservations[reservationIndex].reservationState) {
+                  // Obtener el estado correspondiente al ID directamente del mapa
+                  const newState = reservationStateById[newStatusId] || "PENDIENTE";
+                  
+                  // Actualizar el estado local
+                  updatedReservations[reservationIndex].reservationState.id = newStatusId;
+                  updatedReservations[reservationIndex].reservationState.state = newState;
+                } else {
+                  // Si por alguna razón no existe reservationState, crearlo
+                  const newState = reservationStateById[newStatusId] || "PENDIENTE";
+                  
+                  updatedReservations[reservationIndex].reservationState = {
+                    id: newStatusId,
+                    state: newState
+                  };
+                }
+                setLocalReservations(updatedReservations);
+              }
+            }}
+          />
+        );
+      },
     },
     {
       id: "actions",
@@ -119,24 +167,8 @@ export const ReservationsTable = ({
             className="h-8 px-2 py-0"
           >
             <FileEdit className="h-4 w-4 mr-1" />
-            Abrir
+            Ver detalles
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-              <DropdownMenuItem>Duplicar</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                Cancelar reserva
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       ),
     },
@@ -144,13 +176,13 @@ export const ReservationsTable = ({
 
   return (
     <DataTable
-      data={reservations}
+      data={localReservations}
       columns={columns}
-      totalItems={reservations.length}
-      pageSize={10}
+      totalItems={totalItems}
+      pageSize={pageSize}
       currentPage={page}
-      totalPages={Math.ceil(reservations.length / 10)}
-      onPageChange={setPage}
+      totalPages={Math.ceil(totalItems / pageSize)}
+      onPageChange={onPageChange}
       isLoading={isLoading}
     />
   );
