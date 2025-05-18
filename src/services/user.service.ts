@@ -4,8 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 // Tipos
 export interface UserDto {
   id: number;
-  name: string;
-  document: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone?: string;
   neighborhood?: string;
@@ -43,8 +43,8 @@ function mockUsers(): UserDto[] {
   return [
     {
       id: 1,
-      name: "ACADEMIA DE BADMINTON SANTANDER",
-      document: "90148313",
+      first_name: "ACADEMIA",
+      last_name: "DE BADMINTON SANTANDER",
       email: "academia.badminton@example.com",
       phone: "3105551234",
       neighborhood: "ALFONSO LÓPEZ",
@@ -54,8 +54,8 @@ function mockUsers(): UserDto[] {
     },
     {
       id: 2,
-      name: "CLUB DEPORTIVO BUCARAMANGA",
-      document: "91245678",
+      first_name: "CLUB",
+      last_name: "DEPORTIVO BUCARAMANGA",
       email: "club.deportivo@example.com",
       phone: "3116667890",
       neighborhood: "PROVENZA",
@@ -65,8 +65,8 @@ function mockUsers(): UserDto[] {
     },
     {
       id: 3,
-      name: "ASOCIACIÓN DEPORTIVA SANTANDER",
-      document: "800123456",
+      first_name: "ASOCIACIÓN",
+      last_name: "DEPORTIVA SANTANDER",
       email: "asociacion.deportiva@example.com",
       phone: "3207778888",
       neighborhood: "SAN ALONSO",

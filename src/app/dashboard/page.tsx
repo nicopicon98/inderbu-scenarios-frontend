@@ -347,10 +347,11 @@ export default function ReservationsPage() {
     
     const filtered = reservations.filter(r => 
       r.id.toString().includes(searchTerm) ||
-      r.user?.name.toLowerCase().includes(searchTerm) ||
-      r.user?.document.toLowerCase().includes(searchTerm) ||
-      r.subScenario?.name.toLowerCase().includes(searchTerm) ||
-      r.subScenario?.scenario?.location?.name.toLowerCase().includes(searchTerm)
+      r.user?.first_name?.toLowerCase().includes(searchTerm) ||
+      r.user?.last_name?.toLowerCase().includes(searchTerm) ||
+      r.user?.email?.toLowerCase().includes(searchTerm) ||
+      r.subScenario?.name?.toLowerCase().includes(searchTerm) ||
+      r.subScenario?.scenarioName?.toLowerCase().includes(searchTerm)
     );
     
     setFilteredReservations(filtered);
@@ -547,8 +548,11 @@ export default function ReservationsPage() {
       header: "Cliente",
       cell: (row: ReservationDto) => (
         <div>
-          <div className="font-medium">{row.user?.name || 'Cliente sin nombre'}</div>
-          <div className="text-xs text-gray-500">{row.user?.document || 'Sin documento'}</div>
+          <div className="font-medium">
+            {row.user?.first_name ? `${row.user.first_name} ${row.user.last_name}` : 'Cliente sin nombre'}
+          </div>
+          <div className="text-xs text-gray-500">{row.user?.email || 'Sin email'}</div>
+          <div className="text-xs text-gray-500">{row.user?.phone || 'Sin teléfono'}</div>
         </div>
       ),
     },
@@ -558,7 +562,13 @@ export default function ReservationsPage() {
       cell: (row: ReservationDto) => (
         <div>
           <div className="font-medium">{row.subScenario?.name || 'Escenario sin nombre'}</div>
-          <div className="text-xs text-gray-500">{row.subScenario?.scenario?.location?.name || 'Sin ubicación'}</div>
+          <div className="text-xs text-gray-500">{row.subScenario?.scenarioName || 'Sin escenario'}</div>
+          <div className="text-xs">
+            {row.subScenario?.hasCost 
+              ? <Badge variant="outline" className="bg-yellow-50">De pago</Badge>
+              : <Badge variant="outline" className="bg-green-50">Gratuito</Badge>
+            }
+          </div>
         </div>
       ),
     },
@@ -858,7 +868,9 @@ export default function ReservationsPage() {
                   <Label htmlFor="client">Cliente*</Label>
                   <Input
                     id="client"
-                    value={`${selectedReservation.user?.document || ''} - ${selectedReservation.user?.name || 'Cliente sin nombre'}`}
+                    value={selectedReservation.user ? 
+                      `${selectedReservation.user.first_name} ${selectedReservation.user.last_name} - ${selectedReservation.user.email}` : 
+                      'Cliente sin nombre'}
                     readOnly
                   />
                 </div>
@@ -867,7 +879,7 @@ export default function ReservationsPage() {
                   <Label htmlFor="venue">Escenario*</Label>
                   <Input
                     id="venue"
-                    value={selectedReservation.subScenario?.name || 'Escenario sin nombre'}
+                    value={`${selectedReservation.subScenario?.name || 'Escenario sin nombre'} (${selectedReservation.subScenario?.scenarioName || 'Sin escenario'})`}
                     readOnly
                   />
                 </div>
@@ -970,24 +982,24 @@ export default function ReservationsPage() {
         }
       >
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="new-client">Cliente*</Label>
-            <Select 
-              value={newReservation.clientId}
-              onValueChange={(value) => setNewReservation({...newReservation, clientId: value})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione cliente..." />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id.toString()}>
-                    {user.document} - {user.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+        <Label htmlFor="new-client">Cliente*</Label>
+        <Select 
+        value={newReservation.clientId}
+        onValueChange={(value) => setNewReservation({...newReservation, clientId: value})}
+        >
+        <SelectTrigger>
+        <SelectValue placeholder="Seleccione cliente..." />
+        </SelectTrigger>
+        <SelectContent>
+        {users.map((user) => (
+        <SelectItem key={user.id} value={user.id.toString()}>
+        {user.first_name} {user.last_name} - {user.email}
+        </SelectItem>
+        ))}
+        </SelectContent>
+        </Select>
+        </div>
 
           <div className="space-y-2">
             <Label htmlFor="new-scenario">Escenario*</Label>

@@ -20,39 +20,39 @@ export interface CreateReservationResponseDto {
 export interface ReservationDto {
   id: number;
   reservationDate: string;
-  subScenarioId: number;
-  userId: number;
-  timeSlotId: number;
-  reservationStateId: number;
-  // Campos adicionales que vendrían con relaciones expandidas
-  user?: {
+  createdAt: string;
+  subScenario: {
     id: number;
     name: string;
-    document: string;
+    hasCost: boolean;
+    numberOfSpectators: number | null;
+    numberOfPlayers: number | null;
+    recommendations: string | null;
+    scenarioId: number;
+    scenarioName: string;
   };
-  subScenario?: {
+  user: {
     id: number;
-    name: string;
-    scenario: {
-      id: number;
-      name: string;
-      location?: {
-        id: number;
-        name: string;
-      };
-    };
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
   };
-  timeSlot?: {
+  timeSlot: {
     id: number;
     startTime: string;
     endTime: string;
   };
-  reservationState?: {
+  reservationState: {
     id: number;
     state: 'PENDIENTE' | 'CONFIRMADA' | 'RECHAZADA' | 'CANCELADA';
-    color: string;
   };
-  createdAt?: string;
+  
+  // Campos adicionales para compatibilidad con código existente
+  subScenarioId?: number;
+  userId?: number;
+  timeSlotId?: number;
+  reservationStateId?: number;
 }
 
 export interface TimeslotResponseDto {
@@ -138,8 +138,21 @@ const ReservationService = {
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      const responseToJson = await response.json();
-      return responseToJson.data
+      const responseData = await response.json();
+      
+      // Mapeamos los datos para ser compatibles con el código existente
+      const reservations = responseData.data.map((item: ReservationDto) => {
+        return {
+          ...item,
+          // Añadimos campos derivados para mantener compatibilidad
+          subScenarioId: item.subScenario?.id,
+          userId: item.user?.id,
+          timeSlotId: item.timeSlot?.id,
+          reservationStateId: item.reservationState?.id
+        };
+      });
+      
+      return reservations;
     } catch (error) {
       console.error('Error getting all reservations:', error);
       // Para desarrollo, retornamos datos de ejemplo si la API no está disponible
@@ -177,26 +190,23 @@ function mockReservations(): ReservationDto[] {
     {
       id: 509725,
       reservationDate: "2025-05-17",
-      subScenarioId: 1,
-      userId: 1,
-      timeSlotId: 1,
-      reservationStateId: 2, // CONFIRMADA
-      user: {
-        id: 1,
-        name: "ACADEMIA DE BADMINTON SANTANDER",
-        document: "90148313"
-      },
+      createdAt: "2025-01-13T10:30:00",
       subScenario: {
         id: 1,
         name: "COLISEO BICENTENARIO ALEJANDRO GALVIS RAMIREZ",
-        scenario: {
-          id: 1,
-          name: "Complejo Deportivo",
-          location: {
-            id: 1,
-            name: "ALFONSO LÓPEZ"
-          }
-        }
+        hasCost: false,
+        numberOfSpectators: 100,
+        numberOfPlayers: 20,
+        recommendations: "Sin recomendaciones",
+        scenarioId: 1,
+        scenarioName: "Complejo Deportivo"
+      },
+      user: {
+        id: 1,
+        first_name: "ACADEMIA",
+        last_name: "DE BADMINTON SANTANDER",
+        email: "academia@example.com",
+        phone: "3001234567"
       },
       timeSlot: {
         id: 1,
@@ -205,34 +215,34 @@ function mockReservations(): ReservationDto[] {
       },
       reservationState: {
         id: 2,
-        state: "CONFIRMADA",
-        color: "#22c55e"
+        state: "CONFIRMADA"
       },
-      createdAt: "2025-01-13T10:30:00"
+      // Para compatibilidad
+      subScenarioId: 1,
+      userId: 1,
+      timeSlotId: 1,
+      reservationStateId: 2
     },
     {
       id: 509776,
       reservationDate: "2025-05-17",
-      subScenarioId: 1,
-      userId: 1,
-      timeSlotId: 2,
-      reservationStateId: 2, // CONFIRMADA
-      user: {
-        id: 1,
-        name: "ACADEMIA DE BADMINTON SANTANDER",
-        document: "90148313"
-      },
+      createdAt: "2025-01-13T10:45:00",
       subScenario: {
         id: 1,
         name: "COLISEO BICENTENARIO ALEJANDRO GALVIS RAMIREZ",
-        scenario: {
-          id: 1,
-          name: "Complejo Deportivo",
-          location: {
-            id: 1,
-            name: "ALFONSO LÓPEZ"
-          }
-        }
+        hasCost: false,
+        numberOfSpectators: 100,
+        numberOfPlayers: 20,
+        recommendations: "Sin recomendaciones",
+        scenarioId: 1,
+        scenarioName: "Complejo Deportivo"
+      },
+      user: {
+        id: 1,
+        first_name: "ACADEMIA",
+        last_name: "DE BADMINTON SANTANDER",
+        email: "academia@example.com",
+        phone: "3001234567"
       },
       timeSlot: {
         id: 2,
@@ -241,34 +251,34 @@ function mockReservations(): ReservationDto[] {
       },
       reservationState: {
         id: 2,
-        state: "CONFIRMADA",
-        color: "#22c55e"
+        state: "CONFIRMADA"
       },
-      createdAt: "2025-01-13T10:45:00"
+      // Para compatibilidad
+      subScenarioId: 1,
+      userId: 1,
+      timeSlotId: 2,
+      reservationStateId: 2
     },
     {
       id: 509777,
       reservationDate: "2025-05-18",
-      subScenarioId: 2,
-      userId: 2,
-      timeSlotId: 5,
-      reservationStateId: 1, // PENDIENTE
-      user: {
-        id: 2,
-        name: "CLUB DEPORTIVO BUCARAMANGA",
-        document: "91245678"
-      },
+      createdAt: "2025-01-15T14:20:00",
       subScenario: {
         id: 2,
         name: "PROVENZA - PATINODROMO - PARQUE RECREO- DEPORTIVO",
-        scenario: {
-          id: 2,
-          name: "Parque Recreativo",
-          location: {
-            id: 2,
-            name: "PROVENZA"
-          }
-        }
+        hasCost: true,
+        numberOfSpectators: 50,
+        numberOfPlayers: 10,
+        recommendations: "Traer hidratación",
+        scenarioId: 2,
+        scenarioName: "Parque Recreativo"
+      },
+      user: {
+        id: 2,
+        first_name: "CLUB",
+        last_name: "DEPORTIVO BUCARAMANGA",
+        email: "club@example.com",
+        phone: "3109876543"
       },
       timeSlot: {
         id: 5,
@@ -277,34 +287,34 @@ function mockReservations(): ReservationDto[] {
       },
       reservationState: {
         id: 1,
-        state: "PENDIENTE",
-        color: "#f59e0b"
+        state: "PENDIENTE"
       },
-      createdAt: "2025-01-15T14:20:00"
+      // Para compatibilidad
+      subScenarioId: 2,
+      userId: 2,
+      timeSlotId: 5,
+      reservationStateId: 1
     },
     {
       id: 509778,
       reservationDate: "2025-05-19",
-      subScenarioId: 3,
-      userId: 3,
-      timeSlotId: 8,
-      reservationStateId: 3, // RECHAZADA
-      user: {
-        id: 3,
-        name: "ASOCIACIÓN DEPORTIVA SANTANDER",
-        document: "800123456"
-      },
+      createdAt: "2025-01-20T09:15:00",
       subScenario: {
         id: 3,
         name: "ÓVALO AZUL VELODROMO ALFONSO FLOREZ ORTIZ",
-        scenario: {
-          id: 3,
-          name: "Velódromo",
-          location: {
-            id: 3,
-            name: "SAN ALONSO"
-          }
-        }
+        hasCost: true,
+        numberOfSpectators: 200,
+        numberOfPlayers: 30,
+        recommendations: "Se requiere equipo de seguridad",
+        scenarioId: 3,
+        scenarioName: "Velódromo"
+      },
+      user: {
+        id: 3,
+        first_name: "ASOCIACIÓN",
+        last_name: "DEPORTIVA SANTANDER",
+        email: "asociacion@example.com",
+        phone: "3205551234"
       },
       timeSlot: {
         id: 8,
@@ -313,10 +323,13 @@ function mockReservations(): ReservationDto[] {
       },
       reservationState: {
         id: 3,
-        state: "RECHAZADA",
-        color: "#ef4444"
+        state: "RECHAZADA"
       },
-      createdAt: "2025-01-20T09:15:00"
+      // Para compatibilidad
+      subScenarioId: 3,
+      userId: 3,
+      timeSlotId: 8,
+      reservationStateId: 3
     }
   ];
 }
