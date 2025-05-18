@@ -5,9 +5,6 @@ import {
   Map,
   Settings,
   BarChart,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
 } from "lucide-react";
 
 export const reportItems = [
@@ -27,6 +24,11 @@ export const menuItems = [
   {
     title: "Escenarios",
     href: "/dashboard/escenarios",
+    icon: MapPin,
+  },
+  {
+    title: "Sub-escenarios",
+    href: "/dashboard/sub-escenarios",
     icon: MapPin,
   },
   {

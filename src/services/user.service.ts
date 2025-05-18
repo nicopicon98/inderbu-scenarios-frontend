@@ -1,5 +1,4 @@
-// Definir la URL base del API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 // Tipos
 export interface UserDto {
@@ -19,62 +18,22 @@ const UserService = {
   // Obtener todos los usuarios (clientes)
   getAllUsers: async (): Promise<UserDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/admin/users`, {
+      const response = await fetch(`${API_URL}/users`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
-      return response.json();
+      const users = await response.json();
+      return users.data;
     } catch (error) {
-      console.error('Error getting users:', error);
-      // Para desarrollo, retornamos datos de ejemplo si la API no está disponible
-      return mockUsers();
+      console.error("Error getting users:", error);
+      throw new Error(`Error ${error}`);
     }
   },
 };
-
-// Mock users para desarrollo cuando no haya API disponible
-function mockUsers(): UserDto[] {
-  return [
-    {
-      id: 1,
-      first_name: "ACADEMIA",
-      last_name: "DE BADMINTON SANTANDER",
-      email: "academia.badminton@example.com",
-      phone: "3105551234",
-      neighborhood: "ALFONSO LÓPEZ",
-      address: "Calle 45 #23-45",
-      role: "client",
-      active: true
-    },
-    {
-      id: 2,
-      first_name: "CLUB",
-      last_name: "DEPORTIVO BUCARAMANGA",
-      email: "club.deportivo@example.com",
-      phone: "3116667890",
-      neighborhood: "PROVENZA",
-      address: "Carrera 23 #110-35",
-      role: "client",
-      active: true
-    },
-    {
-      id: 3,
-      first_name: "ASOCIACIÓN",
-      last_name: "DEPORTIVA SANTANDER",
-      email: "asociacion.deportiva@example.com",
-      phone: "3207778888",
-      neighborhood: "SAN ALONSO",
-      address: "Calle 14 entre Cr 32 y 32A",
-      role: "client",
-      active: true
-    }
-  ];
-}
 
 export default UserService;

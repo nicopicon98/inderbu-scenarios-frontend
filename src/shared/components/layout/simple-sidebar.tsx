@@ -92,9 +92,6 @@ const isActive = item.href === '/dashboard'
         })}
 
         <div className="my-2 border-t border-gray-200"></div>
-
-        {!collapsed && <div className="px-3 text-xs font-medium text-gray-500 mb-1">REPORTES</div>}
-
         {reportItems.map((item) => {
           const isActive = pathname === item.href
           return (

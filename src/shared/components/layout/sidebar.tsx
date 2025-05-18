@@ -14,7 +14,12 @@ export function Sidebar() {
     },
     {
       title: "Escenarios",
-      href: "/escenarios",
+      href: "/dashboard/escenarios",
+      icon: MapPin,
+    },
+    {
+      title: "Sub-escenarios",
+      href: "/dashboard/sub-escenarios",
       icon: MapPin,
     },
     {

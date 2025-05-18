@@ -60,9 +60,11 @@ import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 
 import {
+  subScenarioService,
   scenarioService,
   activityAreaService,
   neighborhoodService,
+  SubScenario,
   Scenario,
   ActivityArea,
   Neighborhood,
@@ -75,19 +77,21 @@ interface FilterState {
   search: string;
   activityAreaId?: number;
   neighborhoodId?: number;
+  scenarioId?: number;
   page: number;
   limit: number;
 }
 
-export default function FacilityManagement() {
+export default function SubScenarioManagement() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
+  const [selectedSubScenario, setSelectedSubScenario] = useState<SubScenario | null>(
     null
   );
   const [showFilters, setShowFilters] = useState(false);
 
   // Datos desde API
+  const [subScenarios, setSubScenarios] = useState<SubScenario[]>([]);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [activityAreas, setActivityAreas] = useState<ActivityArea[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
@@ -104,6 +108,37 @@ export default function FacilityManagement() {
     limit: 7,
   });
 
+  // Cargar datos iniciales
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+
+        // Cargar datos para los filtros
+        const scenariosResult = await scenarioService.getAll({ limit: 100 });
+        const areasResult = await activityAreaService.getAll();
+        const neighborhoodsResult = await neighborhoodService.getAll();
+
+        // Manejar los resultados 
+        setScenarios(scenariosResult.data);
+        setActivityAreas(Array.isArray(areasResult) ? areasResult : areasResult.data);
+        setNeighborhoods(Array.isArray(neighborhoodsResult) ? neighborhoodsResult : neighborhoodsResult.data);
+
+        // Cargar sub-escenarios iniciales
+        const subScenariosResult = await subScenarioService.getAll(filters);
+        setSubScenarios(subScenariosResult.data);
+        setPageMeta(subScenariosResult.meta);
+      } catch (err) {
+        console.error("Error fetching initial data:", err);
+        setError("Error al cargar los datos iniciales. Intente nuevamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
   // Filtros dinámicos basados en datos cargados desde API
   const filterOptions = [
     {
@@ -112,6 +147,20 @@ export default function FacilityManagement() {
       type: "text",
       placeholder: "Buscar por nombre o código",
       value: filters.search,
+    },
+    {
+      id: "scenarioId",
+      label: "Escenario",
+      type: "select",
+      placeholder: "Seleccione escenario...",
+      options: [
+        { value: "", label: "Todos los escenarios..." },
+        ...scenarios.map((s) => ({
+          value: s.id.toString(),
+          label: s.name,
+        })),
+      ],
+      value: filters.scenarioId,
     },
     {
       id: "activityAreaId",
@@ -143,61 +192,30 @@ export default function FacilityManagement() {
     },
   ];
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setLoading(true);
 
-        // Simplificar código para manejar ApiResponse
-        const areasResult = await activityAreaService.getAll();
-        const neighborhoodsResult = await neighborhoodService.getAll();
-
-        // Para areas y neighborhoods, pueden ser array o paginados
-        setActivityAreas(
-          Array.isArray(areasResult) ? areasResult : areasResult.data
-        );
-        setNeighborhoods(
-          Array.isArray(neighborhoodsResult)
-            ? neighborhoodsResult
-            : neighborhoodsResult.data
-        );
-
-        // Cargar escenarios iniciales
-        await fetchScenarios(filters);
-      } catch (err) {
-        console.error("Error fetching initial data:", err);
-        setError("Error al cargar los datos iniciales. Intente nuevamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
-
-  // Función para cargar escenarios con filtros
-  const fetchScenarios = async (options: PageOptions) => {
-    try {
-      setLoading(true);
-      const response = await scenarioService.getAll(options);
-      setScenarios(response.data);
-      setPageMeta(response.meta);
-      return response;
-    } catch (err) {
-      console.error("Error fetching scenarios:", err);
-      setError("Error al cargar los escenarios. Intente nuevamente.");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Manejar cambios de página
   const handlePageChange = async (newPage: number) => {
-    const newFilters = { ...filters, page: newPage };
-    setFilters(newFilters);
-    await fetchScenarios(newFilters);
+    // Creamos un nuevo objeto de filtros para evitar referencias al estado anterior
+    const newFilters: FilterState = { 
+      ...filters, 
+      page: newPage 
+    };
+    
+    setLoading(true);
+    try {
+      // Usamos directamente el nuevo objeto para la llamada a la API
+      const response = await subScenarioService.getAll(newFilters);
+      setSubScenarios(response.data);
+      setPageMeta(response.meta);
+      // Actualizamos el estado de filtros después de la llamada exitosa
+      setFilters(newFilters);
+    } catch (err) {
+      console.error("Error changing page:", err);
+      setError("Error al cambiar de página. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Renderizar componentes de paginación
@@ -271,31 +289,67 @@ export default function FacilityManagement() {
 
   // Manejar búsqueda
   const handleSearch = async (searchTerm: string) => {
-    const newFilters = { ...filters, search: searchTerm, page: 1 };
-    setFilters(newFilters);
-    await fetchScenarios(newFilters);
+    // Creamos un nuevo objeto de filtros con la búsqueda y reiniciamos a página 1
+    const newFilters: FilterState = { 
+      ...filters, 
+      search: searchTerm, 
+      page: 1 
+    };
+    
+    setLoading(true);
+    try {
+      // Usamos directamente el nuevo objeto para la llamada a la API
+      const response = await subScenarioService.getAll(newFilters);
+      setSubScenarios(response.data);
+      setPageMeta(response.meta);
+      // Actualizamos el estado de filtros después de la llamada exitosa
+      setFilters(newFilters);
+    } catch (err) {
+      console.error("Error searching:", err);
+      setError("Error al buscar sub-escenarios. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Manejar filtros avanzados
-  const handleFilterChange = async (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters, page: 1 };
-    setFilters(updatedFilters);
-    await fetchScenarios(updatedFilters);
-    setShowFilters(false);
+  const handleFilterChange = async (filterUpdates: Partial<FilterState>) => {
+    // Creamos un nuevo objeto de filtros combinando los actuales con las actualizaciones
+    const newFilters: FilterState = { 
+      ...filters, 
+      ...filterUpdates,
+      page: 1 // Reiniciamos a la primera página para filtros nuevos
+    };
+    
+    setLoading(true);
+    try {
+      // Usamos directamente el nuevo objeto para la llamada a la API
+      const response = await subScenarioService.getAll(newFilters);
+      setSubScenarios(response.data);
+      setPageMeta(response.meta);
+      // Actualizamos el estado de filtros después de la llamada exitosa
+      setFilters(newFilters);
+      // Ocultamos el panel de filtros
+      setShowFilters(false);
+    } catch (err) {
+      console.error("Error applying filters:", err);
+      setError("Error al aplicar filtros. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOpenDrawer = (scenario: Scenario) => {
-    setSelectedScenario(scenario);
+  const handleOpenDrawer = (subScenario: SubScenario) => {
+    setSelectedSubScenario(subScenario);
     setIsDrawerOpen(true);
   };
 
-  // Columnas para la tabla
+  // Columnas para la tabla - adaptadas para sub-escenarios
   const columns = [
-    // Renderizado principal
     {
-      id: "neighborhood",
-      header: "Barrio",
-      cell: (row: any) => <span>{row.neighborhood?.name || 'No asignado'}</span>,
+      id: "scenario",
+      header: "Escenario",
+      cell: (row: any) => <span>{row.scenario?.name || 'No asignado'}</span>,
     },
     {
       id: "name",
@@ -303,9 +357,9 @@ export default function FacilityManagement() {
       cell: (row: any) => <span>{row.name}</span>,
     },
     {
-      id: "address",
-      header: "Dirección",
-      cell: (row: any) => <span>{row.address}</span>,
+      id: "activityArea",
+      header: "Área Actividad",
+      cell: (row: any) => <span>{row.activityArea?.name || 'No asignada'}</span>,
     },
     {
       id: "status",
@@ -362,7 +416,7 @@ export default function FacilityManagement() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold tracking-tight">
-            Escenarios Deportivos
+            Sub-Escenarios Deportivos
           </h1>
           <div className="flex items-center gap-2">
             <Button
@@ -375,7 +429,7 @@ export default function FacilityManagement() {
             </Button>
             <Button onClick={() => setIsModalOpen(true)} size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Nuevo Escenario
+              Nuevo Sub-Escenario
             </Button>
           </div>
         </div>
@@ -411,7 +465,7 @@ export default function FacilityManagement() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       {filterOptions.map((filter) => (
                         <div key={filter.id} className="space-y-2">
                           <Label htmlFor={filter.id}>{filter.label}</Label>
@@ -436,6 +490,8 @@ export default function FacilityManagement() {
                                   ? filters.activityAreaId || ""
                                   : filter.id === "neighborhoodId"
                                   ? filters.neighborhoodId || ""
+                                  : filter.id === "scenarioId"
+                                  ? filters.scenarioId || ""
                                   : ""
                               }
                               onChange={(e) => {
@@ -451,6 +507,11 @@ export default function FacilityManagement() {
                                   setFilters({
                                     ...filters,
                                     neighborhoodId: value,
+                                  });
+                                if (filter.id === "scenarioId")
+                                  setFilters({
+                                    ...filters,
+                                    scenarioId: value,
                                   });
                               }}
                             >
@@ -478,7 +539,7 @@ export default function FacilityManagement() {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle>Listado de Escenarios</CardTitle>
+                    <CardTitle>Listado de Sub-Escenarios</CardTitle>
                     <Badge variant="outline" className="ml-2">
                       {pageMeta?.totalItems || 0}
                     </Badge>
@@ -486,7 +547,7 @@ export default function FacilityManagement() {
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar escenario..."
+                      placeholder="Buscar sub-escenario..."
                       className="pl-8"
                       value={filters.search}
                       onChange={(e) => handleSearch(e.target.value)}
@@ -518,22 +579,22 @@ export default function FacilityManagement() {
                           >
                             <div className="flex justify-center items-center">
                               <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
-                              <span>Cargando escenarios...</span>
+                              <span>Cargando sub-escenarios...</span>
                             </div>
                           </td>
                         </tr>
-                      ) : scenarios.length > 0 ? (
-                        scenarios.map((scenario) => (
+                      ) : subScenarios.length > 0 ? (
+                        subScenarios.map((subScenario) => (
                           <tr
-                            key={scenario.id}
+                            key={subScenario.id}
                             className="border-b hover:bg-gray-50"
                           >
                             {columns.map((column) => (
                               <td
-                                key={`${scenario.id}-${column.id}`}
+                                key={`${subScenario.id}-${column.id}`}
                                 className="px-4 py-3 text-sm"
                               >
-                                {column.cell(scenario)}
+                                {column.cell(subScenario)}
                               </td>
                             ))}
                           </tr>
@@ -544,7 +605,7 @@ export default function FacilityManagement() {
                             colSpan={columns.length}
                             className="px-4 py-8 text-center text-sm text-gray-500"
                           >
-                            No se encontraron escenarios con los filtros
+                            No se encontraron sub-escenarios con los filtros
                             aplicados.
                           </td>
                         </tr>
@@ -557,12 +618,12 @@ export default function FacilityManagement() {
                     {pageMeta && (
                       <>
                         Mostrando{" "}
-                        <span className="font-medium">{scenarios.length}</span>{" "}
+                        <span className="font-medium">{subScenarios.length}</span>{" "}
                         de{" "}
                         <span className="font-medium">
                           {pageMeta.totalItems}
                         </span>{" "}
-                        escenarios (Página {filters.page} de {pageMeta.totalPages})
+                        sub-escenarios (Página {filters.page} de {pageMeta.totalPages})
                       </>
                     )}
                   </div>
@@ -570,26 +631,16 @@ export default function FacilityManagement() {
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious 
-                          onClick={() => {
-                            if (pageMeta?.hasPreviousPage && !loading) {
-                              handlePageChange(filters.page - 1);
-                            }
-                          }}
+                          onClick={() => handlePageChange(filters.page - 1)} 
+                          disabled={!pageMeta?.hasPreviousPage || loading}
                         />
                       </PaginationItem>
                       {renderPaginationItems()}
                       <PaginationItem>
-                        {pageMeta?.hasNextPage && !loading ? (
-                          <PaginationNext 
-                            onClick={() => handlePageChange(filters.page + 1)} 
-                          />
-                        ) : (
-                          <span className="pointer-events-none opacity-50">
-                            <PaginationNext 
-                              onClick={() => {}} 
-                            />
-                          </span>
-                        )}
+                        <PaginationNext 
+                          onClick={() => handlePageChange(filters.page + 1)} 
+                          disabled={!pageMeta?.hasNextPage || loading}
+                        />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
@@ -602,13 +653,13 @@ export default function FacilityManagement() {
           {[
             {
               key: "active",
-              label: "Escenarios Activos",
-              count: scenarios.length,
+              label: "Sub-Escenarios Activos",
+              count: subScenarios.length,
             },
             {
               key: "inactive",
-              label: "Escenarios Inactivos",
-              count: scenarios.length,
+              label: "Sub-Escenarios Inactivos",
+              count: subScenarios.length,
             },
           ].map(({ key, label, count }) => (
             <TabsContent key={key} value={key} className="mt-0">
@@ -624,7 +675,7 @@ export default function FacilityManagement() {
                     <div className="relative w-64">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Buscar escenario..."
+                        placeholder="Buscar sub-escenario..."
                         className="pl-8"
                       />
                     </div>
@@ -655,22 +706,22 @@ export default function FacilityManagement() {
                             >
                               <div className="flex justify-center items-center">
                                 <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
-                                <span>Cargando escenarios...</span>
+                                <span>Cargando sub-escenarios...</span>
                               </div>
                             </td>
                           </tr>
                         ) : (
-                          scenarios.map((scenario) => (
+                          subScenarios.map((subScenario) => (
                             <tr
-                              key={scenario.id}
+                              key={subScenario.id}
                               className="border-b hover:bg-gray-50"
                             >
                               {columns.map((column) => (
                                 <td
-                                  key={`${scenario.id}-${column.id}`}
+                                  key={`${subScenario.id}-${column.id}`}
                                   className="px-4 py-3 text-sm"
                                 >
-                                  {column.cell(scenario)}
+                                  {column.cell(subScenario)}
                                 </td>
                               ))}
                             </tr>
@@ -682,30 +733,22 @@ export default function FacilityManagement() {
                   <div className="flex items-center justify-between px-4 py-2 border-t">
                     <div className="text-sm text-gray-500">
                       Mostrando <span className="font-medium">{count}</span>{" "}
-                      escenarios
+                      sub-escenarios
                     </div>
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>
-                          {(!pageMeta?.hasPreviousPage || loading) ? (
-                            <span className="pointer-events-none opacity-50">
-                              <PaginationPrevious onClick={() => {}} />
-                            </span>
-                          ) : (
-                            <PaginationPrevious 
-                              onClick={() => handlePageChange(filters.page - 1)} 
-                            />
-                          )}
+                          <PaginationPrevious 
+                            onClick={() => handlePageChange(filters.page - 1)} 
+                            disabled={!pageMeta?.hasPreviousPage || loading}
+                          />
                         </PaginationItem>
                         {renderPaginationItems()}
                         <PaginationItem>
-                          {(!pageMeta?.hasNextPage || loading) ? (
-                            <span className="pointer-events-none opacity-50">
-                              <PaginationNext onClick={() => {}} />
-                            </span>
-                          ) : (
-                            <PaginationNext onClick={() => handlePageChange(filters.page + 1)} />
-                          )}
+                          <PaginationNext 
+                            onClick={() => handlePageChange(filters.page + 1)} 
+                            disabled={!pageMeta?.hasNextPage || loading}
+                          />
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
@@ -721,51 +764,67 @@ export default function FacilityManagement() {
           <DrawerContent className="w-full sm:w-[480px]">
             <DrawerHeader>
               <DrawerTitle>
-                {selectedScenario
-                  ? `Editar Escenario: ${selectedScenario.name}`
-                  : "Editar Escenario"}
+                {selectedSubScenario
+                  ? `Editar Sub-Escenario: ${selectedSubScenario.name}`
+                  : "Editar Sub-Escenario"}
               </DrawerTitle>
             </DrawerHeader>
 
             <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)]">
-              {selectedScenario && (
+              {selectedSubScenario && (
                 <>
                   <div className="space-y-2">
-                      <Label htmlFor="venue-neighborhood">Barrio*</Label>
-                      <Input
-                        id="venue-neighborhood"
-                        defaultValue={selectedScenario.neighborhood?.name || ""}
-                      />
-                    </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-name">Nombre*</Label>
+                    <Label htmlFor="sub-scenario-name">Nombre*</Label>
                     <Input
-                      id="venue-name"
-                      defaultValue={selectedScenario.name}
+                      id="sub-scenario-name"
+                      defaultValue={selectedSubScenario.name}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="venue-address">Dirección*</Label>
-                    <Input
-                      id="venue-address"
-                      defaultValue={selectedScenario.address}
-                    />
+                    <Label htmlFor="sub-scenario-scenario">Escenario*</Label>
+                    <select
+                      id="sub-scenario-scenario"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      defaultValue={selectedSubScenario.scenario?.id}
+                    >
+                      <option value="">Seleccione escenario...</option>
+                      {scenarios.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="venue-description">Descripción</Label>
+                    <Label htmlFor="sub-scenario-area">Área de Actividad*</Label>
+                    <select
+                      id="sub-scenario-area"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      defaultValue={selectedSubScenario.activityArea?.id}
+                    >
+                      <option value="">Seleccione área de actividad...</option>
+                      {activityAreas.map(a => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="sub-scenario-description">Descripción</Label>
                     <Textarea
-                      id="venue-description"
-                      placeholder="Descripción del escenario"
+                      id="sub-scenario-description"
+                      placeholder="Descripción del sub-escenario"
                       rows={3}
                     />
                   </div>
 
                   <div className="flex items-center justify-between py-2">
-                    <Label htmlFor="venue-status">Estado</Label>
-                    <Switch id="venue-status" defaultChecked={true} />
+                    <Label htmlFor="sub-scenario-status">Estado</Label>
+                    <Switch id="sub-scenario-status" defaultChecked={true} />
                   </div>
                 </>
               )}
@@ -788,40 +847,52 @@ export default function FacilityManagement() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Crear Escenario</DialogTitle>
+              <DialogTitle>Crear Sub-Escenario</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                  <Label htmlFor="new-venue-neighborhood">Barrio*</Label>
-                  <select
-                    id="new-venue-neighborhood"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Seleccione barrio...</option>
-                    <option value="san-alonso">San Alonso</option>
-                    <option value="provenza">Provenza</option>
-                    <option value="alvarez">Álvarez Las Americas</option>
-                  </select>
-                </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-venue-name">Nombre*</Label>
-                <Input id="new-venue-name" placeholder="Nombre del escenario" />
+                <Label htmlFor="new-sub-scenario-name">Nombre*</Label>
+                <Input id="new-sub-scenario-name" placeholder="Nombre del sub-escenario" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="new-venue-address">Dirección*</Label>
-                <Input id="new-venue-address" placeholder="Dirección" />
+                <Label htmlFor="new-sub-scenario-scenario">Escenario*</Label>
+                <select
+                  id="new-sub-scenario-scenario"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Seleccione escenario...</option>
+                  {scenarios.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="new-venue-description">Descripción</Label>
+                <Label htmlFor="new-sub-scenario-area">Área de Actividad*</Label>
+                <select
+                  id="new-sub-scenario-area"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Seleccione área de actividad...</option>
+                  {activityAreas.map(a => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="new-sub-scenario-description">Descripción</Label>
                 <Textarea
-                  id="new-venue-description"
-                  placeholder="Descripción del escenario"
+                  id="new-sub-scenario-description"
+                  placeholder="Descripción del sub-escenario"
                   rows={3}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="new-venue-status">Estado</Label>
-                <Switch id="new-venue-status" />
+                <Label htmlFor="new-sub-scenario-status">Estado</Label>
+                <Switch id="new-sub-scenario-status" defaultChecked={true} />
               </div>
             </div>
             <div className="flex justify-between">

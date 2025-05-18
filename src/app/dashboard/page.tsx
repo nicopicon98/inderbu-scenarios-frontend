@@ -57,16 +57,21 @@ import {
 import { toast } from "@/shared/hooks/use-toast";
 
 // Servicios
-import ReservationService, { ReservationDto } from "@/services/reservation.service";
+import ReservationService, {
+  ReservationDto,
+} from "@/services/reservation.service";
 import UserService, { UserDto } from "@/services/user.service";
-import ScenarioService, { ScenarioDto, SubScenarioDto } from "@/services/scenario.service";
+import ScenarioService, {
+  ScenarioDto,
+  SubScenarioDto,
+} from "@/services/scenario.service";
 import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
 
 // Utilidades
-import { 
-  mapReservationState, 
-  getReservationStateId, 
-  formatDate 
+import {
+  mapReservationState,
+  getReservationStateId,
+  formatDate,
 } from "@/utils/reservation.utils";
 
 /* -------------------------------------------------------------------------- */
@@ -80,12 +85,7 @@ const filterOptions: {
   placeholder?: string;
   options?: { value: string; label: string }[];
 }[] = [
-  {
-    id: "code",
-    label: "Código",
-    type: "text",
-    placeholder: "Código",
-  },
+  // Eliminamos el filtro de código/ID para evitar brechas de seguridad
   {
     id: "venue",
     label: "Escenario",
@@ -157,7 +157,9 @@ const filterOptions: {
 export default function ReservationsPage() {
   // Estados
   const [reservations, setReservations] = useState<ReservationDto[]>([]);
-  const [filteredReservations, setFilteredReservations] = useState<ReservationDto[]>([]);
+  const [filteredReservations, setFilteredReservations] = useState<
+    ReservationDto[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<UserDto[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioDto[]>([]);
@@ -173,7 +175,8 @@ export default function ReservationsPage() {
   // Estados UI
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState<ReservationDto | null>(null);
+  const [selectedReservation, setSelectedReservation] =
+    useState<ReservationDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -199,8 +202,12 @@ export default function ReservationsPage() {
   });
 
   // Estados para controlar disponibilidad en creación de reserva
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<{ id: number; startTime: string; endTime: string; available: boolean }[]>([]);
-  const [subScenariosForScenario, setSubScenariosForScenario] = useState<SubScenarioDto[]>([]);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<
+    { id: number; startTime: string; endTime: string; available: boolean }[]
+  >([]);
+  const [subScenariosForScenario, setSubScenariosForScenario] = useState<
+    SubScenarioDto[]
+  >([]);
 
   // Carga inicial de datos
   useEffect(() => {
@@ -209,7 +216,7 @@ export default function ReservationsPage() {
       try {
         // Cargar reservaciones
         const reservationsData = await ReservationService.getAllReservations();
-        console.log(reservationsData)
+        console.log(reservationsData);
         setReservations(reservationsData);
         setFilteredReservations(reservationsData);
 
@@ -220,8 +227,10 @@ export default function ReservationsPage() {
         // Cargar escenarios y subescenarios
         const scenariosData = await ScenarioService.getAllScenarios();
         setScenarios(scenariosData);
-        
-        const allSubScenarios = scenariosData.flatMap(s => s.subScenarios || []);
+
+        const allSubScenarios = scenariosData.flatMap(
+          (s) => s.subScenarios || []
+        );
         setSubScenarios(allSubScenarios);
 
         // Cargar timeslots
@@ -234,7 +243,8 @@ export default function ReservationsPage() {
         console.error("Error loading initial data:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los datos. Intente de nuevo más tarde.",
+          description:
+            "No se pudieron cargar los datos. Intente de nuevo más tarde.",
           duration: 3000,
           variant: "destructive",
         });
@@ -248,15 +258,19 @@ export default function ReservationsPage() {
 
   // Calculamos las estadísticas
   const calculateStats = (
-    reservations: ReservationDto[], 
-    scenarios: ScenarioDto[], 
+    reservations: ReservationDto[],
+    scenarios: ScenarioDto[],
     users: UserDto[]
   ) => {
     const today = new Date().toISOString().split("T")[0];
-    const todayReservations = reservations.filter(r => r.reservationDate === today).length;
-    
+    const todayReservations = reservations.filter(
+      (r) => r.reservationDate === today
+    ).length;
+
     const activeScenarios = scenarios.reduce((total, scenario) => {
-      return total + (scenario.subScenarios?.filter(ss => ss.active)?.length || 0);
+      return (
+        total + (scenario.subScenarios?.filter((ss) => ss.active)?.length || 0)
+      );
     }, 0);
 
     setStatsData({
@@ -273,8 +287,8 @@ export default function ReservationsPage() {
     setEditingReservation({
       id: reservation.id,
       date: reservation.reservationDate,
-      timeSlotId: reservation.timeSlotId,
-      reservationStateId: reservation.reservationStateId,
+      timeSlotId: reservation.timeSlotId ?? 1,
+      reservationStateId: reservation.reservationStateId ?? 1,
       observations: "", // Asumimos que este campo no existe en el modelo actual
     });
     setIsDrawerOpen(true);
@@ -283,49 +297,57 @@ export default function ReservationsPage() {
   // Manejador de búsqueda y filtros
   const handleSearch = (appliedFilters: Record<string, string>) => {
     setFilters(appliedFilters);
-    
+
     let filtered = [...reservations];
-    
-    if (appliedFilters.code) {
-      filtered = filtered.filter(r => r.id.toString().includes(appliedFilters.code));
-    }
-    
-    if (appliedFilters.venue && appliedFilters.venue !== 'all') {
-      filtered = filtered.filter(r => r.subScenario?.scenario?.id.toString() === appliedFilters.venue);
-    }
-    
-    if (appliedFilters.neighborhood && appliedFilters.neighborhood !== 'all') {
-      filtered = filtered.filter(r => 
-        r.subScenario?.scenario?.location?.id.toString() === appliedFilters.neighborhood
+
+    // El filtro por ID fue eliminado para mejorar la seguridad
+
+    if (appliedFilters.venue && appliedFilters.venue !== "all") {
+      filtered = filtered.filter(
+        (r) => r.subScenario?.scenario?.id.toString() === appliedFilters.venue
       );
     }
-    
-    if (appliedFilters.client && appliedFilters.client !== 'all') {
-      filtered = filtered.filter(r => r.userId.toString() === appliedFilters.client);
+
+    if (appliedFilters.neighborhood && appliedFilters.neighborhood !== "all") {
+      filtered = filtered.filter(
+        (r) =>
+          r.subScenario?.scenario?.neighborhood?.id.toString() ===
+          appliedFilters.neighborhood
+      );
     }
-    
+
+    if (appliedFilters.client && appliedFilters.client !== "all") {
+      filtered = filtered.filter(
+        (r) => r.user.id.toString() === appliedFilters.client
+      );
+    }
+
     if (appliedFilters.dateFrom) {
-      filtered = filtered.filter(r => r.reservationDate >= appliedFilters.dateFrom);
+      filtered = filtered.filter(
+        (r) => r.reservationDate >= appliedFilters.dateFrom
+      );
     }
-    
+
     if (appliedFilters.dateTo) {
-      filtered = filtered.filter(r => r.reservationDate <= appliedFilters.dateTo);
+      filtered = filtered.filter(
+        (r) => r.reservationDate <= appliedFilters.dateTo
+      );
     }
-    
-    if (appliedFilters.status && appliedFilters.status !== 'all') {
+
+    if (appliedFilters.status && appliedFilters.status !== "all") {
       const stateMap: Record<string, number[]> = {
-        'approved': [2], // CONFIRMADA
-        'pending': [1],  // PENDIENTE
-        'rejected': [3], // RECHAZADA
+        approved: [2], // CONFIRMADA
+        pending: [1], // PENDIENTE
+        rejected: [3], // RECHAZADA
       };
-      
+
       if (stateMap[appliedFilters.status]) {
-        filtered = filtered.filter(r => 
-          stateMap[appliedFilters.status].includes(r.reservationStateId)
+        filtered = filtered.filter((r) =>
+          stateMap[appliedFilters.status].includes(r.reservationState.id)
         );
       }
     }
-    
+
     setFilteredReservations(filtered);
     setShowFilters(false);
   };
@@ -339,21 +361,22 @@ export default function ReservationsPage() {
   // Manejador para búsqueda rápida
   const handleQuickSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value.toLowerCase();
-    
+
     if (!searchTerm) {
       setFilteredReservations(reservations);
       return;
     }
-    
-    const filtered = reservations.filter(r => 
-      r.id.toString().includes(searchTerm) ||
-      r.user?.first_name?.toLowerCase().includes(searchTerm) ||
-      r.user?.last_name?.toLowerCase().includes(searchTerm) ||
-      r.user?.email?.toLowerCase().includes(searchTerm) ||
-      r.subScenario?.name?.toLowerCase().includes(searchTerm) ||
-      r.subScenario?.scenarioName?.toLowerCase().includes(searchTerm)
+
+    // Eliminamos la búsqueda por ID y nos centramos en campos descriptivos para mayor seguridad
+    const filtered = reservations.filter(
+      (r) =>
+        r.user?.first_name?.toLowerCase().includes(searchTerm) ||
+        r.user?.last_name?.toLowerCase().includes(searchTerm) ||
+        r.user?.email?.toLowerCase().includes(searchTerm) ||
+        r.subScenario?.name?.toLowerCase().includes(searchTerm) ||
+        r.subScenario?.scenarioName?.toLowerCase().includes(searchTerm)
     );
-    
+
     setFilteredReservations(filtered);
   };
 
@@ -361,25 +384,35 @@ export default function ReservationsPage() {
   const handleScenarioChange = async (scenarioId: string) => {
     if (!scenarioId) {
       setSubScenariosForScenario([]);
-      setNewReservation(prev => ({ ...prev, scenarioId: "", subScenarioId: "" }));
+      setNewReservation((prev) => ({
+        ...prev,
+        scenarioId: "",
+        subScenarioId: "",
+      }));
       return;
     }
 
     try {
       // Si estamos usando los datos mockeados
-      const scenarioData = scenarios.find(s => s.id.toString() === scenarioId);
+      const scenarioData = scenarios.find(
+        (s) => s.id.toString() === scenarioId
+      );
       const filteredSubScenarios = scenarioData?.subScenarios || [];
       setSubScenariosForScenario(filteredSubScenarios);
-      setNewReservation(prev => ({ 
-        ...prev, 
+      setNewReservation((prev) => ({
+        ...prev,
         scenarioId,
-        subScenarioId: "" // Resetear el subescenario al cambiar el escenario
+        subScenarioId: "", // Resetear el subescenario al cambiar el escenario
       }));
     } catch (error) {
-      console.error(`Error loading subscenarios for scenario ${scenarioId}:`, error);
+      console.error(
+        `Error loading subscenarios for scenario ${scenarioId}:`,
+        error
+      );
       toast({
         title: "Error",
-        description: "No se pudieron cargar los subescenarios. Intente de nuevo más tarde.",
+        description:
+          "No se pudieron cargar los subescenarios. Intente de nuevo más tarde.",
         duration: 3000,
         variant: "destructive",
       });
@@ -389,16 +422,16 @@ export default function ReservationsPage() {
   // Manejador para cambio de subescenario o fecha en nueva reserva
   const handleAvailabilityCheck = async () => {
     const { subScenarioId, reservationDate } = newReservation;
-    
+
     if (!subScenarioId || !reservationDate) {
       setAvailableTimeSlots([]);
       return;
     }
-    
+
     try {
       // Obtener slots disponibles desde el servicio
       const slots = await ReservationService.getAvailableTimeSlots(
-        parseInt(subScenarioId), 
+        parseInt(subScenarioId),
         reservationDate
       );
       setAvailableTimeSlots(slots);
@@ -406,17 +439,19 @@ export default function ReservationsPage() {
       console.error("Error checking availability:", error);
       toast({
         title: "Error",
-        description: error.message || "No se pudo verificar la disponibilidad. Usando datos de ejemplo.",
+        description:
+          error.message ||
+          "No se pudo verificar la disponibilidad. Usando datos de ejemplo.",
         duration: 3000,
         variant: "default",
       });
       // Si falla, usamos un mock de timeslots para desarrollo
       setAvailableTimeSlots(
-        timeSlots.map(ts => ({
+        timeSlots.map((ts) => ({
           id: ts.id,
           startTime: ts.startTime,
           endTime: ts.endTime,
-          available: Math.random() > 0.3 // Simulamos disponibilidad aleatoria
+          available: Math.random() > 0.3, // Simulamos disponibilidad aleatoria
         }))
       );
     }
@@ -431,8 +466,9 @@ export default function ReservationsPage() {
 
   // Crear nueva reserva
   const handleCreateReservation = async () => {
-    const { clientId, subScenarioId, timeSlotId, reservationDate } = newReservation;
-    
+    const { clientId, subScenarioId, timeSlotId, reservationDate } =
+      newReservation;
+
     if (!clientId || !subScenarioId || !timeSlotId || !reservationDate) {
       toast({
         title: "Error",
@@ -442,32 +478,34 @@ export default function ReservationsPage() {
       });
       return;
     }
-    
+
     try {
       // Preparar payload según lo requiere el backend
       const payload = {
         subScenarioId: parseInt(subScenarioId),
         timeSlotId: parseInt(timeSlotId),
-        reservationDate
+        reservationDate,
       };
-      
+
       console.log("Creating reservation with payload:", payload);
-      
+
       // Llamada al servicio
-      const newReservationData = await ReservationService.createReservation(payload);
-      
+      const newReservationData = await ReservationService.createReservation(
+        payload
+      );
+
       // Si todo sale bien, cerramos el modal y actualizamos las reservas
       toast({
         title: "Éxito",
         description: "Reserva creada correctamente.",
         duration: 3000,
       });
-      
+
       // Recargar reservas
       const updatedReservations = await ReservationService.getAllReservations();
       setReservations(updatedReservations);
       setFilteredReservations(updatedReservations);
-      
+
       // Reset formulario y cerrar modal
       setNewReservation({
         clientId: "",
@@ -478,13 +516,15 @@ export default function ReservationsPage() {
         comments: "",
         status: true,
       });
-      
+
       setIsModalOpen(false);
     } catch (error: any) {
       console.error("Error creating reservation:", error);
       toast({
         title: "Error",
-        description: error.message || "No se pudo crear la reserva. Intente de nuevo más tarde.",
+        description:
+          error.message ||
+          "No se pudo crear la reserva. Intente de nuevo más tarde.",
         duration: 5000,
         variant: "destructive",
       });
@@ -494,31 +534,33 @@ export default function ReservationsPage() {
   // Actualizar reserva
   const handleUpdateReservation = async () => {
     if (!selectedReservation) return;
-    
+
     try {
       // Actualizar estado de reserva
       await ReservationService.updateReservationState(
         selectedReservation.id,
         editingReservation.reservationStateId
       );
-      
+
       toast({
         title: "Éxito",
         description: "Reserva actualizada correctamente.",
         duration: 3000,
       });
-      
+
       // Recargar reservas
       const updatedReservations = await ReservationService.getAllReservations();
       setReservations(updatedReservations);
       setFilteredReservations(updatedReservations);
-      
+
       setIsDrawerOpen(false);
     } catch (error: any) {
       console.error("Error updating reservation:", error);
       toast({
         title: "Error",
-        description: error.message || "No se pudo actualizar la reserva. Intente de nuevo más tarde.",
+        description:
+          error.message ||
+          "No se pudo actualizar la reserva. Intente de nuevo más tarde.",
         duration: 3000,
         variant: "destructive",
       });
@@ -527,32 +569,39 @@ export default function ReservationsPage() {
 
   // Calculamos contadores para las pestañas
   const getTabCounts = () => {
-    const approved = reservations.filter(r => r.reservationStateId === 2).length;
-    const pending = reservations.filter(r => r.reservationStateId === 1).length;
-    const rejected = reservations.filter(r => r.reservationStateId === 3).length;
-    
+    const approved = reservations.filter(
+      (r) => r.reservationStateId === 2
+    ).length;
+    const pending = reservations.filter(
+      (r) => r.reservationStateId === 1
+    ).length;
+    const rejected = reservations.filter(
+      (r) => r.reservationStateId === 3
+    ).length;
+
     return { approved, pending, rejected, total: reservations.length };
   };
 
   const tabCounts = getTabCounts();
 
-  // Columnas para la tabla de reservas
+  // Columnas para la tabla de reservas - eliminamos la columna ID por seguridad
   const columns = [
-    {
-      id: "id",
-      header: "Cód.",
-      cell: (row: ReservationDto) => <span>{row.id}</span>,
-    },
     {
       id: "client",
       header: "Cliente",
       cell: (row: ReservationDto) => (
         <div>
           <div className="font-medium">
-            {row.user?.first_name ? `${row.user.first_name} ${row.user.last_name}` : 'Cliente sin nombre'}
+            {row.user?.first_name
+              ? `${row.user.first_name} ${row.user.last_name}`
+              : "Cliente sin nombre"}
           </div>
-          <div className="text-xs text-gray-500">{row.user?.email || 'Sin email'}</div>
-          <div className="text-xs text-gray-500">{row.user?.phone || 'Sin teléfono'}</div>
+          <div className="text-xs text-gray-500">
+            {row.user?.email || "Sin email"}
+          </div>
+          <div className="text-xs text-gray-500">
+            {row.user?.phone || "Sin teléfono"}
+          </div>
         </div>
       ),
     },
@@ -561,13 +610,22 @@ export default function ReservationsPage() {
       header: "Escenario",
       cell: (row: ReservationDto) => (
         <div>
-          <div className="font-medium">{row.subScenario?.name || 'Escenario sin nombre'}</div>
-          <div className="text-xs text-gray-500">{row.subScenario?.scenarioName || 'Sin escenario'}</div>
+          <div className="font-medium">
+            {row.subScenario?.name || "Escenario sin nombre"}
+          </div>
+          <div className="text-xs text-gray-500">
+            {row.subScenario?.scenarioName || "Sin escenario"}
+          </div>
           <div className="text-xs">
-            {row.subScenario?.hasCost 
-              ? <Badge variant="outline" className="bg-yellow-50">De pago</Badge>
-              : <Badge variant="outline" className="bg-green-50">Gratuito</Badge>
-            }
+            {row.subScenario?.hasCost ? (
+              <Badge variant="outline" className="bg-yellow-50">
+                De pago
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-green-50">
+                Gratuito
+              </Badge>
+            )}
           </div>
         </div>
       ),
@@ -575,21 +633,25 @@ export default function ReservationsPage() {
     {
       id: "created",
       header: "Creado",
-      cell: (row: ReservationDto) => <span>{row.createdAt ? formatDate(row.createdAt) : 'N/A'}</span>,
+      cell: (row: ReservationDto) => (
+        <span>{row.createdAt ? formatDate(row.createdAt) : "N/A"}</span>
+      ),
     },
     {
       id: "date",
       header: "Reserva",
-      cell: (row: ReservationDto) => <span>{formatDate(row.reservationDate)}</span>,
+      cell: (row: ReservationDto) => (
+        <span>{formatDate(row.reservationDate)}</span>
+      ),
     },
     {
       id: "time",
       header: "Hora",
       cell: (row: ReservationDto) => (
         <span>
-          {row.timeSlot 
-            ? `${row.timeSlot.startTime} - ${row.timeSlot.endTime}` 
-            : 'Horario no disponible'}
+          {row.timeSlot
+            ? `${row.timeSlot.startTime} - ${row.timeSlot.endTime}`
+            : "Horario no disponible"}
         </span>
       ),
     },
@@ -597,8 +659,10 @@ export default function ReservationsPage() {
       id: "status",
       header: "Estado",
       cell: (row: ReservationDto) => (
-        <StatusBadge 
-          status={mapReservationState(row.reservationState?.state || 'PENDIENTE')} 
+        <StatusBadge
+          status={mapReservationState(
+            row.reservationState?.state || "PENDIENTE"
+          )}
         />
       ),
     },
@@ -785,10 +849,10 @@ export default function ReservationsPage() {
                   </div>
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Buscar reserva..." 
+                    <Input
+                      placeholder="Buscar reserva..."
                       className="pl-8"
-                      onChange={handleQuickSearch} 
+                      onChange={handleQuickSearch}
                     />
                   </div>
                 </div>
@@ -812,9 +876,24 @@ export default function ReservationsPage() {
 
           {(
             [
-              { key: "approved", label: "Reservas Aprobadas", badge: tabCounts.approved, stateId: 2 },
-              { key: "pending", label: "Reservas Pendientes", badge: tabCounts.pending, stateId: 1 },
-              { key: "rejected", label: "Reservas Rechazadas", badge: tabCounts.rejected, stateId: 3 },
+              {
+                key: "approved",
+                label: "Reservas Aprobadas",
+                badge: tabCounts.approved,
+                stateId: 2,
+              },
+              {
+                key: "pending",
+                label: "Reservas Pendientes",
+                badge: tabCounts.pending,
+                stateId: 1,
+              },
+              {
+                key: "rejected",
+                label: "Reservas Rechazadas",
+                badge: tabCounts.rejected,
+                stateId: 3,
+              },
             ] as const
           ).map(({ key, label, badge, stateId }) => (
             <TabsContent key={key} value={key} className="mt-0">
@@ -831,7 +910,9 @@ export default function ReservationsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <DataTable
-                    data={reservations.filter(r => r.reservationStateId === stateId)}
+                    data={reservations.filter(
+                      (r) => r.reservationStateId === stateId
+                    )}
                     columns={columns}
                     totalItems={badge}
                     pageSize={10}
@@ -855,9 +936,7 @@ export default function ReservationsPage() {
         <DrawerContent className="w-full sm:w-[480px]">
           <DrawerHeader>
             <DrawerTitle>
-              {selectedReservation
-                ? `Editar Código ${selectedReservation.id}`
-                : "Editar Reserva"}
+              {selectedReservation ? `Editar Reserva` : "Editar Reserva"}
             </DrawerTitle>
           </DrawerHeader>
 
@@ -868,9 +947,11 @@ export default function ReservationsPage() {
                   <Label htmlFor="client">Cliente*</Label>
                   <Input
                     id="client"
-                    value={selectedReservation.user ? 
-                      `${selectedReservation.user.first_name} ${selectedReservation.user.last_name} - ${selectedReservation.user.email}` : 
-                      'Cliente sin nombre'}
+                    value={
+                      selectedReservation.user
+                        ? `${selectedReservation.user.first_name} ${selectedReservation.user.last_name} - ${selectedReservation.user.email}`
+                        : "Cliente sin nombre"
+                    }
                     readOnly
                   />
                 </div>
@@ -879,7 +960,13 @@ export default function ReservationsPage() {
                   <Label htmlFor="venue">Escenario*</Label>
                   <Input
                     id="venue"
-                    value={`${selectedReservation.subScenario?.name || 'Escenario sin nombre'} (${selectedReservation.subScenario?.scenarioName || 'Sin escenario'})`}
+                    value={`${
+                      selectedReservation.subScenario?.name ||
+                      "Escenario sin nombre"
+                    } (${
+                      selectedReservation.subScenario?.scenarioName ||
+                      "Sin escenario"
+                    })`}
                     readOnly
                   />
                 </div>
@@ -890,31 +977,41 @@ export default function ReservationsPage() {
                     id="date"
                     type="date"
                     value={editingReservation.date}
-                    onChange={(e) => setEditingReservation({...editingReservation, date: e.target.value})}
+                    onChange={(e) =>
+                      setEditingReservation({
+                        ...editingReservation,
+                        date: e.target.value,
+                      })
+                    }
                     readOnly // Solo permitimos cambiar el estado, no la fecha
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="time">Hora*</Label>
-                  <Input 
-                    id="time" 
+                  <Input
+                    id="time"
                     value={
                       selectedReservation.timeSlot
                         ? `${selectedReservation.timeSlot.startTime} - ${selectedReservation.timeSlot.endTime}`
-                        : 'Horario no disponible'
+                        : "Horario no disponible"
                     }
-                    readOnly 
+                    readOnly
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="observations">Observaciones</Label>
-                  <Textarea 
-                    id="observations" 
+                  <Textarea
+                    id="observations"
                     placeholder="Observaciones"
                     value={editingReservation.observations}
-                    onChange={(e) => setEditingReservation({...editingReservation, observations: e.target.value})}
+                    onChange={(e) =>
+                      setEditingReservation({
+                        ...editingReservation,
+                        observations: e.target.value,
+                      })
+                    }
                   />
                 </div>
 
@@ -922,7 +1019,13 @@ export default function ReservationsPage() {
                   <Label htmlFor="created">Creado</Label>
                   <Input
                     id="created"
-                    value={selectedReservation.createdAt ? new Date(selectedReservation.createdAt).toLocaleString() : 'Fecha no disponible'}
+                    value={
+                      selectedReservation.createdAt
+                        ? new Date(
+                            selectedReservation.createdAt
+                          ).toLocaleString()
+                        : "Fecha no disponible"
+                    }
                     readOnly
                     disabled
                   />
@@ -930,12 +1033,14 @@ export default function ReservationsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Estado*</Label>
-                  <Select 
+                  <Select
                     value={editingReservation.reservationStateId.toString()}
-                    onValueChange={(value) => setEditingReservation({
-                      ...editingReservation, 
-                      reservationStateId: parseInt(value)
-                    })}
+                    onValueChange={(value) =>
+                      setEditingReservation({
+                        ...editingReservation,
+                        reservationStateId: parseInt(value),
+                      })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione estado" />
@@ -953,7 +1058,9 @@ export default function ReservationsPage() {
           </div>
 
           <DrawerFooter>
-            <Button className="w-full" onClick={handleUpdateReservation}>Guardar</Button>
+            <Button className="w-full" onClick={handleUpdateReservation}>
+              Guardar
+            </Button>
             <DrawerClose asChild>
               <Button variant="outline" className="w-full">
                 Cancelar
@@ -982,28 +1089,30 @@ export default function ReservationsPage() {
         }
       >
         <div className="space-y-4">
-        <div className="space-y-2">
-        <Label htmlFor="new-client">Cliente*</Label>
-        <Select 
-        value={newReservation.clientId}
-        onValueChange={(value) => setNewReservation({...newReservation, clientId: value})}
-        >
-        <SelectTrigger>
-        <SelectValue placeholder="Seleccione cliente..." />
-        </SelectTrigger>
-        <SelectContent>
-        {users.map((user) => (
-        <SelectItem key={user.id} value={user.id.toString()}>
-        {user.first_name} {user.last_name} - {user.email}
-        </SelectItem>
-        ))}
-        </SelectContent>
-        </Select>
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-client">Cliente*</Label>
+            <Select
+              value={newReservation.clientId}
+              onValueChange={(value) =>
+                setNewReservation({ ...newReservation, clientId: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccione cliente..." />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id.toString()}>
+                    {user.first_name} {user.last_name} - {user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="new-scenario">Escenario*</Label>
-            <Select 
+            <Select
               value={newReservation.scenarioId}
               onValueChange={(value) => handleScenarioChange(value)}
             >
@@ -1022,17 +1131,25 @@ export default function ReservationsPage() {
 
           <div className="space-y-2">
             <Label htmlFor="new-subscenario">Subescenario*</Label>
-            <Select 
+            <Select
               value={newReservation.subScenarioId}
-              onValueChange={(value) => setNewReservation({...newReservation, subScenarioId: value})}
-              disabled={!newReservation.scenarioId || subScenariosForScenario.length === 0}
+              onValueChange={(value) =>
+                setNewReservation({ ...newReservation, subScenarioId: value })
+              }
+              disabled={
+                !newReservation.scenarioId ||
+                subScenariosForScenario.length === 0
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccione subescenario..." />
               </SelectTrigger>
               <SelectContent>
                 {subScenariosForScenario.map((subScenario) => (
-                  <SelectItem key={subScenario.id} value={subScenario.id.toString()}>
+                  <SelectItem
+                    key={subScenario.id}
+                    value={subScenario.id.toString()}
+                  >
                     {subScenario.name}
                   </SelectItem>
                 ))}
@@ -1042,11 +1159,16 @@ export default function ReservationsPage() {
 
           <div className="space-y-2">
             <Label htmlFor="new-date">Fecha de reserva*</Label>
-            <Input 
-              id="new-date" 
+            <Input
+              id="new-date"
               type="date"
               value={newReservation.reservationDate}
-              onChange={(e) => setNewReservation({...newReservation, reservationDate: e.target.value})}
+              onChange={(e) =>
+                setNewReservation({
+                  ...newReservation,
+                  reservationDate: e.target.value,
+                })
+              }
               min={new Date().toISOString().split("T")[0]} // No permitir fechas pasadas
             />
           </div>
@@ -1054,16 +1176,18 @@ export default function ReservationsPage() {
           {newReservation.subScenarioId && newReservation.reservationDate && (
             <div className="space-y-2">
               <Label htmlFor="new-timeslot">Horario*</Label>
-              <Select 
+              <Select
                 value={newReservation.timeSlotId}
-                onValueChange={(value) => setNewReservation({...newReservation, timeSlotId: value})}
+                onValueChange={(value) =>
+                  setNewReservation({ ...newReservation, timeSlotId: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione horario..." />
                 </SelectTrigger>
                 <SelectContent>
                   {availableTimeSlots
-                    .filter(slot => slot.available)
+                    .filter((slot) => slot.available)
                     .map((slot) => (
                       <SelectItem key={slot.id} value={slot.id.toString()}>
                         {slot.startTime} - {slot.endTime}
@@ -1071,9 +1195,12 @@ export default function ReservationsPage() {
                     ))}
                 </SelectContent>
               </Select>
-              {availableTimeSlots.length > 0 && availableTimeSlots.filter(s => s.available).length === 0 && (
-                <p className="text-sm text-red-500">No hay horarios disponibles para esta fecha y escenario.</p>
-              )}
+              {availableTimeSlots.length > 0 &&
+                availableTimeSlots.filter((s) => s.available).length === 0 && (
+                  <p className="text-sm text-red-500">
+                    No hay horarios disponibles para esta fecha y escenario.
+                  </p>
+                )}
             </div>
           )}
 
@@ -1083,16 +1210,23 @@ export default function ReservationsPage() {
               id="comments"
               placeholder="Escriba si tiene comentarios adicionales sobre la reserva."
               value={newReservation.comments}
-              onChange={(e) => setNewReservation({...newReservation, comments: e.target.value})}
+              onChange={(e) =>
+                setNewReservation({
+                  ...newReservation,
+                  comments: e.target.value,
+                })
+              }
             />
           </div>
 
           <div className="flex items-center justify-between">
             <Label htmlFor="new-status">Estado activo</Label>
-            <Switch 
+            <Switch
               id="new-status"
               checked={newReservation.status}
-              onCheckedChange={(checked) => setNewReservation({...newReservation, status: checked})}
+              onCheckedChange={(checked) =>
+                setNewReservation({ ...newReservation, status: checked })
+              }
             />
           </div>
         </div>

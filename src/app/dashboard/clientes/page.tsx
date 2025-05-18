@@ -1,47 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Plus, FileEdit } from "lucide-react";
+
+import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { FilterToolbar } from "@/shared/ui/filter-toolbar";
+import { StatusBadge } from "@/shared/ui/status-badge";
 import { DataTable } from "@/shared/ui/data-table";
 import { Button } from "@/shared/ui/button";
-import { StatusBadge } from "@/shared/ui/status-badge";
 import { Badge } from "@/shared/ui/badge";
-import { Drawer } from "@/shared/ui/drawer";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Switch } from "@/shared/ui/switch";
-import { Label } from "@/shared/ui/label";
-import { Plus, FileEdit } from "lucide-react";
-import {
-  ClientDrawer,
-  IClient,
-} from "@/features/dashboard/components/client-drawer";
 
-// Mock data
-const clients = [
-  {
-    id: "1001",
-    document: "90148313",
-    name: "ACADEMIA DE BADMINTON SANTANDER",
-    created: "2025-01-13",
-    status: "active",
-  },
-  {
-    id: "1002",
-    document: "91245678",
-    name: "CLUB DEPORTIVO BUCARAMANGA",
-    created: "2025-01-15",
-    status: "active",
-  },
-  {
-    id: "1003",
-    document: "800123456",
-    name: "ASOCIACIÓN DEPORTIVA SANTANDER",
-    created: "2025-01-20",
-    status: "inactive",
-  },
-];
+interface IUser {
+  id: number;
+  dni: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  isActive: boolean;
+  role: {
+    id: number;
+    name: string;
+    description: string;
+  };
+  neighborhood: {
+    id: number;
+    name: string;
+  };
+}
+
+interface IPageResponse {
+  data: IUser[];
+  meta: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
 
 interface IOption {
   value: string;
@@ -56,144 +54,265 @@ interface IFilterOption {
   options?: IOption[];
 }
 
-// Filter options
 const filterOptions: IFilterOption[] = [
   {
-    id: "documentOrName",
-    label: "Documento/Nombre",
+    id: "search",
+    label: "Buscar",
     type: "text",
-    placeholder: "Documento/Nombre",
+    placeholder: "Nombre, Email o DNI",
   },
   {
-    id: "neighborhood",
-    label: "Barrio",
+    id: "roleId",
+    label: "Rol",
     type: "select",
-    placeholder: "Todos los barrios...",
+    placeholder: "Todos los roles…",        // <— stays as placeholder
     options: [
-      { value: "all", label: "Todos los barrios..." },
-      { value: "san-alonso", label: "San Alonso" },
-      { value: "provenza", label: "Provenza" },
-      { value: "alvarez", label: "Álvarez Las Americas" },
+      { value: "1", label: "Administrador" },
+      { value: "2", label: "Cliente" },
+      { value: "3", label: "Gestor" },
     ],
   },
   {
-    id: "createdFrom",
-    label: "Creado desde",
-    type: "date",
-    placeholder: "",
+    id: "neighborhoodId",
+    label: "Barrio",
+    type: "select",
+    placeholder: "Todos los barrios…",
+    options: [
+      { value: "1", label: "San Alonso" },
+      { value: "2", label: "Provenza" },
+      { value: "3", label: "Álvarez Las Américas" },
+    ],
   },
   {
-    id: "createdTo",
-    label: "Creado hasta",
-    type: "date",
-    placeholder: "",
-  },
-  {
-    id: "status",
+    id: "isActive",
     label: "Estado",
     type: "select",
-    placeholder: "Todos los estados...",
+    placeholder: "Todos los estados…",
     options: [
-      { value: "all", label: "Todos los estados..." },
-      { value: "active", label: "Activo" },
-      { value: "inactive", label: "Inactivo" },
+      { value: "true", label: "Activo" },
+      { value: "false", label: "Inactivo" },
     ],
   },
 ];
 
-export default function ClientsPage() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleOpenDrawer = (client: any) => {
-    setSelectedClient(client);
+/* -------------------------------------------------------------------------- */
+/*  Utils                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/** Small helper so we don’t repeat response.ok checks everywhere. */
+async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, init);
+  if (!res.ok) {
+    // You can customise error handling here (logging, toast, etc.)
+    throw new Error(`${res.status} ${res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+export default function UsersPage() {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
+  /* ---------------------------------------------------------------------- */
+  /*  Load data                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  useEffect(() => {
+    fetchUsers().catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filters]);
+
+  /** Fetch paginated user list (honours filters) */
+  const fetchUsers = async () => {
+    setLoading(true);
+
+    try {
+      // Build query params
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      // Switch to /by-role/:id endpoint if role filter present
+      let url = `${API_BASE_URL}/users`;
+      if (filters.roleId) {
+        url = `${API_BASE_URL}/users/by-role/${filters.roleId}`;
+        params.delete("roleId");
+      }
+
+      const data = await fetchJson<IPageResponse>(`${url}?${params.toString()}`);
+
+      setUsers(data.data);
+      setTotalItems(data.meta.totalItems);
+      setTotalPages(data.meta.totalPages);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** Load one user (full details) and open the drawer */
+  const handleOpenDrawer = async (user: IUser) => {
+    try {
+      const fullUser = await fetchJson<IUser>(
+        `${API_BASE_URL}/users/${user.id}`,
+      );
+      setSelectedUser(fullUser);
+      setIsDrawerOpen(true);
+    } catch (err) {
+      console.error("Error fetching user details:", err);
+    }
+  };
+
+  /** Create new user or update existing one */
+  const handleSaveDrawer = async (data: Partial<IUser>) => {
+    const isUpdate = Boolean(selectedUser?.id);
+
+    try {
+      await fetchJson(
+        `${API_BASE_URL}/users/${isUpdate ? selectedUser!.id : ""}`,
+        {
+          method: isUpdate ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
+
+      // Refresh list
+      await fetchUsers();
+    } catch (err) {
+      console.error("Error saving user:", err);
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /*  Search / pagination controls                                          */
+  /* ---------------------------------------------------------------------- */
+
+  const handleCreateUser = () => {
+    setSelectedUser(null);
     setIsDrawerOpen(true);
   };
 
-  const handleSaveDrawer = async (data: Partial<IClient>) => {
-    // Implement
+  const handleSearch = (searchFilters: Record<string, string>) => {
+    setFilters(searchFilters);
+    setCurrentPage(1);
   };
 
-  const handleSearch = (filters: Record<string, string>) => {
-    console.log("Search with filters:", filters);
-    // Here you would fetch data with the filters
-  };
+  /* ---------------------------------------------------------------------- */
+  /*  Table columns                                                         */
+  /* ---------------------------------------------------------------------- */
 
   const columns = [
     {
       id: "id",
-      header: "Cód.",
-      cell: (row: any) => <span>{row.id}</span>,
+      header: "ID",
+      cell: (row: IUser) => <span>{row.id}</span>,
     },
     {
-      id: "document",
-      header: "Documento",
-      cell: (row: any) => <span>{row.document}</span>,
+      id: "dni",
+      header: "DNI",
+      cell: (row: IUser) => <span>{row.dni}</span>,
     },
     {
       id: "name",
       header: "Nombre",
-      cell: (row: any) => <span>{row.name}</span>,
+      cell: (row: IUser) => (
+        <span>
+          {row.firstName} {row.lastName}
+        </span>
+      ),
     },
     {
-      id: "created",
-      header: "Creado",
-      cell: (row: any) => <span>{row.created}</span>,
+      id: "email",
+      header: "Email",
+      cell: (row: IUser) => <span>{row.email}</span>,
+    },
+    {
+      id: "role",
+      header: "Rol",
+      cell: (row: IUser) => <span>{row.role?.name || "N/A"}</span>,
+    },
+    {
+      id: "neighborhood",
+      header: "Barrio",
+      cell: (row: IUser) => <span>{row.neighborhood?.name || "N/A"}</span>,
     },
     {
       id: "status",
       header: "Estado",
-      cell: (row: any) => <StatusBadge status={row.status} />,
+      cell: (row: IUser) => (
+        <StatusBadge status={row.isActive ? "active" : "inactive"} />
+      ),
     },
     {
       id: "actions",
       header: "Acciones",
-      cell: (row: any) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleOpenDrawer(row)}
-        >
+      cell: (row: IUser) => (
+        <Button variant="outline" size="sm" onClick={() => handleOpenDrawer(row)}>
           <FileEdit className="h-4 w-4 mr-1" />
-          Abrir
+          Editar
         </Button>
       ),
     },
   ];
 
+  /* ---------------------------------------------------------------------- */
+  /*  Render                                                                */
+  /* ---------------------------------------------------------------------- */
+
   return (
     <SimpleLayout>
       <FilterToolbar filters={filterOptions} onSearch={handleSearch} />
+
       <div className="bg-white rounded-md border p-4 mb-4 flex items-center justify-between">
         <div className="flex items-center">
-          <h2 className="text-lg font-semibold">Listado de Clientes</h2>
+          <h2 className="text-lg font-semibold">Listado de Usuarios</h2>
           <Badge variant="outline" className="ml-2">
-            350
+            {totalItems}
           </Badge>
         </div>
-        <Button>
+
+        <Button onClick={handleCreateUser}>
           <Plus className="h-4 w-4 mr-2" />
-          Nuevo
+          Nuevo Usuario
         </Button>
       </div>
+
       <DataTable
-        data={clients}
+        data={users}
         columns={columns}
-        totalItems={350}
-        pageSize={10}
+        totalItems={totalItems}
+        pageSize={pageSize}
         currentPage={currentPage}
-        totalPages={35}
+        totalPages={totalPages}
         onPageChange={setCurrentPage}
+        isLoading={loading}
       />
-      {/* Edit Drawer */}
-      <ClientDrawer
+
+      {/* User Drawer */}
+      <UserDrawer
         open={isDrawerOpen}
-        client={selectedClient}
+        user={selectedUser}
         onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveDrawer}
       />
-      ;
     </SimpleLayout>
   );
 }
