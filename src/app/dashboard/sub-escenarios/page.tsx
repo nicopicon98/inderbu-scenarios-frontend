@@ -14,16 +14,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/shared/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerFooter,
-  DrawerClose,
-} from "@/shared/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,6 +80,18 @@ export default function SubScenarioManagement() {
   const [selectedSubScenario, setSelectedSubScenario] = useState<SubScenario | null>(
     null
   );
+  const [fieldSurfaceTypes, setFieldSurfaceTypes] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    state: true,
+    hasCost: false,
+    numberOfSpectators: 0,
+    numberOfPlayers: 0,
+    recommendations: "",
+    scenarioId: undefined as number | undefined,
+    activityAreaId: undefined as number | undefined,
+    fieldSurfaceTypeId: undefined as number | undefined
+  });
   const [showFilters, setShowFilters] = useState(false);
 
   // Datos desde API
@@ -118,11 +122,19 @@ export default function SubScenarioManagement() {
         const scenariosResult = await scenarioService.getAll({ limit: 100 });
         const areasResult = await activityAreaService.getAll();
         const neighborhoodsResult = await neighborhoodService.getAll();
+        // Simulamos obtener los tipos de superficie para campos
+        const fieldSurfaceTypesData = [
+          { id: 1, name: "Concreto" },
+          { id: 2, name: "Sintético" },
+          { id: 3, name: "Césped" },
+          { id: 4, name: "Cemento" }
+        ];
 
         // Manejar los resultados 
         setScenarios(scenariosResult.data);
         setActivityAreas(Array.isArray(areasResult) ? areasResult : areasResult.data);
         setNeighborhoods(Array.isArray(neighborhoodsResult) ? neighborhoodsResult : neighborhoodsResult.data);
+        setFieldSurfaceTypes(fieldSurfaceTypesData);
 
         // Cargar sub-escenarios iniciales
         const subScenariosResult = await subScenarioService.getAll(filters);
@@ -138,6 +150,40 @@ export default function SubScenarioManagement() {
 
     fetchInitialData();
   }, []);
+  
+  // Resetear el formulario y establecer valores iniciales
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      state: true,
+      hasCost: false,
+      numberOfSpectators: 0,
+      numberOfPlayers: 0,
+      recommendations: "",
+      scenarioId: undefined,
+      activityAreaId: undefined,
+      fieldSurfaceTypeId: undefined
+    });
+  };
+  
+  // Configurar el formulario con los datos del sub-escenario seleccionado
+  useEffect(() => {
+    if (selectedSubScenario) {
+      setFormData({
+        name: selectedSubScenario.name,
+        state: selectedSubScenario.state,
+        hasCost: selectedSubScenario.hasCost,
+        numberOfSpectators: selectedSubScenario.numberOfSpectators,
+        numberOfPlayers: selectedSubScenario.numberOfPlayers,
+        recommendations: selectedSubScenario.recommendations || "",
+        scenarioId: selectedSubScenario.scenarioId,
+        activityAreaId: selectedSubScenario.activityAreaId,
+        fieldSurfaceTypeId: selectedSubScenario.fieldSurfaceTypeId
+      });
+    } else {
+      resetForm();
+    }
+  }, [selectedSubScenario]);
 
   // Filtros dinámicos basados en datos cargados desde API
   const filterOptions = [
@@ -197,11 +243,11 @@ export default function SubScenarioManagement() {
   // Manejar cambios de página
   const handlePageChange = async (newPage: number) => {
     // Creamos un nuevo objeto de filtros para evitar referencias al estado anterior
-    const newFilters: FilterState = { 
-      ...filters, 
-      page: newPage 
+    const newFilters: FilterState = {
+      ...filters,
+      page: newPage
     };
-    
+
     setLoading(true);
     try {
       // Usamos directamente el nuevo objeto para la llamada a la API
@@ -221,15 +267,15 @@ export default function SubScenarioManagement() {
   // Renderizar componentes de paginación
   const renderPaginationItems = () => {
     if (!pageMeta) return null;
-    
+
     const items = [];
     const currentPage = filters.page;
     const totalPages = pageMeta.totalPages;
-    
+
     // Siempre mostrar primera página
     items.push(
       <PaginationItem key="page-1">
-        <PaginationLink 
+        <PaginationLink
           isActive={currentPage === 1}
           onClick={() => handlePageChange(1)}
         >
@@ -237,7 +283,7 @@ export default function SubScenarioManagement() {
         </PaginationLink>
       </PaginationItem>
     );
-    
+
     // Mostrar elipsis si es necesario antes del rango
     if (currentPage > 3) {
       items.push(
@@ -246,12 +292,12 @@ export default function SubScenarioManagement() {
         </PaginationItem>
       );
     }
-    
+
     // Mostrar páginas intermedias
     for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
       items.push(
         <PaginationItem key={`page-${i}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === i}
             onClick={() => handlePageChange(i)}
           >
@@ -260,7 +306,7 @@ export default function SubScenarioManagement() {
         </PaginationItem>
       );
     }
-    
+
     // Mostrar elipsis si es necesario después del rango
     if (currentPage < totalPages - 2 && totalPages > 4) {
       items.push(
@@ -269,12 +315,12 @@ export default function SubScenarioManagement() {
         </PaginationItem>
       );
     }
-    
+
     // Siempre mostrar última página si hay más de una
     if (totalPages > 1) {
       items.push(
         <PaginationItem key={`page-${totalPages}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === totalPages}
             onClick={() => handlePageChange(totalPages)}
           >
@@ -283,19 +329,19 @@ export default function SubScenarioManagement() {
         </PaginationItem>
       );
     }
-    
+
     return items;
   };
 
   // Manejar búsqueda
   const handleSearch = async (searchTerm: string) => {
     // Creamos un nuevo objeto de filtros con la búsqueda y reiniciamos a página 1
-    const newFilters: FilterState = { 
-      ...filters, 
-      search: searchTerm, 
-      page: 1 
+    const newFilters: FilterState = {
+      ...filters,
+      search: searchTerm,
+      page: 1
     };
-    
+
     setLoading(true);
     try {
       // Usamos directamente el nuevo objeto para la llamada a la API
@@ -315,12 +361,12 @@ export default function SubScenarioManagement() {
   // Manejar filtros avanzados
   const handleFilterChange = async (filterUpdates: Partial<FilterState>) => {
     // Creamos un nuevo objeto de filtros combinando los actuales con las actualizaciones
-    const newFilters: FilterState = { 
-      ...filters, 
+    const newFilters: FilterState = {
+      ...filters,
       ...filterUpdates,
       page: 1 // Reiniciamos a la primera página para filtros nuevos
     };
-    
+
     setLoading(true);
     try {
       // Usamos directamente el nuevo objeto para la llamada a la API
@@ -342,6 +388,64 @@ export default function SubScenarioManagement() {
   const handleOpenDrawer = (subScenario: SubScenario) => {
     setSelectedSubScenario(subScenario);
     setIsDrawerOpen(true);
+  };
+
+  // Manejar creación de un nuevo sub-escenario
+  const handleCreateSubScenario = async (formData: any) => {
+    try {
+      setLoading(true);
+      await subScenarioService.create({
+        name: formData.name,
+        state: formData.state,
+        hasCost: formData.hasCost,
+        numberOfSpectators: formData.numberOfSpectators,
+        numberOfPlayers: formData.numberOfPlayers,
+        recommendations: formData.recommendations,
+        scenarioId: formData.scenarioId,
+        activityAreaId: formData.activityAreaId,
+        fieldSurfaceTypeId: formData.fieldSurfaceTypeId
+      });
+      
+      // Recargar datos después de crear
+      const response = await subScenarioService.getAll(filters);
+      setSubScenarios(response.data);
+      setPageMeta(response.meta);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Error creating sub-scenario:", err);
+      setError("Error al crear el sub-escenario. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Manejar actualización de un sub-escenario existente
+  const handleUpdateSubScenario = async (id: number, formData: any) => {
+    try {
+      setLoading(true);
+      await subScenarioService.update(id, {
+        name: formData.name,
+        state: formData.state,
+        hasCost: formData.hasCost,
+        numberOfSpectators: formData.numberOfSpectators,
+        numberOfPlayers: formData.numberOfPlayers,
+        recommendations: formData.recommendations,
+        scenarioId: formData.scenarioId,
+        activityAreaId: formData.activityAreaId,
+        fieldSurfaceTypeId: formData.fieldSurfaceTypeId
+      });
+      
+      // Recargar datos después de actualizar
+      const response = await subScenarioService.getAll(filters);
+      setSubScenarios(response.data);
+      setPageMeta(response.meta);
+      setIsDrawerOpen(false);
+    } catch (err) {
+      console.error("Error updating sub-scenario:", err);
+      setError("Error al actualizar el sub-escenario. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Columnas para la tabla - adaptadas para sub-escenarios
@@ -366,13 +470,12 @@ export default function SubScenarioManagement() {
       header: "Estado",
       cell: (row: any) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            row.status === "active"
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${row.state === true
               ? "bg-orange-100 text-orange-800"
               : "bg-gray-100 text-gray-800"
-          }`}
+            }`}
         >
-          {row.status === "active" ? "Activo" : "Inactivo"}
+          {row.state === true ? "Activo" : "Inactivo"}
         </span>
       ),
     },
@@ -489,10 +592,10 @@ export default function SubScenarioManagement() {
                                 filter.id === "activityAreaId"
                                   ? filters.activityAreaId || ""
                                   : filter.id === "neighborhoodId"
-                                  ? filters.neighborhoodId || ""
-                                  : filter.id === "scenarioId"
-                                  ? filters.scenarioId || ""
-                                  : ""
+                                    ? filters.neighborhoodId || ""
+                                    : filter.id === "scenarioId"
+                                      ? filters.scenarioId || ""
+                                      : ""
                               }
                               onChange={(e) => {
                                 const value = e.target.value
@@ -630,16 +733,15 @@ export default function SubScenarioManagement() {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => handlePageChange(filters.page - 1)} 
-                          disabled={!pageMeta?.hasPreviousPage || loading}
-                        />
+                        <PaginationPrevious
+                          onClick={() => handlePageChange(filters.page - 1)}
+                          isActive={pageMeta?.hasNextPage && !loading} />
                       </PaginationItem>
                       {renderPaginationItems()}
                       <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => handlePageChange(filters.page + 1)} 
-                          disabled={!pageMeta?.hasNextPage || loading}
+                        <PaginationNext
+                          onClick={() => handlePageChange(filters.page + 1)}
+                          isActive={!pageMeta?.hasNextPage && !loading}
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -738,16 +840,16 @@ export default function SubScenarioManagement() {
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => handlePageChange(filters.page - 1)} 
-                            disabled={!pageMeta?.hasPreviousPage || loading}
+                          <PaginationPrevious
+                            onClick={() => handlePageChange(filters.page - 1)}
+                            isActive={!pageMeta?.hasPreviousPage && loading}
                           />
                         </PaginationItem>
                         {renderPaginationItems()}
                         <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => handlePageChange(filters.page + 1)} 
-                            disabled={!pageMeta?.hasNextPage || loading}
+                          <PaginationNext
+                            onClick={() => handlePageChange(filters.page + 1)}
+                            isActive={!pageMeta?.hasNextPage && loading}
                           />
                         </PaginationItem>
                       </PaginationContent>
@@ -759,34 +861,248 @@ export default function SubScenarioManagement() {
           ))}
         </Tabs>
 
-        {/* Edit Drawer */}
-        <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-          <DrawerContent className="w-full sm:w-[480px]">
-            <DrawerHeader>
-              <DrawerTitle>
+        {/* Edit Dialog */}
+        <Dialog open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-xl text-teal-700">
                 {selectedSubScenario
                   ? `Editar Sub-Escenario: ${selectedSubScenario.name}`
                   : "Editar Sub-Escenario"}
-              </DrawerTitle>
-            </DrawerHeader>
+              </DialogTitle>
+            </DialogHeader>
 
-            <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)]">
+            <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
               {selectedSubScenario && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="sub-scenario-name">Nombre*</Label>
-                    <Input
-                      id="sub-scenario-name"
-                      defaultValue={selectedSubScenario.name}
-                    />
+                  {/* Información Básica */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                      Información Básica
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-name" className="text-sm font-medium">Nombre*</Label>
+                        <Input
+                          id="sub-scenario-name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          className="bg-white h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-scenario" className="text-sm font-medium">Escenario*</Label>
+                        <select
+                          id="sub-scenario-scenario"
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          value={formData.scenarioId}
+                          onChange={(e) => setFormData({...formData, scenarioId: e.target.value ? parseInt(e.target.value) : undefined})}
+                        >
+                          <option value="">Seleccione escenario...</option>
+                          {scenarios.map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="sub-scenario-scenario">Escenario*</Label>
+                  {/* Especificaciones */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                      </svg>
+                      Especificaciones
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-area" className="text-sm font-medium">Área de Actividad*</Label>
+                        <select
+                          id="sub-scenario-area"
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          value={formData.activityAreaId}
+                          onChange={(e) => setFormData({...formData, activityAreaId: e.target.value ? parseInt(e.target.value) : undefined})}
+                        >
+                          <option value="">Seleccione área...</option>
+                          {activityAreas.map(a => (
+                            <option key={a.id} value={a.id}>
+                              {a.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-surface" className="text-sm font-medium">Tipo de Superficie*</Label>
+                        <select
+                          id="sub-scenario-surface"
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          value={formData.fieldSurfaceTypeId}
+                          onChange={(e) => setFormData({...formData, fieldSurfaceTypeId: e.target.value ? parseInt(e.target.value) : undefined})}
+                        >
+                          <option value="">Seleccione superficie...</option>
+                          {fieldSurfaceTypes.map(t => (
+                            <option key={t.id} value={t.id}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-spectators" className="text-sm font-medium">Número de Espectadores</Label>
+                        <Input
+                          id="sub-scenario-spectators"
+                          type="number"
+                          min="0"
+                          value={formData.numberOfSpectators}
+                          onChange={(e) => setFormData({...formData, numberOfSpectators: parseInt(e.target.value) || 0})}
+                          className="bg-white h-9"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-players" className="text-sm font-medium">Número de Jugadores</Label>
+                        <Input
+                          id="sub-scenario-players"
+                          type="number"
+                          min="0"
+                          value={formData.numberOfPlayers}
+                          onChange={(e) => setFormData({...formData, numberOfPlayers: parseInt(e.target.value) || 0})}
+                          className="bg-white h-9"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detalles adicionales */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                      Detalles Adicionales
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="sub-scenario-recommendations" className="text-sm font-medium">Recomendaciones</Label>
+                        <Textarea
+                          id="sub-scenario-recommendations"
+                          placeholder="Recomendaciones para el uso del sub-escenario"
+                          className="bg-white resize-none h-20 min-h-[80px]"
+                          value={formData.recommendations}
+                          onChange={(e) => setFormData({...formData, recommendations: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                          <Label htmlFor="sub-scenario-status" className="text-sm font-medium">Estado Activo</Label>
+                          <div className="flex flex-col items-end">
+                            <Switch
+                              id="sub-scenario-status"
+                              checked={formData.state}
+                              onCheckedChange={(checked) => setFormData({...formData, state: checked})}
+                            />
+                            <span className="text-xs text-gray-500 mt-1">
+                              {formData.state ? "Disponible para reservas" : "No disponible"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                          <Label htmlFor="sub-scenario-cost" className="text-sm font-medium">Tiene Costo</Label>
+                          <div className="flex flex-col items-end">
+                            <Switch
+                              id="sub-scenario-cost"
+                              checked={formData.hasCost}
+                              onCheckedChange={(checked) => setFormData({...formData, hasCost: checked})}
+                            />
+                            <span className="text-xs text-gray-500 mt-1">
+                              {formData.hasCost ? "Servicio de pago" : "Servicio gratuito"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <DialogFooter className="flex justify-end gap-3 pt-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsDrawerOpen(false)}
+                className="px-4"
+                size="sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="bg-teal-600 hover:bg-teal-700 px-4"
+                size="sm"
+                onClick={() => handleUpdateSubScenario(selectedSubScenario.id, formData)}
+              >
+                Guardar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-xl text-teal-700">Crear Sub-Escenario</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
+              {/* Información Básica */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  Información Básica
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-name" className="text-sm font-medium">Nombre*</Label>
+                    <Input 
+                      id="new-sub-scenario-name" 
+                      placeholder="Nombre del sub-escenario" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="bg-white h-9"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-scenario" className="text-sm font-medium">Escenario*</Label>
                     <select
-                      id="sub-scenario-scenario"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      defaultValue={selectedSubScenario.scenario?.id}
+                      id="new-sub-scenario-scenario"
+                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      value={formData.scenarioId}
+                      onChange={(e) => setFormData({...formData, scenarioId: e.target.value ? parseInt(e.target.value) : undefined})}
                     >
                       <option value="">Seleccione escenario...</option>
                       {scenarios.map(s => (
@@ -796,15 +1112,29 @@ export default function SubScenarioManagement() {
                       ))}
                     </select>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="sub-scenario-area">Área de Actividad*</Label>
+                </div>
+              </div>
+              
+              {/* Especificaciones */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                  Especificaciones
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-area" className="text-sm font-medium">Área de Actividad*</Label>
                     <select
-                      id="sub-scenario-area"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      defaultValue={selectedSubScenario.activityArea?.id}
+                      id="new-sub-scenario-area"
+                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      value={formData.activityAreaId}
+                      onChange={(e) => setFormData({...formData, activityAreaId: e.target.value ? parseInt(e.target.value) : undefined})}
                     >
-                      <option value="">Seleccione área de actividad...</option>
+                      <option value="">Seleccione área...</option>
                       {activityAreas.map(a => (
                         <option key={a.id} value={a.id}>
                           {a.name}
@@ -812,103 +1142,124 @@ export default function SubScenarioManagement() {
                       ))}
                     </select>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="sub-scenario-description">Descripción</Label>
-                    <Textarea
-                      id="sub-scenario-description"
-                      placeholder="Descripción del sub-escenario"
-                      rows={3}
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-surface" className="text-sm font-medium">Tipo de Superficie*</Label>
+                    <select
+                      id="new-sub-scenario-surface"
+                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      value={formData.fieldSurfaceTypeId}
+                      onChange={(e) => setFormData({...formData, fieldSurfaceTypeId: e.target.value ? parseInt(e.target.value) : undefined})}
+                    >
+                      <option value="">Seleccione superficie...</option>
+                      {fieldSurfaceTypes.map(t => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-spectators" className="text-sm font-medium">Número de Espectadores</Label>
+                    <Input
+                      id="new-sub-scenario-spectators"
+                      type="number"
+                      min="0"
+                      value={formData.numberOfSpectators}
+                      onChange={(e) => setFormData({...formData, numberOfSpectators: parseInt(e.target.value) || 0})}
+                      className="bg-white h-9"
                     />
                   </div>
-
-                  <div className="flex items-center justify-between py-2">
-                    <Label htmlFor="sub-scenario-status">Estado</Label>
-                    <Switch id="sub-scenario-status" defaultChecked={true} />
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-players" className="text-sm font-medium">Número de Jugadores</Label>
+                    <Input
+                      id="new-sub-scenario-players"
+                      type="number"
+                      min="0"
+                      value={formData.numberOfPlayers}
+                      onChange={(e) => setFormData({...formData, numberOfPlayers: parseInt(e.target.value) || 0})}
+                      className="bg-white h-9"
+                    />
                   </div>
-                </>
-              )}
-            </div>
-
-            <DrawerFooter>
-              <Button className="w-full bg-green-500 hover:bg-green-600">
-                Guardar
-              </Button>
-              <DrawerClose asChild>
-                <Button variant="outline" className="w-full">
-                  Cancelar
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-
-        {/* Create Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>Crear Sub-Escenario</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="new-sub-scenario-name">Nombre*</Label>
-                <Input id="new-sub-scenario-name" placeholder="Nombre del sub-escenario" />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-sub-scenario-scenario">Escenario*</Label>
-                <select
-                  id="new-sub-scenario-scenario"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Seleccione escenario...</option>
-                  {scenarios.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-sub-scenario-area">Área de Actividad*</Label>
-                <select
-                  id="new-sub-scenario-area"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Seleccione área de actividad...</option>
-                  {activityAreas.map(a => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-sub-scenario-description">Descripción</Label>
-                <Textarea
-                  id="new-sub-scenario-description"
-                  placeholder="Descripción del sub-escenario"
-                  rows={3}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="new-sub-scenario-status">Estado</Label>
-                <Switch id="new-sub-scenario-status" defaultChecked={true} />
+              
+              {/* Detalles adicionales */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Detalles Adicionales
+                </h3>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-sub-scenario-recommendations" className="text-sm font-medium">Recomendaciones</Label>
+                    <Textarea
+                      id="new-sub-scenario-recommendations"
+                      placeholder="Recomendaciones para el uso del sub-escenario"
+                      className="bg-white resize-none h-20 min-h-[80px]"
+                      value={formData.recommendations}
+                      onChange={(e) => setFormData({...formData, recommendations: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                      <Label htmlFor="new-sub-scenario-status" className="text-sm font-medium">Estado Activo</Label>
+                      <div className="flex flex-col items-end">
+                        <Switch 
+                          id="new-sub-scenario-status" 
+                          checked={formData.state}
+                          onCheckedChange={(checked) => setFormData({...formData, state: checked})}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">
+                          {formData.state ? "Disponible para reservas" : "No disponible"}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                      <Label htmlFor="new-sub-scenario-cost" className="text-sm font-medium">Tiene Costo</Label>
+                      <div className="flex flex-col items-end">
+                        <Switch 
+                          id="new-sub-scenario-cost" 
+                          checked={formData.hasCost}
+                          onCheckedChange={(checked) => setFormData({...formData, hasCost: checked})}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">
+                          {formData.hasCost ? "Servicio de pago" : "Servicio gratuito"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            
+            <DialogFooter className="flex justify-end gap-3 pt-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsModalOpen(false);
+                  resetForm();
+                }}
+                size="sm"
+                className="px-4"
+              >
                 Cancelar
               </Button>
               <Button
-                className="bg-green-500 hover:bg-green-600"
-                onClick={() => {
-                  // Handle save logic here
-                  setIsModalOpen(false);
-                }}
+                className="bg-teal-600 hover:bg-teal-700 px-4"
+                onClick={() => handleCreateSubScenario(formData)}
+                size="sm"
               >
                 Guardar
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

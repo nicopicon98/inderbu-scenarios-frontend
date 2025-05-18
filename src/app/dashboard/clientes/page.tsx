@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, FileEdit } from "lucide-react";
+import { Plus, FileEdit, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
@@ -14,8 +15,10 @@ import { Badge } from "@/shared/ui/badge";
 interface IUser {
   id: number;
   dni: number;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   phone: string;
   address: string;
@@ -29,6 +32,8 @@ interface IUser {
     id: number;
     name: string;
   };
+  roleId?: number;
+  neighborhoodId?: number;
 }
 
 interface IPageResponse {
@@ -65,7 +70,7 @@ const filterOptions: IFilterOption[] = [
     id: "roleId",
     label: "Rol",
     type: "select",
-    placeholder: "Todos los roles…",        // <— stays as placeholder
+    placeholder: "Todos los roles…", // <— stays as placeholder
     options: [
       { value: "1", label: "Administrador" },
       { value: "2", label: "Cliente" },
@@ -95,13 +100,15 @@ const filterOptions: IFilterOption[] = [
   },
 ];
 
-
 /* -------------------------------------------------------------------------- */
 /*  Utils                                                                     */
 /* -------------------------------------------------------------------------- */
 
 /** Small helper so we don’t repeat response.ok checks everywhere. */
-async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+async function fetchJson<T>(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<T> {
   const res = await fetch(input, init);
   if (!res.ok) {
     // You can customise error handling here (logging, toast, etc.)
@@ -110,8 +117,7 @@ async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> 
   return res.json() as Promise<T>;
 }
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function UsersPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -155,7 +161,9 @@ export default function UsersPage() {
         params.delete("roleId");
       }
 
-      const data = await fetchJson<IPageResponse>(`${url}?${params.toString()}`);
+      const data = await fetchJson<IPageResponse>(
+        `${url}?${params.toString()}`
+      );
 
       setUsers(data.data);
       setTotalItems(data.meta.totalItems);
@@ -170,9 +178,26 @@ export default function UsersPage() {
   /** Load one user (full details) and open the drawer */
   const handleOpenDrawer = async (user: IUser) => {
     try {
+      // Para asegurarnos de que los campos de nombre siempre estén disponibles
+      if (!user.firstName && user.first_name) {
+        user.firstName = user.first_name;
+      }
+      if (!user.lastName && user.last_name) {
+        user.lastName = user.last_name;
+      }
+      
       const fullUser = await fetchJson<IUser>(
-        `${API_BASE_URL}/users/${user.id}`,
+        `${API_BASE_URL}/users/${user.id}`
       );
+      
+      // También asegurar que el usuario completo tenga las propiedades correctas
+      if (!fullUser.firstName && fullUser.first_name) {
+        fullUser.firstName = fullUser.first_name;
+      }
+      if (!fullUser.lastName && fullUser.last_name) {
+        fullUser.lastName = fullUser.last_name;
+      }
+      
       setSelectedUser(fullUser);
       setIsDrawerOpen(true);
     } catch (err) {
@@ -191,7 +216,7 @@ export default function UsersPage() {
           method: isUpdate ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        },
+        }
       );
 
       // Refresh list
@@ -221,11 +246,6 @@ export default function UsersPage() {
 
   const columns = [
     {
-      id: "id",
-      header: "ID",
-      cell: (row: IUser) => <span>{row.id}</span>,
-    },
-    {
       id: "dni",
       header: "DNI",
       cell: (row: IUser) => <span>{row.dni}</span>,
@@ -235,7 +255,7 @@ export default function UsersPage() {
       header: "Nombre",
       cell: (row: IUser) => (
         <span>
-          {row.firstName} {row.lastName}
+          {(row.firstName || row.first_name || '') + ' ' + (row.lastName || row.last_name || '')}
         </span>
       ),
     },
@@ -265,7 +285,11 @@ export default function UsersPage() {
       id: "actions",
       header: "Acciones",
       cell: (row: IUser) => (
-        <Button variant="outline" size="sm" onClick={() => handleOpenDrawer(row)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleOpenDrawer(row)}
+        >
           <FileEdit className="h-4 w-4 mr-1" />
           Editar
         </Button>
@@ -288,23 +312,92 @@ export default function UsersPage() {
             {totalItems}
           </Badge>
         </div>
-
-        <Button onClick={handleCreateUser}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Usuario
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+          <Button onClick={handleCreateUser}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Usuario
+          </Button>
+        </div>
       </div>
 
-      <DataTable
-        data={users}
-        columns={columns}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        isLoading={loading}
-      />
+      <Tabs defaultValue="all" className="mb-4">
+        <TabsList className="grid grid-cols-5 w-full max-w-2xl mb-4">
+          <TabsTrigger value="all">Todos</TabsTrigger>
+          <TabsTrigger value="admin">Administradores</TabsTrigger>
+          <TabsTrigger value="independiente">Independientes</TabsTrigger>
+          <TabsTrigger value="club-deportivo">Clubes Deportivos</TabsTrigger>
+          <TabsTrigger value="entrenador">Entrenadores</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all">
+          <DataTable
+            data={users}
+            columns={columns}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            isLoading={loading}
+          />
+        </TabsContent>
+        
+        <TabsContent value="admin">
+          <DataTable
+            data={users.filter(user => user.role?.name === "admin")}
+            columns={columns}
+            totalItems={users.filter(user => user.role?.name === "admin").length}
+            pageSize={pageSize}
+            currentPage={1}
+            totalPages={Math.ceil(users.filter(user => user.role?.name === "admin").length / pageSize)}
+            onPageChange={setCurrentPage}
+            isLoading={loading}
+          />
+        </TabsContent>
+        
+        <TabsContent value="independiente">
+          <DataTable
+            data={users.filter(user => user.role?.name === "independiente")}
+            columns={columns}
+            totalItems={users.filter(user => user.role?.name === "independiente").length}
+            pageSize={pageSize}
+            currentPage={1}
+            totalPages={Math.ceil(users.filter(user => user.role?.name === "independiente").length / pageSize)}
+            onPageChange={setCurrentPage}
+            isLoading={loading}
+          />
+        </TabsContent>
+        
+        <TabsContent value="club-deportivo">
+          <DataTable
+            data={users.filter(user => user.role?.name === "club-deportivo")}
+            columns={columns}
+            totalItems={users.filter(user => user.role?.name === "club-deportivo").length}
+            pageSize={pageSize}
+            currentPage={1}
+            totalPages={Math.ceil(users.filter(user => user.role?.name === "club-deportivo").length / pageSize)}
+            onPageChange={setCurrentPage}
+            isLoading={loading}
+          />
+        </TabsContent>
+        
+        <TabsContent value="entrenador">
+          <DataTable
+            data={users.filter(user => user.role?.name === "entrenador")}
+            columns={columns}
+            totalItems={users.filter(user => user.role?.name === "entrenador").length}
+            pageSize={pageSize}
+            currentPage={1}
+            totalPages={Math.ceil(users.filter(user => user.role?.name === "entrenador").length / pageSize)}
+            onPageChange={setCurrentPage}
+            isLoading={loading}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* User Drawer */}
       <UserDrawer

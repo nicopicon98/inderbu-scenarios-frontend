@@ -109,11 +109,31 @@ export interface Scenario {
   neighborhood?: Neighborhood;
 }
 
+export interface FieldSurfaceType {
+  id: number;
+  name: string;
+}
+
+// Ahora actualizemos la interfaz SubScenario
 export interface SubScenario {
   id: number;
   name: string;
+  state: boolean;
+  hasCost: boolean;
+  numberOfSpectators?: number;
+  numberOfPlayers?: number;
+  recommendations?: string;
+  createdAt: string; // o Date si prefieres parsearla
+  
+  // IDs de relaciones
+  scenarioId: number;
+  activityAreaId?: number;
+  fieldSurfaceTypeId?: number;
+  
+  // Objetos de relaciones
   scenario?: Scenario;
   activityArea?: ActivityArea;
+  fieldSurfaceType?: FieldSurfaceType;
 }
 
 // Tipo para manejar tanto respuestas paginadas como arrays simples

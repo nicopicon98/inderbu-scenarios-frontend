@@ -14,16 +14,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/shared/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerFooter,
-  DrawerClose,
-} from "@/shared/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -716,128 +708,246 @@ export default function FacilityManagement() {
           ))}
         </Tabs>
 
-        {/* Edit Drawer */}
-        <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-          <DrawerContent className="w-full sm:w-[480px]">
-            <DrawerHeader>
-              <DrawerTitle>
+        {/* Edit Dialog */}
+        <Dialog open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-xl text-teal-700">
                 {selectedScenario
                   ? `Editar Escenario: ${selectedScenario.name}`
                   : "Editar Escenario"}
-              </DrawerTitle>
-            </DrawerHeader>
+              </DialogTitle>
+            </DialogHeader>
 
-            <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)]">
+            <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
               {selectedScenario && (
                 <>
-                  <div className="space-y-2">
-                      <Label htmlFor="venue-neighborhood">Barrio*</Label>
-                      <Input
-                        id="venue-neighborhood"
-                        defaultValue={selectedScenario.neighborhood?.name || ""}
-                      />
+                  {/* Ubicación */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <MapPin className="h-3 w-3 mr-1 text-teal-600" />
+                      Ubicación
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="venue-neighborhood" className="text-sm font-medium">Barrio*</Label>
+                        <select
+                          id="venue-neighborhood"
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          defaultValue={selectedScenario.neighborhood?.id}
+                        >
+                          <option value="">Seleccione barrio...</option>
+                          {neighborhoods.map(n => (
+                            <option key={n.id} value={n.id}>
+                              {n.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <Label htmlFor="venue-address" className="text-sm font-medium">Dirección*</Label>
+                        <Input
+                          id="venue-address"
+                          defaultValue={selectedScenario.address}
+                          className="bg-white h-9"
+                        />
+                      </div>
                     </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-name">Nombre*</Label>
-                    <Input
-                      id="venue-name"
-                      defaultValue={selectedScenario.name}
-                    />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-address">Dirección*</Label>
-                    <Input
-                      id="venue-address"
-                      defaultValue={selectedScenario.address}
-                    />
+                  {/* Información General */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                      Información General
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="venue-name" className="text-sm font-medium">Nombre del Escenario*</Label>
+                        <Input
+                          id="venue-name"
+                          defaultValue={selectedScenario.name}
+                          className="bg-white h-9"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <Label htmlFor="venue-description" className="text-sm font-medium">Descripción</Label>
+                        <Textarea
+                          id="venue-description"
+                          placeholder="Descripción del escenario"
+                          className="bg-white resize-none h-20 min-h-[80px]"
+                          defaultValue={selectedScenario.description || ""}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-description">Descripción</Label>
-                    <Textarea
-                      id="venue-description"
-                      placeholder="Descripción del escenario"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between py-2">
-                    <Label htmlFor="venue-status">Estado</Label>
-                    <Switch id="venue-status" defaultChecked={true} />
+                  {/* Configuración */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                      Configuración
+                    </h3>
+                    <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                      <Label htmlFor="venue-status" className="text-sm font-medium">Estado Activo</Label>
+                      <div className="flex flex-col items-end">
+                        <Switch 
+                          id="venue-status" 
+                          defaultChecked={selectedScenario.status === "active"}
+                        />
+                        <span className="text-xs text-gray-500 mt-1">
+                          {selectedScenario.status === "active" 
+                            ? "El escenario está disponible para reservas"
+                            : "El escenario no está disponible actualmente"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </div>
 
-            <DrawerFooter>
-              <Button className="w-full bg-green-500 hover:bg-green-600">
-                Guardar
-              </Button>
-              <DrawerClose asChild>
-                <Button variant="outline" className="w-full">
-                  Cancelar
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-
-        {/* Create Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>Crear Escenario</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                  <Label htmlFor="new-venue-neighborhood">Barrio*</Label>
-                  <select
-                    id="new-venue-neighborhood"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Seleccione barrio...</option>
-                    <option value="san-alonso">San Alonso</option>
-                    <option value="provenza">Provenza</option>
-                    <option value="alvarez">Álvarez Las Americas</option>
-                  </select>
-                </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-venue-name">Nombre*</Label>
-                <Input id="new-venue-name" placeholder="Nombre del escenario" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-venue-address">Dirección*</Label>
-                <Input id="new-venue-address" placeholder="Dirección" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="new-venue-description">Descripción</Label>
-                <Textarea
-                  id="new-venue-description"
-                  placeholder="Descripción del escenario"
-                  rows={3}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="new-venue-status">Estado</Label>
-                <Switch id="new-venue-status" />
-              </div>
-            </div>
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <DialogFooter className="flex justify-end gap-3 pt-3">
+              <Button 
+                variant="outline"
+                onClick={() => setIsDrawerOpen(false)}
+                className="px-4"
+                size="sm"
+              >
                 Cancelar
               </Button>
               <Button
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-teal-600 hover:bg-teal-700 px-4" 
+                size="sm"
+              >
+                Guardar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-xl text-teal-700">Crear Escenario</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
+              {/* Ubicación */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <MapPin className="h-3 w-3 mr-1 text-teal-600" />
+                  Ubicación
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-venue-neighborhood" className="text-sm font-medium">Barrio*</Label>
+                    <select
+                      id="new-venue-neighborhood"
+                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="">Seleccione barrio...</option>
+                      {neighborhoods.map(n => (
+                        <option key={n.id} value={n.id}>
+                          {n.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-venue-address" className="text-sm font-medium">Dirección*</Label>
+                    <Input 
+                      id="new-venue-address" 
+                      placeholder="Dirección completa" 
+                      className="bg-white h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Información General */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  Información General
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-venue-name" className="text-sm font-medium">Nombre del Escenario*</Label>
+                    <Input id="new-venue-name" placeholder="Ingrese nombre del escenario" className="bg-white h-9" />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="new-venue-description" className="text-sm font-medium">Descripción</Label>
+                    <Textarea
+                      id="new-venue-description"
+                      placeholder="Descripción del escenario"
+                      className="bg-white resize-none h-20 min-h-[80px]"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Configuración */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                  Configuración
+                </h3>
+                <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
+                  <Label htmlFor="new-venue-status" className="text-sm font-medium">Estado Activo</Label>
+                  <div className="flex flex-col items-end">
+                    <Switch id="new-venue-status" defaultChecked={true} />
+                    <span className="text-xs text-gray-500 mt-1">
+                      El escenario estará disponible para reservas
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter className="flex justify-end gap-3 pt-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsModalOpen(false)} 
+                size="sm"
+                className="px-4"
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="bg-teal-600 hover:bg-teal-700 px-4"
                 onClick={() => {
                   // Handle save logic here
                   setIsModalOpen(false);
                 }}
+                size="sm"
               >
                 Guardar
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

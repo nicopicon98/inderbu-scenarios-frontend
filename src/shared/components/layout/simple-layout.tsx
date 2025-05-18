@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/button";
+import Link from "next/link";
 
 interface SimpleLayoutProps {
   children: React.ReactNode;
@@ -30,13 +31,13 @@ function AdminBar() {
 
       {/* Right Section */}
       <div className="ml-auto flex items-center gap-4">
-        <Button className="hidden md:flex gap-1 items-center text-gray-300 hover:text-white transition text-sm">
+        <Link
+          href={"/"}
+          className="flex flex-row items-center gap-2 text-white"
+        >
           <HomeIcon className="h-4 w-4" />
           <span>Ver sitio</span>
-        </Button>
-        {/* <Button className="rounded-full bg-gray-700 hover:bg-gray-600 p-1">
-          <UserCircle className="h-6 w-6 text-white" />
-        </Button> */}
+        </Link>
       </div>
     </header>
   );
