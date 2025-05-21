@@ -114,6 +114,22 @@ export interface FieldSurfaceType {
   name: string;
 }
 
+export interface SubScenarioImage {
+  id: number;
+  path: string;
+  url: string;
+  isFeature: boolean;
+  displayOrder: number;
+  subScenarioId: number;
+  createdAt?: string | Date;
+}
+
+export interface SubScenarioImageGallery {
+  featured?: SubScenarioImage;
+  additional: SubScenarioImage[];
+  count: number;
+}
+
 // Ahora actualizemos la interfaz SubScenario
 export interface SubScenario {
   id: number;
@@ -134,6 +150,10 @@ export interface SubScenario {
   scenario?: Scenario;
   activityArea?: ActivityArea;
   fieldSurfaceType?: FieldSurfaceType;
+  
+  // Imágenes asociadas
+  imageGallery?: SubScenarioImageGallery;
+  images?: SubScenarioImage[];
 }
 
 // Tipo para manejar tanto respuestas paginadas como arrays simples
@@ -157,6 +177,55 @@ export const subScenarioService = {
   getById: async (id: number): Promise<SubScenario> => {
     return fetchApi<SubScenario>(`/sub-scenarios/${id}`, { method: 'GET' });
   },
+  create: async (data: Partial<SubScenario>): Promise<SubScenario> => {
+    return fetchApi<SubScenario>('/sub-scenarios', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  update: async (id: number, data: Partial<SubScenario>): Promise<SubScenario> => {
+    return fetchApi<SubScenario>(`/sub-scenarios/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(`/sub-scenarios/${id}`, { method: 'DELETE' });
+  },
+  getImages: async (subScenarioId: number): Promise<SubScenarioImage[]> => {
+    return fetchApi<SubScenarioImage[]>(`/sub-scenarios/${subScenarioId}/images`, { method: 'GET' });
+  },
+  uploadImages: async (subScenarioId: number, formData: FormData): Promise<SubScenarioImage[]> => {
+    // Esta función no utiliza fetchApi porque necesitamos manejar formData para subir archivos
+    const url = `${API_URL}/sub-scenarios/${subScenarioId}/images`;
+    
+    // Para FormData no debemos establecer el Content-Type, el navegador lo hará automáticamente
+    const headers: HeadersInit = {};
+    
+    // Agregar token de autenticación si existe
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    
+    // Verificar si la respuesta es exitosa
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.message || `Error ${response.status}: ${response.statusText}`
+      );
+    }
+    
+    // Parsear respuesta como JSON
+    const data = await response.json();
+    return data;
+  }
 };
 
 // Servicios para Activity Areas
@@ -206,3 +275,74 @@ export const apiService = {
 };
 
 export default apiService;
+
+// Servicios específicos para imágenes de sub-escenarios
+export const subScenarioImageService = {
+  // Obtiene todas las imágenes de un sub-escenario
+  getBySubScenarioId: async (subScenarioId: number): Promise<SubScenarioImage[]> => {
+    return fetchApi<SubScenarioImage[]>(`/sub-scenarios/${subScenarioId}/images`, { method: 'GET' });
+  },
+  
+  // Actualiza una imagen específica (para cambiar si es destacada o su orden)
+  updateImage: async (subScenarioId: number, imageId: number, data: { isFeature?: boolean, displayOrder?: number }): Promise<SubScenarioImage> => {
+    return fetchApi<SubScenarioImage>(`/sub-scenarios/${subScenarioId}/images/${imageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  // Sube múltiples imágenes
+  uploadMultiple: async (subScenarioId: number, files: File[], isFeatureIndexes: number[] = []): Promise<SubScenarioImage[]> => {
+    const formData = new FormData();
+    
+    // Agregar archivos al FormData
+    files.forEach((file, index) => {
+      formData.append('files', file);
+      
+      // Determinar si esta imagen es destacada
+      const isFeature = isFeatureIndexes.includes(index);
+      formData.append('isFeature', isFeature.toString());
+    });
+    
+    // Usar la misma lógica de uploadImages en subScenarioService
+    return subScenarioService.uploadImages(subScenarioId, formData);
+  },
+  
+  // Sube una sola imagen
+  uploadSingle: async (subScenarioId: number, file: File, isFeature: boolean = false): Promise<SubScenarioImage> => {
+    const formData = new FormData();
+    formData.append('files', file);
+    formData.append('isFeature', isFeature.toString());
+    
+    const images = await subScenarioService.uploadImages(subScenarioId, formData);
+    return images[0]; // Devolver la primera (y única) imagen subida
+  },
+  
+  // Establece una imagen como destacada y las demás como no destacadas
+  setAsFeature: async (subScenarioId: number, imageId: number): Promise<SubScenarioImage> => {
+    return subScenarioImageService.updateImage(subScenarioId, imageId, { isFeature: true });
+  },
+};
+
+// Funciones utilitarias para trabajar con imágenes
+export const imageUtils = {
+  // Obtiene la imagen destacada de un sub-escenario
+  getFeatureImage: (subScenario?: SubScenario): SubScenarioImage | undefined => {
+    return subScenario?.imageGallery?.featured;
+  },
+  
+  // Obtiene la URL de la imagen destacada, o una imagen por defecto si no hay
+  getFeatureImageUrl: (subScenario?: SubScenario, defaultImage: string = '/placeholder.jpg'): string => {
+    return subScenario?.imageGallery?.featured?.url || defaultImage;
+  },
+  
+  // Comprueba si un sub-escenario tiene imágenes
+  hasImages: (subScenario?: SubScenario): boolean => {
+    return !!subScenario?.imageGallery?.count && subScenario.imageGallery.count > 0;
+  },
+  
+  // Obtiene el número de imágenes de un sub-escenario
+  getImageCount: (subScenario?: SubScenario): number => {
+    return subScenario?.imageGallery?.count || 0;
+  },
+};
