@@ -8,7 +8,7 @@ import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { CreateSubScenarioDialog } from "./create-sub-scenario-dialog";
 import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { EditSubScenarioDialog } from "./edit-sub-scenario-dialog";
-import { FilterPanel } from "../molecules/filter-panel";
+import { SubScenariosFiltersCard } from "../molecules/SubScenariosFiltersCard";
 import { SubScenarioTable } from "./sub-scenario-table";
 import { Button } from "@/shared/ui/button";
 
@@ -36,12 +36,9 @@ export function SubScenarioManagement() {
                 </div>
 
                 {/* filters */}
-                <FilterPanel
+                <SubScenariosFiltersCard
                     visible={showFilters}
                     filters={data.filters}
-                    scenarios={data.scenarios}
-                    activityAreas={data.activityAreas}
-                    neighborhoods={data.neighborhoods}
                     onChange={f => data.onFilterChange(f)}
                     onToggle={() => setShowFilters(false)}
                 />

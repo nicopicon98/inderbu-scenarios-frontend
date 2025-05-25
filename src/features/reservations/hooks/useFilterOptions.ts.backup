@@ -1,0 +1,77 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import ReservationService from "@/services/reservation.service";
+
+export interface FilterOptions {
+  scenarios: { id: number; name: string }[];
+  activityAreas: { id: number; name: string }[];
+  neighborhoods: { id: number; name: string }[];
+  users: { id: number; firstName: string; lastName: string; email: string }[];
+}
+
+export const useFilterOptions = () => {
+  const [options, setOptions] = useState<FilterOptions>({
+    scenarios: [],
+    activityAreas: [],
+    neighborhoods: [],
+    users: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOptions = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Realizar todas las peticiones en paralelo
+      const [scenarios, activityAreas, neighborhoods, users] = await Promise.allSettled([
+        ReservationService.getAllScenarios(),
+        ReservationService.getAllActivityAreas(),
+        ReservationService.getAllNeighborhoods(),
+        ReservationService.getAllUsers(),
+      ]);
+
+      const newOptions: FilterOptions = {
+        scenarios: scenarios.status === 'fulfilled' ? scenarios.value : [],
+        activityAreas: activityAreas.status === 'fulfilled' ? activityAreas.value : [],
+        neighborhoods: neighborhoods.status === 'fulfilled' ? neighborhoods.value : [],
+        users: users.status === 'fulfilled' ? users.value : [],
+      };
+
+      setOptions(newOptions);
+
+      // Log errores si los hay, pero no fallar completamente
+      if (scenarios.status === 'rejected') {
+        console.error('Error loading scenarios:', scenarios.reason);
+      }
+      if (activityAreas.status === 'rejected') {
+        console.error('Error loading activity areas:', activityAreas.reason);
+      }
+      if (neighborhoods.status === 'rejected') {
+        console.error('Error loading neighborhoods:', neighborhoods.reason);
+      }
+      if (users.status === 'rejected') {
+        console.error('Error loading users:', users.reason);
+      }
+
+    } catch (error) {
+      console.error('Error loading filter options:', error);
+      setError(error instanceof Error ? error.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOptions();
+  }, []);
+
+  return {
+    options,
+    isLoading,
+    error,
+    refetch: fetchOptions,
+  };
+};

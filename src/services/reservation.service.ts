@@ -171,9 +171,46 @@ const ReservationService = {
     }
   },
 
-  // Obtener todas las reservas (admin)
-  getAllReservations: async (): Promise<ReservationDto[]> => {
-    const response = await fetch(`${API_URL}/reservations`, {
+  // Obtener todas las reservas (admin) con filtros opcionales
+  getAllReservations: async (filters?: {
+    scenarioId?: number;
+    activityAreaId?: number;
+    neighborhoodId?: number;
+    userId?: number;
+    page?: number;
+    limit?: number;
+    searchQuery?: string;
+  }): Promise<ReservationDto[]> => {
+    const url = new URL(`${API_URL}/reservations`);
+    
+    // Añadir parámetros de filtros si existen
+    if (filters) {
+      if (filters.scenarioId && filters.scenarioId > 0) {
+        url.searchParams.set('scenarioId', filters.scenarioId.toString());
+      }
+      if (filters.activityAreaId && filters.activityAreaId > 0) {
+        url.searchParams.set('activityAreaId', filters.activityAreaId.toString());
+      }
+      if (filters.neighborhoodId && filters.neighborhoodId > 0) {
+        url.searchParams.set('neighborhoodId', filters.neighborhoodId.toString());
+      }
+      if (filters.userId && filters.userId > 0) {
+        url.searchParams.set('userId', filters.userId.toString());
+      }
+      if (filters.page && filters.page > 0) {
+        url.searchParams.set('page', filters.page.toString());
+      }
+      if (filters.limit && filters.limit > 0) {
+        url.searchParams.set('limit', filters.limit.toString());
+      }
+      if (filters.searchQuery && filters.searchQuery.trim()) {
+        url.searchParams.set('search', filters.searchQuery.trim());
+      }
+    }
+
+    console.log('Fetching reservations with URL:', url.toString());
+
+    const response = await fetch(url.toString(), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
@@ -201,6 +238,89 @@ const ReservationService = {
     });
 
     return reservations;
+  },
+
+  // Nueva función para obtener reservas con paginación y metadatos
+  getAllReservationsWithPagination: async (filters?: {
+    scenarioId?: number;
+    activityAreaId?: number;
+    neighborhoodId?: number;
+    userId?: number;
+    page?: number;
+    limit?: number;
+    searchQuery?: string;
+  }): Promise<{
+    data: ReservationDto[];
+    meta: {
+      page: number;
+      limit: number;
+      totalItems: number;
+      totalPages: number;
+    };
+  }> => {
+    const url = new URL(`${API_URL}/reservations`);
+    
+    // Añadir parámetros de filtros si existen
+    if (filters) {
+      if (filters.scenarioId && filters.scenarioId > 0) {
+        url.searchParams.set('scenarioId', filters.scenarioId.toString());
+      }
+      if (filters.activityAreaId && filters.activityAreaId > 0) {
+        url.searchParams.set('activityAreaId', filters.activityAreaId.toString());
+      }
+      if (filters.neighborhoodId && filters.neighborhoodId > 0) {
+        url.searchParams.set('neighborhoodId', filters.neighborhoodId.toString());
+      }
+      if (filters.userId && filters.userId > 0) {
+        url.searchParams.set('userId', filters.userId.toString());
+      }
+      if (filters.page && filters.page > 0) {
+        url.searchParams.set('page', filters.page.toString());
+      }
+      if (filters.limit && filters.limit > 0) {
+        url.searchParams.set('limit', filters.limit.toString());
+      }
+      if (filters.searchQuery && filters.searchQuery.trim()) {
+        url.searchParams.set('search', filters.searchQuery.trim());
+      }
+    }
+
+    console.log('Fetching reservations with pagination, URL:', url.toString());
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    const responseData = await response.json();
+
+    console.log('Paginated reservations response:', responseData);
+
+    // Mapeamos los datos para ser compatibles con el código existente
+    const reservations = responseData.data.map((item: ReservationDto) => {
+      return {
+        ...item,
+        // Añadimos campos derivados para mantener compatibilidad
+        subScenarioId: item.subScenario?.id,
+        userId: item.user?.id,
+        timeSlotId: item.timeSlot?.id,
+        reservationStateId: item.reservationState?.id,
+      };
+    });
+
+    return {
+      data: reservations,
+      meta: responseData.meta || {
+        page: filters?.page || 1,
+        limit: filters?.limit || 10,
+        totalItems: reservations.length,
+        totalPages: 1,
+      }
+    };
   },
   // Obtener todos los estados de reserva disponibles
   getAllReservationStates: async (): Promise<ReservationStateDto[]> => {
@@ -255,6 +375,93 @@ const ReservationService = {
     } catch (error) {
       console.error("Error updating reservation state:", error);
       throw error;
+    }
+  },
+
+  // Obtener escenarios para filtros
+  getAllScenarios: async (): Promise<{id: number, name: string}[]> => {
+    try {
+      const response = await fetch(`${API_URL}/scenarios`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.data || data;
+    } catch (error) {
+      console.error("Error fetching scenarios:", error);
+      return [];
+    }
+  },
+
+  // Obtener áreas de actividad para filtros
+  getAllActivityAreas: async (): Promise<{id: number, name: string}[]> => {
+    try {
+      const response = await fetch(`${API_URL}/activity-areas`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.data || data;
+    } catch (error) {
+      console.error("Error fetching activity areas:", error);
+      return [];
+    }
+  },
+
+  // Obtener barrios para filtros
+  getAllNeighborhoods: async (): Promise<{id: number, name: string}[]> => {
+    try {
+      const response = await fetch(`${API_URL}/neighborhoods`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.data || data;
+    } catch (error) {
+      console.error("Error fetching neighborhoods:", error);
+      return [];
+    }
+  },
+
+  // Obtener usuarios para filtros (solo admins)
+  getAllUsers: async (): Promise<{id: number, firstName: string, lastName: string, email: string}[]> => {
+    try {
+      const response = await fetch(`${API_URL}/users`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      // Mapear a formato consistente
+      return (data.data || data).map((user: any) => ({
+        id: user.id,
+        firstName: user.firstName || user.first_name || '',
+        lastName: user.lastName || user.last_name || '',
+        email: user.email || ''
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return [];
     }
   },
 };

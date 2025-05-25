@@ -53,19 +53,18 @@ import { Badge } from "@/shared/ui/badge";
 
 import {
   scenarioService,
-  activityAreaService,
   neighborhoodService,
   Scenario,
-  ActivityArea,
   Neighborhood,
   PageOptions,
   PageMeta,
 } from "@/services/api";
 
+import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
+
 // Interfaz para nuestro estado y filtros
 interface FilterState {
   search: string;
-  activityAreaId?: number;
   neighborhoodId?: number;
   page: number;
   limit: number;
@@ -81,7 +80,6 @@ export default function FacilityManagement() {
 
   // Datos desde API
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [activityAreas, setActivityAreas] = useState<ActivityArea[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
 
@@ -96,44 +94,31 @@ export default function FacilityManagement() {
     limit: 7,
   });
 
-  // Filtros dinámicos basados en datos cargados desde API
-  const filterOptions = [
-    {
-      id: "search",
-      label: "Nombre/Código",
-      type: "text",
-      placeholder: "Buscar por nombre o código",
-      value: filters.search,
-    },
-    {
-      id: "activityAreaId",
-      label: "Área de Actividad",
-      type: "select",
-      placeholder: "Seleccione área...",
-      options: [
-        { value: "", label: "Todas las áreas..." },
-        ...activityAreas.map((a) => ({
-          value: a.id.toString(),
-          label: a.name,
-        })),
-      ],
-      value: filters.activityAreaId,
-    },
-    {
-      id: "neighborhoodId",
-      label: "Barrio",
-      type: "select",
-      placeholder: "Seleccione barrio...",
-      options: [
-        { value: "", label: "Todos los barrios..." },
-        ...neighborhoods.map((n) => ({
-          value: n.id.toString(),
-          label: n.name,
-        })),
-      ],
-      value: filters.neighborhoodId,
-    },
-  ];
+  // Manejar búsqueda
+  const handleSearch = async (searchTerm: string) => {
+    const newFilters = { ...filters, search: searchTerm, page: 1 };
+    setFilters(newFilters);
+    await fetchScenarios(newFilters);
+  };
+
+  // Manejar cambios de filtros desde ScenariosFiltersCard
+  const handleFiltersChange = async (newFilters: FilterState) => {
+    const updatedFilters = { ...newFilters, page: 1 };
+    setFilters(updatedFilters);
+    await fetchScenarios(updatedFilters);
+  };
+
+  // Limpiar filtros
+  const clearFilters = async () => {
+    const clearedFilters: FilterState = {
+      search: "",
+      neighborhoodId: undefined,
+      page: 1,
+      limit: 7,
+    };
+    setFilters(clearedFilters);
+    await fetchScenarios(clearedFilters);
+  };
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -141,14 +126,9 @@ export default function FacilityManagement() {
       try {
         setLoading(true);
 
-        // Simplificar código para manejar ApiResponse
-        const areasResult = await activityAreaService.getAll();
+        // Cargar solo neighborhoods ya que no necesitamos activityAreas
         const neighborhoodsResult = await neighborhoodService.getAll();
 
-        // Para areas y neighborhoods, pueden ser array o paginados
-        setActivityAreas(
-          Array.isArray(areasResult) ? areasResult : areasResult.data
-        );
         setNeighborhoods(
           Array.isArray(neighborhoodsResult)
             ? neighborhoodsResult
@@ -261,19 +241,11 @@ export default function FacilityManagement() {
     return items;
   };
 
-  // Manejar búsqueda
-  const handleSearch = async (searchTerm: string) => {
+  // Manejar búsqueda rápida desde el input de la tabla
+  const handleQuickSearch = async (searchTerm: string) => {
     const newFilters = { ...filters, search: searchTerm, page: 1 };
     setFilters(newFilters);
     await fetchScenarios(newFilters);
-  };
-
-  // Manejar filtros avanzados
-  const handleFilterChange = async (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters, page: 1 };
-    setFilters(updatedFilters);
-    await fetchScenarios(updatedFilters);
-    setShowFilters(false);
   };
 
   const handleOpenDrawer = (scenario: Scenario) => {
@@ -391,80 +363,12 @@ export default function FacilityManagement() {
 
           {/* Tab All */}
           <TabsContent value="all" className="mt-0">
-            {showFilters && (
-              <div className="mb-4 animate-in fade-in">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">
-                      Filtros de búsqueda
-                    </CardTitle>
-                    <CardDescription>
-                      Refina los resultados usando los siguientes filtros
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {filterOptions.map((filter) => (
-                        <div key={filter.id} className="space-y-2">
-                          <Label htmlFor={filter.id}>{filter.label}</Label>
-                          {filter.type === "text" ? (
-                            <Input
-                              id={filter.id}
-                              placeholder={filter.placeholder}
-                              value={filters.search || ""}
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  search: e.target.value,
-                                })
-                              }
-                            />
-                          ) : (
-                            <select
-                              id={filter.id}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              value={
-                                filter.id === "activityAreaId"
-                                  ? filters.activityAreaId || ""
-                                  : filter.id === "neighborhoodId"
-                                  ? filters.neighborhoodId || ""
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  ? parseInt(e.target.value)
-                                  : undefined;
-                                if (filter.id === "activityAreaId")
-                                  setFilters({
-                                    ...filters,
-                                    activityAreaId: value,
-                                  });
-                                if (filter.id === "neighborhoodId")
-                                  setFilters({
-                                    ...filters,
-                                    neighborhoodId: value,
-                                  });
-                              }}
-                            >
-                              {filter.options?.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button onClick={() => handleFilterChange(filters)}>
-                        Buscar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            <ScenariosFiltersCard 
+              open={showFilters} 
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={clearFilters}
+            />
 
             <Card>
               <CardHeader className="pb-2">
@@ -478,10 +382,10 @@ export default function FacilityManagement() {
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar escenario..."
-                      className="pl-8"
-                      value={filters.search}
-                      onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Buscar escenario..."
+                    className="pl-8"
+                    value={filters.search}
+                    onChange={(e) => handleQuickSearch(e.target.value)}
                     />
                   </div>
                 </div>

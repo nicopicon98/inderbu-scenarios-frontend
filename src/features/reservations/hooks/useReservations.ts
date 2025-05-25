@@ -2,6 +2,13 @@ import ReservationService, { ReservationDto } from "@/services/reservation.servi
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+type Filters = {
+  scenarioId?: number;
+  activityAreaId?: number;
+  neighborhoodId?: number;
+  userId?: number;
+};
+
 export const useReservations = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -18,23 +25,43 @@ export const useReservations = () => {
     const [page, setPage] = useState(urlPage);
     const [pageSize] = useState(urlPageSize); // Fijo en 7, pero obtenido de URL si existe
     const [totalReservations, setTotalReservations] = useState(0);
+    
+    // Estado de filtros
+    const [filters, setFilters] = useState<Filters>({});
+    const [meta, setMeta] = useState({
+        page: urlPage,
+        limit: urlPageSize,
+        totalItems: 0,
+        totalPages: 0,
+    });
 
-    // Función para obtener reservas paginadas
-    const fetchReservations = async (pageNumber = page) => {
+    // Función para obtener reservas paginadas con filtros
+    const fetchReservations = async (pageNumber = page, currentFilters = filters) => {
         setLoading(true);
         try {
-            const data = await ReservationService.getAllReservations();
-            setTotalReservations(data.length); // Guardamos el total para stats y paginación
+            console.log('Fetching reservations with filters:', currentFilters);
             
-            // Implementamos paginación en el cliente
-            const startIndex = (pageNumber - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedData = data.slice(startIndex, endIndex);
+            const result = await ReservationService.getAllReservationsWithPagination({
+                page: pageNumber,
+                limit: pageSize,
+                ...currentFilters,
+            });
             
-            setReservations(paginatedData);
-            return data; // Retornamos todos los datos para uso en stats
+            setReservations(result.data);
+            setMeta(result.meta);
+            setTotalReservations(result.meta.totalItems);
+            
+            return result.data;
         } catch (error) {
             console.error("Error fetching reservations:", error);
+            setReservations([]);
+            setMeta({
+                page: pageNumber,
+                limit: pageSize,
+                totalItems: 0,
+                totalPages: 0,
+            });
+            setTotalReservations(0);
             return [];
         } finally {
             setLoading(false);
@@ -53,13 +80,26 @@ export const useReservations = () => {
         
         // Actualizar estado local y cargar datos
         setPage(newPage);
-        await fetchReservations(newPage);
+        await fetchReservations(newPage, filters);
     };
 
-    // Cargar reservaciones cuando cambian parámetros de URL o al montar el componente
+    // Función para manejar cambios en filtros
+    const handleFiltersChange = (newFilters: Filters) => {
+        console.log('Filters changed:', newFilters);
+        setFilters(newFilters);
+        setPage(1); // Resetear a la primera página cuando cambian los filtros
+    };
+
+    // Función para limpiar filtros
+    const clearFilters = () => {
+        setFilters({});
+        setPage(1);
+    };
+
+    // Cargar reservaciones cuando cambian parámetros de URL, filtros o al montar el componente
     useEffect(() => {
-        fetchReservations(urlPage);
-    }, [urlPage, urlPageSize]); // Re-ejecutar cuando cambien los parámetros de URL
+        fetchReservations(page, filters);
+    }, [page, filters, urlPage, urlPageSize]); // Re-ejecutar cuando cambien los parámetros de URL o filtros
 
     /* ---------- derived state (memoised) ---------- */
     const stats = useMemo(() => {
@@ -102,6 +142,11 @@ export const useReservations = () => {
         page,
         pageSize,
         totalReservations,
-        changePage
+        changePage,
+        // Nuevos campos para filtros
+        filters,
+        handleFiltersChange,
+        clearFilters,
+        meta
     };
 };

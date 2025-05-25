@@ -41,6 +41,7 @@ export function SearchSelect({
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedOption, setSelectedOption] = useState<SearchSelectOption | null>(null);
+  const [selectedCache, setSelectedCache] = useState<Map<string | number, SearchSelectOption>>(new Map());
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Load initial options
@@ -67,24 +68,40 @@ export function SearchSelect({
 
   // Update selected option when value changes or options load
   useEffect(() => {
-    if (value && value !== "all" && options.length > 0) {
-      const option = options.find(opt => opt.id.toString() === value.toString());
+    if (value && value !== "all") {
+      // ✅ Primero buscar en opciones actuales
+      let option = options.find(opt => opt.id.toString() === value.toString());
+      
+      // ✅ Si no está en opciones actuales, buscar en cache
+      if (!option) {
+        option = selectedCache.get(value) || null;
+      }
+      
       if (option) {
         setSelectedOption(option);
-      } else {
-        // If option not found in current results, create temporary option
-        setSelectedOption({ id: value, name: `ID: ${value}` });
       }
     } else {
       setSelectedOption(null);
     }
-  }, [value, options]);
+  }, [value, options, selectedCache]);
 
   const loadOptions = async (query: string) => {
     setLoading(true);
     try {
       const results = await onSearch(query);
       setOptions(results);
+      
+      // ✅ Si hay opciones nuevas y un valor seleccionado, actualizar cache
+      if (results.length > 0 && value && value !== "all") {
+        const matchingOption = results.find(opt => opt.id.toString() === value.toString());
+        if (matchingOption) {
+          setSelectedCache(prev => {
+            const newCache = new Map(prev);
+            newCache.set(matchingOption.id, matchingOption);
+            return newCache;
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading options:', error);
       setOptions([]);
@@ -95,6 +112,12 @@ export function SearchSelect({
 
   const handleSelect = (option: SearchSelectOption) => {
     setSelectedOption(option);
+    // ✅ Guardar en cache para uso futuro
+    setSelectedCache(prev => {
+      const newCache = new Map(prev);
+      newCache.set(option.id, option);
+      return newCache;
+    });
     onValueChange(option.id);
     setOpen(false);
     setSearchQuery("");

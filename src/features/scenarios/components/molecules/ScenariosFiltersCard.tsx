@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { MapPin, Tag, X, Filter, Building, User } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, MapPin, X, Filter } from "lucide-react";
+import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import {
@@ -12,63 +13,40 @@ import {
   CardDescription,
 } from "@/shared/ui/card";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
-import {
-  searchScenarios,
-  searchActivityAreas,
-  searchNeighborhoods,
-  searchUsers,
-} from "../../api/dashboard-search.service";
+import { searchNeighborhoodsForScenarios } from "../../api/scenarios-search.service";
 
-type Filters = {
-  scenarioId?: number;
-  activityAreaId?: number;
+type ScenariosFilters = {
+  search: string;
   neighborhoodId?: number;
-  userId?: number;
 };
 
-interface FiltersCardProps {
+interface ScenariosFiltersCardProps {
   open: boolean;
-  filters: Filters;
-  onFiltersChange: (filters: Filters) => void;
+  filters: ScenariosFilters;
+  onFiltersChange: (filters: ScenariosFilters) => void;
   onClearFilters: () => void;
 }
 
-export const FiltersCard = ({ 
+export const ScenariosFiltersCard = ({ 
   open, 
   filters, 
   onFiltersChange, 
   onClearFilters 
-}: FiltersCardProps) => {
+}: ScenariosFiltersCardProps) => {
   // ⚠️ TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [localSearchValue, setLocalSearchValue] = useState(filters.search || "");
+
+  // ✅ Sincronizar estado local con filtros externos (para limpiar correctamente)
+  useEffect(() => {
+    setLocalSearchValue(filters.search || "");
+  }, [filters.search]);
 
   // ✅ AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
   if (!open) return null;
 
   /* ─────────── Handlers ─────────── */
-  const handleScenarioChange = (value: string | number | null) => {
-    const val = value === "all" || value === null ? undefined : Number(value);
-    onFiltersChange({ ...filters, scenarioId: val });
-    updateChip(
-      "scenario",
-      val?.toString() ?? "",
-      "Escenario seleccionado",
-      val !== undefined
-    );
-  };
-
-  const handleActivityAreaChange = (value: string | number | null) => {
-    const val = value === "all" || value === null ? undefined : Number(value);
-    onFiltersChange({ ...filters, activityAreaId: val });
-    updateChip(
-      "activity",
-      val?.toString() ?? "",
-      "Actividad seleccionada",
-      val !== undefined
-    );
-  };
-
   const handleNeighborhoodChange = (value: string | number | null) => {
     const val = value === "all" || value === null ? undefined : Number(value);
     onFiltersChange({ ...filters, neighborhoodId: val });
@@ -80,18 +58,20 @@ export const FiltersCard = ({
     );
   };
 
-  const handleUserChange = (value: string | number | null) => {
-    const val = value === "all" || value === null ? undefined : Number(value);
-    onFiltersChange({ ...filters, userId: val });
-    updateChip(
-      "user",
-      val?.toString() ?? "",
-      "Usuario seleccionado",
-      val !== undefined
-    );
+  /* Debounce de búsqueda - SEPARADO del estado local del input */
+  const handleSearchChange = (q: string) => {
+    // ✅ Actualizar inmediatamente el estado local (sin lag)
+    setLocalSearchValue(q);
+    
+    // ✅ Debounce solo para la petición al servidor
+    if (searchTimeout.current !== null) {
+      clearTimeout(searchTimeout.current);
+    }
+    searchTimeout.current = setTimeout(() => {
+      onFiltersChange({ ...filters, search: q });
+      updateChip("search", q, `"${q}"`, q.length > 0);
+    }, 300);
   };
-
-  /* Debounce de búsqueda - searchTimeout ya está declarado arriba */
 
   /* ─────────── Chips visuales ─────────── */
   const updateChip = (
@@ -109,14 +89,16 @@ export const FiltersCard = ({
 
   const removeChip = (chip: string) => {
     const [type] = chip.split(":");
-    if (type === "scenario") handleScenarioChange("all");
-    else if (type === "activity") handleActivityAreaChange("all");
-    else if (type === "neighborhood") handleNeighborhoodChange("all");
-    else if (type === "user") handleUserChange("all");
+    if (type === "neighborhood") handleNeighborhoodChange("all");
+    else if (type === "search") {
+      setLocalSearchValue(""); // ✅ Limpiar estado local
+      onFiltersChange({ ...filters, search: "" });
+    }
     setActiveFilters((c) => c.filter((x) => x !== chip));
   };
 
   const clearAllFilters = () => {
+    setLocalSearchValue(""); // ✅ Limpiar estado local
     onClearFilters();
     setActiveFilters([]);
   };
@@ -130,8 +112,8 @@ export const FiltersCard = ({
             Filtros de búsqueda
           </CardTitle>
           <CardDescription className="flex items-center justify-between">
-            <span>Refina los resultados de reservas usando los siguientes filtros</span>
-            {(filters.scenarioId || filters.activityAreaId || filters.neighborhoodId || filters.userId) && (
+            <span>Refina los resultados de escenarios usando los siguientes filtros</span>
+            {(filters.search || filters.neighborhoodId) && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -147,43 +129,25 @@ export const FiltersCard = ({
         <CardContent>
           <div className="bg-white rounded-xl border border-gray-200/60 p-6 shadow-sm backdrop-blur-sm">
             {/* Fila principal */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              {/* Escenario */}
-              <div className="md:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+              {/* Search por Nombre */}
+              <div className="md:col-span-4">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Escenario
+                  Buscar por nombre
                 </label>
-                <SearchSelect
-                  placeholder="Todos los escenarios"
-                  searchPlaceholder="Buscar escenario..."
-                  icon={Building}
-                  value={filters.scenarioId ?? "all"}
-                  onValueChange={handleScenarioChange}
-                  onSearch={searchScenarios}
-                  emptyMessage="No se encontraron escenarios"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Área deportiva */}
-              <div className="md:col-span-3">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Actividad
-                </label>
-                <SearchSelect
-                  placeholder="Todas las actividades"
-                  searchPlaceholder="Buscar actividad..."
-                  icon={Tag}
-                  value={filters.activityAreaId ?? "all"}
-                  onValueChange={handleActivityAreaChange}
-                  onSearch={searchActivityAreas}
-                  emptyMessage="No se encontraron actividades"
-                  className="w-full"
-                />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Ej: Polideportivo, Cancha Central..."
+                    value={localSearchValue}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white"
+                  />
+                </div>
               </div>
 
               {/* Barrio */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Barrio
                 </label>
@@ -193,25 +157,8 @@ export const FiltersCard = ({
                   icon={MapPin}
                   value={filters.neighborhoodId ?? "all"}
                   onValueChange={handleNeighborhoodChange}
-                  onSearch={searchNeighborhoods}
+                  onSearch={searchNeighborhoodsForScenarios}
                   emptyMessage="No se encontraron barrios"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Usuario */}
-              <div className="md:col-span-3">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Usuario
-                </label>
-                <SearchSelect
-                  placeholder="Todos los usuarios"
-                  searchPlaceholder="Buscar usuario..."
-                  icon={User}
-                  value={filters.userId ?? "all"}
-                  onValueChange={handleUserChange}
-                  onSearch={searchUsers}
-                  emptyMessage="No se encontraron usuarios"
                   className="w-full"
                 />
               </div>
