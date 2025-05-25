@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { useToast } from "@/shared/hooks/use-toast";
+import { toast } from "sonner";
 import { decodeJWT } from "../../../lib/utils";
 
 //
@@ -89,14 +89,13 @@ type Mode = "login" | "register" | "reset";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (email: string, role: number, token: string) => void;
+  onLoginSuccess: (id: number, email: string, role: number, token: string) => void;
 }
 
 export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { toast } = useToast();
 
   // Forms
   const loginForm = useForm<LoginData>({
@@ -136,23 +135,15 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       .then((r) => r.json())
       .then((b) => setRoles(b.data))
       .catch(() =>
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los roles",
-          variant: "destructive",
-        })
+        toast.error("No se pudieron cargar los roles")
       );
     fetch(`http://localhost:3001/neighborhoods`)
       .then((r) => r.json())
       .then((b) => setNeighborhoods(b.data))
       .catch(() =>
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los barrios",
-          variant: "destructive",
-        })
+        toast.error("No se pudieron cargar los barrios")
       );
-  }, [mode, toast]);
+  }, [mode]);
 
   // Handlers
   const handleLogin = loginForm.handleSubmit(async (data) => {
@@ -165,20 +156,13 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       const body = await res.json();
       if (!res.ok) throw new Error(body.message);
       const token = body.data.access_token;
-      const { email, role } = decodeJWT(token);
+      const { email, role, sub: id } = decodeJWT(token);
       localStorage.setItem("auth_token", token);
-      toast({
-        title: "¡Bienvenido!",
-        description: "Inicio de sesión correcto",
-      });
-      onLoginSuccess(email, role, token);
+      toast.success("¡Bienvenido! Inicio de sesión correcto");
+      onLoginSuccess(id, email, role, token);
       onClose();
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "No se pudo iniciar sesión",
-        variant: "destructive",
-      });
+      toast.error(err.message || "No se pudo iniciar sesión");
     }
   });
 
@@ -193,17 +177,10 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "Error");
-      toast({
-        title: "Registrado",
-        description: "Revisa tu correo para confirmar tu cuenta",
-      });
+      toast.success("Registrado. Revisa tu correo para confirmar tu cuenta");
       setMode("login");
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "No se pudo registrar",
-        variant: "destructive",
-      });
+      toast.error(err.message || "No se pudo registrar");
     }
   });
 
@@ -218,17 +195,10 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
         const body = await res.json();
         throw new Error(body.message);
       }
-      toast({
-        title: "Correo enviado",
-        description: "Revisa tu bandeja para restablecer tu contraseña",
-      });
+      toast.success("Correo enviado. Revisa tu bandeja para restablecer tu contraseña");
       setMode("login");
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "No se pudo enviar el correo",
-        variant: "destructive",
-      });
+      toast.error(err.message || "No se pudo enviar el correo");
     }
   });
 

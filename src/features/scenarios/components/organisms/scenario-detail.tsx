@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useToast } from "@/shared/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/shared/contexts/auth-context";
 import {
   FiCalendar,
@@ -37,24 +37,19 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Add a refresh trigger
-  const { toast } = useToast();
   const { isAuthenticated, login } = useAuth();
 
   console.log({subScenario});
 
-  const handleLoginSuccess = (email: string, role: number, token: string) => {
-    login(email, role, token);
+  const handleLoginSuccess = (id: number, email: string, role: number, token: string) => {
+    login(id, email, role, token);
     // After successful login, we can continue with the reservation process
     handleReservationProcess();
   };
 
   const handleReservationProcess = async () => {
     if (!selectedTimeSlotId) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Por favor selecciona un horario para reservar",
-      });
+      toast.error("Por favor selecciona un horario para reservar");
       return;
     }
 
@@ -70,11 +65,7 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
 
       await createReservation(payload);
       
-      toast({
-        title: "Reserva exitosa",
-        description: "¡Reserva realizada con éxito!",
-        variant: "default",
-      });
+      toast.success("¡Reserva realizada con éxito!");
       
       // Reset selection after successful reservation
       setSelectedTimeSlotId(null);
@@ -84,11 +75,7 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
       
     } catch (error) {
       console.error("Error creating reservation:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo completar la reserva. Por favor intenta nuevamente.",
-      });
+      toast.error("No se pudo completar la reserva. Por favor intenta nuevamente.");
     } finally {
       setIsSubmitting(false);
     }

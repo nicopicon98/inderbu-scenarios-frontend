@@ -15,7 +15,7 @@ import {
 } from "@/shared/ui/select";
 import { Modal } from "@/shared/ui/modal";
 import { Clock, Loader2, MapPin, Users, FileEdit, Search, UserRound, Building } from "lucide-react";
-import { toast } from "@/shared/hooks/use-toast";
+import { toast } from "sonner";
 import debounce from "lodash/debounce";
 
 import ReservationService from "@/services/reservation.service";
@@ -81,11 +81,7 @@ export const CreateReservationModal = ({
         setUsers(response.data);
       } catch (error) {
         console.error("Error al buscar usuarios:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los usuarios",
-          variant: "destructive",
-        });
+        toast.error("No se pudieron cargar los usuarios");
       } finally {
         setLoadingUsers(false);
       }
@@ -107,11 +103,7 @@ export const CreateReservationModal = ({
         setScenarios(response);
       } catch (error) {
         console.error("Error al buscar escenarios:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los escenarios",
-          variant: "destructive",
-        });
+        toast.error("No se pudieron cargar los escenarios");
       } finally {
         setLoadingScenarios(false);
       }
@@ -135,11 +127,7 @@ export const CreateReservationModal = ({
         setSubScenarios(response.data);
       } catch (error) {
         console.error("Error al buscar subescenarios:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los subescenarios",
-          variant: "destructive",
-        });
+        toast.error("No se pudieron cargar los subescenarios");
       } finally {
         setLoadingSubScenarios(false);
       }
@@ -173,11 +161,7 @@ export const CreateReservationModal = ({
           const scenData = await ScenarioService.getAllScenarios();
           setScenarios(scenData);
         } catch (err) {
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar los escenarios",
-            variant: "destructive",
-          });
+          toast.error("No se pudieron cargar los escenarios");
         } finally {
           setLoadingScenarios(false);
         }
@@ -201,11 +185,7 @@ export const CreateReservationModal = ({
           setSubScenarios(response.data);
         } catch (error) {
           console.error("Error al cargar sub-escenarios:", error);
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar los sub-escenarios",
-            variant: "destructive",
-          });
+          toast.error("No se pudieron cargar los sub-escenarios");
         } finally {
           setLoadingSubScenarios(false);
         }
@@ -262,11 +242,7 @@ export const CreateReservationModal = ({
           const scenData = await ScenarioService.getAllScenarios();
           setScenarios(scenData);
         } catch (err) {
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar los escenarios",
-            variant: "destructive",
-          });
+          toast.error("No se pudieron cargar los escenarios");
         } finally {
           setLoadingScenarios(false);
         }
@@ -306,11 +282,7 @@ export const CreateReservationModal = ({
         setAvailableTimeSlots(slots);
       } catch (error) {
         console.error("Error al cargar horarios disponibles:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los horarios disponibles",
-          variant: "destructive",
-        });
+        toast.error("No se pudieron cargar los horarios disponibles");
       }
     })();
   }, [newReservation.subScenarioId, newReservation.reservationDate]);
@@ -319,11 +291,7 @@ export const CreateReservationModal = ({
   const handleCreate = async () => {
     const { clientId, subScenarioId, timeSlotId, reservationDate, comments } = newReservation;
     if (!clientId || !subScenarioId || !timeSlotId || !reservationDate) {
-      toast({
-        title: "Error",
-        description: "Todos los campos marcados con * son obligatorios.",
-        variant: "destructive",
-      });
+      toast.error("Todos los campos marcados con * son obligatorios.");
       return;
     }
     setLoading(true);
@@ -334,7 +302,7 @@ export const CreateReservationModal = ({
         reservationDate,
         comments: comments || undefined,
       });
-      toast({ title: "Éxito", description: "Reserva creada correctamente." });
+      toast.success("Reserva creada correctamente.");
       
       // Llamar al callback de éxito si existe
       if (onSuccess) {
@@ -343,11 +311,7 @@ export const CreateReservationModal = ({
         onClose();
       }
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message ?? "No se pudo crear la reserva",
-        variant: "destructive",
-      });
+      toast.error(err.message ?? "No se pudo crear la reserva");
     } finally {
       setLoading(false);
     }

@@ -19,8 +19,8 @@ export function UnifiedHeader() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleLoginSuccess = (email: string, role: number, token: string) => {
-    login(email, role, token);
+  const handleLoginSuccess = (id: number, email: string, role: number, token: string) => {
+    login(id, email, role, token);
     setModalOpen(false);
   };
 
@@ -45,7 +45,7 @@ export function UnifiedHeader() {
           
           {/* User actions - solo para admin/dashboard en top */}
           <div className="flex items-center gap-2">
-            {isAuthenticated && user?.role === 1 && (
+            {isAuthenticated && (user?.role === 1 || user?.role === 2) && (
               <Link href="/dashboard" className="text-white hover:text-blue-200 text-sm transition-colors">
                 Panel de Control
               </Link>
@@ -71,19 +71,22 @@ export function UnifiedHeader() {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="hidden md:flex items-center gap-2 border-blue-200 text-blue-700 
-                           hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                  asChild
-                >
-                  <Link href="/reservations">
-                    <BookIcon className="w-4 h-4" />
-                    <span>Mis Reservas</span>
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-1"></div>
-                  </Link>
-                </Button>
+                {/* Mis Reservas: solo super admin (1) o cualquier otro que no sea admin (2) */}
+                {(user?.role === 1 || user?.role !== 2) && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="hidden md:flex items-center gap-2 border-blue-200 text-blue-700 
+                             hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                    asChild
+                  >
+                    <Link href={`/reservations/${user?.id}`}>
+                      <BookIcon className="w-4 h-4" />
+                      <span>Mis Reservas</span>
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-1"></div>
+                    </Link>
+                  </Button>
+                )}
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -107,7 +110,7 @@ export function UnifiedHeader() {
                       <p className="text-sm font-medium text-gray-900">{user?.email}</p>
                       <p className="text-xs text-gray-500">Cuenta activa</p>
                     </div>
-                    <Link href="/reservations" className="md:hidden">
+                    <Link href={`/reservations/${user?.id}`} className="md:hidden">
                       <DropdownMenuItem className="cursor-pointer hover:bg-blue-50 text-blue-600">
                         <BookIcon className="mr-2 h-4 w-4" />
                         Mis Reservas
@@ -164,16 +167,19 @@ export function UnifiedHeader() {
                 </Button>
               ) : (
                 <>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
-                    asChild
-                  >
-                    <Link href="/reservations" onClick={() => setIsMenuOpen(false)}>
-                      <BookIcon className="w-4 h-4 mr-2" />
-                      Mis Reservas
-                    </Link>
-                  </Button>
+                  {/* Mis Reservas: solo super admin (1) o cualquier otro que no sea admin (2) */}
+                  {(user?.role === 1 || user?.role !== 2) && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                      asChild
+                    >
+                      <Link href={`/reservations/${user?.id}`} onClick={() => setIsMenuOpen(false)}>
+                        <BookIcon className="w-4 h-4 mr-2" />
+                        Mis Reservas
+                      </Link>
+                    </Button>
+                  )}
                   <Button 
                     variant="outline" 
                     className="w-full border-red-200 text-red-600 hover:bg-red-50"
@@ -194,7 +200,6 @@ export function UnifiedHeader() {
 
       {/* Modal para Login / Register / Reset */}
       <AuthModal
-        isModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}

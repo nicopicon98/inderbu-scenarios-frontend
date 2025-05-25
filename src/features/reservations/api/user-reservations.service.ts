@@ -82,7 +82,7 @@ export async function cancelReservation(reservationId: number): Promise<Reservat
     throw new Error("No se encontró un token de autenticación");
   }
 
-  // Asumiendo que el estado CANCELADA tiene ID 4
+  // Asumiendo que el estado CANCELADA tiene ID 3
   const response = await fetch(
     `http://localhost:3001/reservations/${reservationId}/state`,
     {
@@ -91,7 +91,7 @@ export async function cancelReservation(reservationId: number): Promise<Reservat
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ stateId: 4 }), // ID del estado CANCELADA
+      body: JSON.stringify({ stateId: 3 }), // ID del estado CANCELADA
     }
   );
 

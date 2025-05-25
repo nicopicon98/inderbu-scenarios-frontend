@@ -22,7 +22,8 @@ import {
   User,
   Settings,
   Filter,
-  X
+  X,
+  CheckCircle2
 } from "lucide-react";
 
 interface PageProps {
@@ -191,6 +192,59 @@ export default function UserReservationsPage({ params }: PageProps) {
       </div>
 
       <div className="container mx-auto px-4 py-12 flex-grow">
+        {/* Banner flotante de ayuda para usuarios nuevos */}
+        {reservations.length > 0 && reservations.length <= 3 && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50 border-2 border-dashed border-blue-300 rounded-xl p-6 relative overflow-hidden">
+              {/* Elementos decorativos */}
+              <div className="absolute top-2 right-2 text-4xl opacity-20">✨</div>
+              <div className="absolute bottom-2 left-2 text-3xl opacity-20">🎆</div>
+              
+              <div className="relative z-10">
+                <div className="flex items-start gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-full p-3 shadow-lg">
+                    <Settings className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      🎉 ¡Bienvenido a tu panel de reservas!
+                    </h3>
+                    <p className="text-gray-700 mb-4 leading-relaxed">
+                      Desde aquí puedes <strong>gestionar todas tus reservas</strong> de manera fácil y rápida. 
+                      📱 Solo haz clic en el botón azul <strong>"Gestionar reserva"</strong> en cualquier tarjeta.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="font-semibold text-green-700 text-sm">Cambiar Estado</span>
+                        </div>
+                        <p className="text-xs text-gray-600">Pendiente → Confirmada</p>
+                      </div>
+                      
+                      <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="font-semibold text-blue-700 text-sm">Cambiar Fecha</span>
+                        </div>
+                        <p className="text-xs text-gray-600">Nueva reserva automática</p>
+                      </div>
+                      
+                      <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="font-semibold text-red-700 text-sm">Cancelar</span>
+                        </div>
+                        <p className="text-xs text-gray-600">Con confirmación segura</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Filtros y búsqueda */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -264,22 +318,43 @@ export default function UserReservationsPage({ params }: PageProps) {
             {/* Reservas Activas */}
             {activeReservations.length > 0 && (
               <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
-                  <h2 className="text-2xl font-bold text-gray-800">Reservas Activas</h2>
-                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {activeReservations.length}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+                    <h2 className="text-2xl font-bold text-gray-800">Reservas Activas</h2>
+                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {activeReservations.length}
+                    </div>
+                  </div>
+                  
+                  {/* Quick Actions para reservas activas */}
+                  <div className="hidden md:flex items-center gap-2 text-sm text-blue-600">
+                    <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                      <Settings className="h-3 w-3" />
+                      <span className="font-medium">Gestiona tus reservas →</span>
+                    </div>
                   </div>
                 </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {activeReservations.map((reservation) => (
-                    <ModernReservationItem 
-                      key={reservation.id} 
-                      reservation={reservation}
-                      isActive={true}
-                      onModify={() => handleModifyReservation(reservation)}
-                      onCancelled={handleReservationUpdated}
-                    />
+                  {activeReservations.map((reservation, index) => (
+                    <div key={reservation.id} className="relative">
+                      {/* Indicador visual para la primera reserva */}
+                      {index === 0 && activeReservations.length === 1 && (
+                        <div className="absolute -top-2 -right-2 z-10">
+                          <div className="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-medium shadow-lg animate-pulse">
+                            👆 ¡Gestiona aquí!
+                          </div>
+                        </div>
+                      )}
+                      <ModernReservationItem 
+                        reservation={reservation}
+                        isActive={true}
+                        onModify={() => handleModifyReservation(reservation)}
+                        onCancelled={handleReservationUpdated}
+                        highlightManageButton={index < 2 && reservations.length <= 3} // Destacar primeras 2 reservas si hay pocas
+                      />
+                    </div>
                   ))}
                 </div>
               </section>
@@ -288,13 +363,24 @@ export default function UserReservationsPage({ params }: PageProps) {
             {/* Historial */}
             {pastReservations.length > 0 && (
               <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1 h-8 bg-gray-400 rounded-full"></div>
-                  <h2 className="text-2xl font-bold text-gray-800">Historial</h2>
-                  <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
-                    {pastReservations.length}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gray-400 rounded-full"></div>
+                    <h2 className="text-2xl font-bold text-gray-800">Historial</h2>
+                    <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                      {pastReservations.length}
+                    </div>
+                  </div>
+                  
+                  {/* Info para historial */}
+                  <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Reservas completadas o canceladas</span>
+                    </div>
                   </div>
                 </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {pastReservations.map((reservation) => (
                     <ModernReservationItem 

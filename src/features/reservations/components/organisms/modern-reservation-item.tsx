@@ -28,45 +28,35 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import { Reservation } from "../../types/reservation.types";
-import { useToast } from "@/shared/hooks/use-toast";
+import { ReservationDto } from "@/services/reservation.service";
+import { toast } from "sonner";
+import { StatusBadge } from "../atoms/StatusBadge";
+import { cancelReservation } from "../../api/user-reservations.service";
 
 interface ModernReservationItemProps {
-  reservation: Reservation;
+  reservation: ReservationDto;
   isActive: boolean;
   onCancelled: (id: number) => void;
-  onModify?: (reservation: Reservation) => void;
+  onModify?: (reservation: ReservationDto) => void;
+  highlightManageButton?: boolean; // Nueva prop para destacar el botón
 }
 
-export function ModernReservationItem({ reservation, isActive, onCancelled, onModify }: ModernReservationItemProps) {
+export function ModernReservationItem({ reservation, isActive, onCancelled, onModify, highlightManageButton = false }: ModernReservationItemProps) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { toast } = useToast();
 
   const handleCancelReservation = async () => {
     setIsCancelling(true);
     try {
-      // const success = await cancelReservation(reservation.id);
-      const success = true;
+      const success = await cancelReservation(reservation.id);
       if (success) {
-        toast({
-          title: "Reserva cancelada",
-          description: "La reserva ha sido cancelada exitosamente",
-        });
+        toast.success("La reserva ha sido cancelada exitosamente");
         onCancelled(reservation.id);
       } else {
-        toast({
-          title: "Error",
-          description: "No se pudo cancelar la reserva",
-          variant: "destructive",
-        });
+        toast.error("No se pudo cancelar la reserva");
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ocurrió un error al cancelar la reserva",
-        variant: "destructive",
-      });
+      toast.error("Ocurrió un error al cancelar la reserva");
     } finally {
       setIsCancelling(false);
       setIsConfirmOpen(false);
@@ -97,23 +87,13 @@ export function ModernReservationItem({ reservation, isActive, onCancelled, onMo
           
           {/* Status badge */}
           <div className="absolute top-3 right-3 z-20">
-            <Badge 
-              variant={isActive ? "default" : "secondary"}
-              className={`${
-                isActive
-                  ? "bg-green-500/90 text-white shadow-lg" 
-                  : "bg-gray-500/90 text-white shadow-lg"
-              } backdrop-blur-sm border-0`}
-            >
-              {isActive ? (
-                <>
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Activa
-                </>
-              ) : (
-                "Finalizada"
-              )}
-            </Badge>
+            <div className="backdrop-blur-sm rounded-lg shadow-lg">
+              <StatusBadge 
+                status={reservation.reservationState.state}
+                size="sm"
+                variant="default"
+              />
+            </div>
           </div>
 
           {/* Date badge */}
@@ -141,16 +121,25 @@ export function ModernReservationItem({ reservation, isActive, onCancelled, onMo
 
         {/* Content */}
         <CardContent className="p-5">
-          {/* Activity area and surface */}
+          {/* Cost and capacity info */}
           <div className="flex items-center justify-between mb-3">
-            <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
+            <Badge 
+              variant="outline" 
+              className={`text-xs ${
+                reservation.subScenario.hasCost 
+                  ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+                  : 'bg-green-50 text-green-700 border-green-200'
+              }`}
+            >
               <Tag className="w-3 h-3 mr-1" />
-              {/* {reservation.subScenario.activityArea.name} */}
+              {reservation.subScenario.hasCost ? 'De pago' : 'Gratuito'}
             </Badge>
-            <div className="flex items-center text-gray-500 text-xs">
-              <Users className="w-3 h-3 mr-1" />
-              <span>{reservation.subScenario.numberOfPlayers} jugadores</span>
-            </div>
+            {reservation.subScenario.numberOfPlayers && (
+              <div className="flex items-center text-gray-500 text-xs">
+                <Users className="w-3 h-3 mr-1" />
+                <span>{reservation.subScenario.numberOfPlayers} jugadores</span>
+              </div>
+            )}
           </div>
 
           {/* Date and time */}
@@ -195,12 +184,17 @@ export function ModernReservationItem({ reservation, isActive, onCancelled, onMo
             <div className="space-y-2">
               {onModify && (
                 <Button 
-                  variant="outline" 
-                  className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300
-                           transition-all duration-200 group/btn"
+                  variant="default" 
+                  className={`w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg
+                           transition-all duration-200 group/btn font-medium relative ${
+                    highlightManageButton ? 'animate-pulse ring-4 ring-blue-300 ring-opacity-50' : ''
+                  }`}
                   onClick={() => onModify(reservation)}
                 >
-                  <Settings className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                  {highlightManageButton && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                  )}
+                  <Settings className="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform" />
                   Gestionar reserva
                 </Button>
               )}
@@ -215,11 +209,23 @@ export function ModernReservationItem({ reservation, isActive, onCancelled, onMo
               </Button>
             </div>
           ) : (
-            <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100">
-              <span className="text-gray-500 font-medium">Reserva completada</span>
-              <div className="flex items-center text-gray-400">
-                <span>Ver detalles</span>
-                <ChevronRight className="w-4 h-4 ml-1" />
+            <div className="space-y-2">
+              {onModify && (
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-200 text-gray-600 hover:bg-gray-50
+                           transition-all duration-200 group/btn"
+                  onClick={() => onModify(reservation)}
+                >
+                  <Settings className="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform" />
+                  Gestionar reserva
+                </Button>
+              )}
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-100">
+                <span className="text-gray-500 font-medium">Reserva completada</span>
+                <div className="flex items-center text-gray-400">
+                  <CheckCircle2 className="w-4 h-4 ml-1" />
+                </div>
               </div>
             </div>
           )}
