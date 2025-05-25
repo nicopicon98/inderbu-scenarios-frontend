@@ -6,7 +6,6 @@ import { Search, ChevronDown } from "lucide-react";
 
 import { ActivityArea, Neighborhood } from "../../types/filters.types";
 import { useHomeFilters } from "../../hooks/use-home-filters.hook";
-import { getSubScenarios } from "../../api/home.service";
 
 interface FiltersSectionProps {
   initialActivityAreas: ActivityArea[];

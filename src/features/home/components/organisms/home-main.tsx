@@ -22,51 +22,44 @@ interface HomeMainProps {
   initialMeta: MetaDto;
 }
 
+type Filters = {
+  activityAreaId?: number;
+  neighborhoodId?: number;
+  searchQuery: string;
+  hasCost?: boolean;
+};
+
 export default function HomeMain({
   initialActivityAreas,
   initialNeighborhoods,
   initialSubScenarios,
   initialMeta,
 }: HomeMainProps) {
+  /* ─────────── State global de la página ─────────── */
   const [subScenarios, setSubScenarios] =
     useState<SubScenario[]>(initialSubScenarios);
   const [meta, setMeta] = useState<MetaDto>(initialMeta);
   const [page, setPage] = useState<number>(initialMeta.page);
 
+  /* Filtros y chips visuales */
+  const [filters, setFilters] = useState<Filters>({ searchQuery: "" });
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
   // whenever `page` changes, re‑fetch that page
   useEffect(() => {
-    if (page === initialMeta.page) return; // already have page 1
-    getSubScenarios({ page, limit: initialMeta.limit })
+    console.log("Nuevo valor de filters :", filters);
+    getSubScenarios({ page, limit: initialMeta.limit, ...filters })
       .then(({ data, meta }) => {
-        console.log({ data, meta });
         setSubScenarios(data);
         setMeta(meta);
       })
       .catch(console.error);
-  }, [page]);
+  }, [page, filters]);
 
-  const handleFiltersChange = (filters: {
-    activityAreaId?: number;
-    neighborhoodId?: number;
-    searchQuery?: string;
-    hasCost?: boolean;
-  }) => {
-    const { activityAreaId, neighborhoodId, searchQuery, hasCost } = filters;
-
-    getSubScenarios({
-      page: 1,
-      limit: initialMeta.limit,
-      activityAreaId,
-      neighborhoodId,
-      search: searchQuery,
-      hasCost,
-    })
-      .then(({ data, meta }) => {
-        setSubScenarios(data);
-        setMeta(meta);
-        setPage(1); // Reset to the first page after filtering
-      })
-      .catch(console.error);
+  const clearFilters = () => {
+    setFilters({ searchQuery: "" });
+    setActiveFilters([]);
+    setPage(1);
   };
 
   return (
@@ -76,13 +69,17 @@ export default function HomeMain({
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-gray-50 py-12">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-green-600 
-                       bg-clip-text text-transparent mb-4">
+          <h1
+            className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-green-600 
+                       bg-clip-text text-transparent mb-4"
+          >
             Reserva tu espacio deportivo
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
             Descubre y reserva los mejores{" "}
-            <span className="font-semibold text-blue-600">escenarios deportivos</span>{" "}
+            <span className="font-semibold text-blue-600">
+              escenarios deportivos
+            </span>{" "}
             de Medellín con INDERBÚ
           </p>
           <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
@@ -99,15 +96,21 @@ export default function HomeMain({
       </div>
 
       <div className="container mx-auto px-4 py-12 flex-grow">
-
         <ModernFilters
-          initialActivityAreas={initialActivityAreas!}
-          initialNeighborhoods={initialNeighborhoods!}
-          onFiltersChange={handleFiltersChange}
+          activityAreas={initialActivityAreas}
+          neighborhoods={initialNeighborhoods}
+          filters={filters}
+          setFilters={setFilters}
+          activeFilters={activeFilters}
+          setActiveFilters={setActiveFilters}
+          clearFilters={clearFilters}
         />
-        
+
         <div className="mt-12">
-          <FacilityGrid subScenarios={subScenarios} />
+          <FacilityGrid
+            subScenarios={subScenarios}
+            onClearFilters={clearFilters}
+          />
         </div>
 
         <Pagination
@@ -118,7 +121,6 @@ export default function HomeMain({
       </div>
 
       <Footer />
-      
     </main>
   );
 }

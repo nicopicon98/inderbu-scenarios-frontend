@@ -82,7 +82,7 @@ interface ISubScenarioParams {
   scenarioId?: number;
   page?: number;
   limit?: number;
-  search?: string;
+  searchQuery?: string;
   activityAreaId?: number;
   neighborhoodId?: number;
   hasCost?: boolean;
@@ -92,22 +92,40 @@ export async function getSubScenarios({
   scenarioId = 0,
   page = 1,
   limit = 10,
-  search = "",
+  searchQuery = "",
   activityAreaId = 0,
   neighborhoodId = 0,
   hasCost,
 }: ISubScenarioParams = {}): Promise<SubScenarioList> {
+  console.log("Fetching sub-scenarios with filters:", {
+    scenarioId,
+    page,
+    limit,
+    searchQuery,
+    activityAreaId,
+    neighborhoodId,
+    hasCost,
+  });
   const url = new URL("http://localhost:3001/sub-scenarios");
-  url.searchParams.set("scenarioId", scenarioId.toString() == "0" ? "" : scenarioId.toString());
-  url.searchParams.set("search", search);
-  url.searchParams.set("activityAreaId", activityAreaId.toString() == "0" ? "" : activityAreaId.toString());
-  url.searchParams.set("neighborhoodId", neighborhoodId.toString() == "0" ? "" : neighborhoodId.toString());
-  
+  url.searchParams.set(
+    "scenarioId",
+    scenarioId.toString() == "0" ? "" : scenarioId.toString()
+  );
+  url.searchParams.set("search", searchQuery);
+  url.searchParams.set(
+    "activityAreaId",
+    activityAreaId.toString() == "0" ? "" : activityAreaId.toString()
+  );
+  url.searchParams.set(
+    "neighborhoodId",
+    neighborhoodId.toString() == "0" ? "" : neighborhoodId.toString()
+  );
+
   // Add hasCost filter if provided
   if (hasCost !== undefined) {
     url.searchParams.set("hasCost", hasCost.toString());
   }
-  
+
   // Set default values for page and limit if not provided
   url.searchParams.set("page", page.toString());
   url.searchParams.set("limit", limit.toString());
@@ -118,5 +136,5 @@ export async function getSubScenarios({
   if (!res.ok) {
     throw new Error(`Failed to load sub-scenarios: ${res.status}`);
   }
-  return (resJson) as SubScenarioList;
+  return resJson as SubScenarioList;
 }

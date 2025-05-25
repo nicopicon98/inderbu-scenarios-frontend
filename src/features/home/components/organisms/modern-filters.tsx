@@ -1,163 +1,137 @@
 "use client";
-
-import { useState } from "react";
+import { Dispatch, SetStateAction, useRef } from "react";
 import { Search, MapPin, Tag, X, Filter, DollarSign } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { searchActivityAreas, searchNeighborhoods } from "../../api/search.service";
+import {
+  searchActivityAreas,
+  searchNeighborhoods,
+} from "../../api/search.service";
 import { ActivityArea, Neighborhood } from "../../types/filters.types";
 
+/* ─────────── Tipos ─────────── */
+type Filters = {
+  activityAreaId?: number;
+  neighborhoodId?: number;
+  searchQuery: string;
+  hasCost?: boolean;
+};
+
 interface ModernFiltersProps {
-  initialActivityAreas: ActivityArea[];
-  initialNeighborhoods: Neighborhood[];
-  onFiltersChange: (filters: {
-    activityAreaId?: number;
-    neighborhoodId?: number;
-    searchQuery?: string;
-    hasCost?: boolean;
-  }) => void;
+  activityAreas: ActivityArea[];
+  neighborhoods: Neighborhood[];
+  filters: Filters;
+  setFilters: Dispatch<SetStateAction<Filters>>;
+  activeFilters: string[];
+  setActiveFilters: Dispatch<SetStateAction<string[]>>;
+  clearFilters: () => void;
 }
 
 export default function ModernFilters({
-  initialActivityAreas,
-  initialNeighborhoods,
-  onFiltersChange,
+  activityAreas,
+  neighborhoods,
+  filters,
+  setFilters,
+  activeFilters,
+  setActiveFilters,
+  clearFilters,
 }: ModernFiltersProps) {
-  const [selectedArea, setSelectedArea] = useState<string | number>("all");
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | number>("all");
-  const [selectedCostFilter, setSelectedCostFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-
+  /* ─────────── Handlers ─────────── */
   const handleAreaChange = (value: string | number | null) => {
-    const actualValue = value === null || value === "all" ? "all" : value;
-    setSelectedArea(actualValue);
-    updateFilters({ activityAreaId: actualValue !== "all" ? Number(actualValue) : undefined });
-    
-    if (actualValue !== "all") {
-      // We'll get the display name from the SearchSelect component when available
-      updateActiveFilters('area', actualValue.toString(), `Área seleccionada`);
-    } else {
-      removeActiveFilter('area');
-    }
+    const val = value === "all" || value === null ? undefined : Number(value);
+    setFilters((f) => ({ ...f, activityAreaId: val }));
+    updateChip(
+      "area",
+      val?.toString() ?? "",
+      "Área seleccionada",
+      val !== undefined
+    );
   };
 
   const handleNeighborhoodChange = (value: string | number | null) => {
-    const actualValue = value === null || value === "all" ? "all" : value;
-    setSelectedNeighborhood(actualValue);
-    updateFilters({ neighborhoodId: actualValue !== "all" ? Number(actualValue) : undefined });
-    
-    if (actualValue !== "all") {
-      // We'll get the display name from the SearchSelect component when available
-      updateActiveFilters('neighborhood', actualValue.toString(), `Barrio seleccionado`);
-    } else {
-      removeActiveFilter('neighborhood');
-    }
+    const val = value === "all" || value === null ? undefined : Number(value);
+    setFilters((f) => ({ ...f, neighborhoodId: val }));
+    updateChip(
+      "neighborhood",
+      val?.toString() ?? "",
+      "Barrio seleccionado",
+      val !== undefined
+    );
   };
 
-  const handleCostFilterChange = (value: string) => {
-    setSelectedCostFilter(value);
+  const handleCostChange = (value: string) => {
     let hasCost: boolean | undefined;
-    
-    if (value === "paid") {
-      hasCost = true;
-      updateActiveFilters('cost', value, "Solo de pago");
-    } else if (value === "free") {
-      hasCost = false;
-      updateActiveFilters('cost', value, "Solo gratuitos");
-    } else {
-      hasCost = undefined;
-      removeActiveFilter('cost');
+    if (value === "paid") hasCost = true;
+    else if (value === "free") hasCost = false;
+    setFilters((f) => ({ ...f, hasCost }));
+    updateChip(
+      "cost",
+      value,
+      value === "paid"
+        ? "Solo de pago"
+        : value === "free"
+        ? "Solo gratuitos"
+        : "",
+      value !== "all"
+    );
+  };
+
+  /* Debounce de búsqueda */
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const handleSearchChange = (q: string) => {
+    if (searchTimeout.current !== null) {
+      clearTimeout(searchTimeout.current);
     }
-    
-    updateFilters({ hasCost });
+    searchTimeout.current = setTimeout(() => {
+      setFilters((f) => ({ ...f, searchQuery: q }));
+      updateChip("search", q, `"${q}"`, q.length > 0);
+    }, 0);
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    // Debounce search
-    const timeoutId = setTimeout(() => {
-      updateFilters({ searchQuery: value });
-      if (value) {
-        updateActiveFilters('search', value, `"${value}"`);
-      } else {
-        removeActiveFilter('search');
-      }
-    }, 300);
-    
-    return () => clearTimeout(timeoutId);
-  };
-
-  const updateFilters = (newFilters: any) => {
-    onFiltersChange({
-      activityAreaId: selectedArea && selectedArea !== "all" ? Number(selectedArea) : undefined,
-      neighborhoodId: selectedNeighborhood && selectedNeighborhood !== "all" ? Number(selectedNeighborhood) : undefined,
-      searchQuery,
-      hasCost: selectedCostFilter === "paid" ? true : selectedCostFilter === "free" ? false : undefined,
-      ...newFilters,
+  /* ─────────── Chips visuales ─────────── */
+  const updateChip = (
+    type: string,
+    value: string,
+    display: string,
+    add: boolean
+  ) => {
+    setActiveFilters((chips) => {
+      const next = [...chips.filter((c) => !c.startsWith(`${type}:`))];
+      if (add) next.push(`${type}:${value}:${display}`);
+      return next;
     });
   };
 
-  const updateActiveFilters = (type: string, value: string, displayName: string) => {
-    const newFilters = [...activeFilters];
-    const filterIndex = newFilters.findIndex(f => f.startsWith(`${type}:`));
-    
-    if (filterIndex >= 0) {
-      if (value) {
-        newFilters[filterIndex] = `${type}:${value}:${displayName}`;
-      } else {
-        newFilters.splice(filterIndex, 1);
-      }
-    } else if (value) {
-      newFilters.push(`${type}:${value}:${displayName}`);
-    }
-    
-    setActiveFilters(newFilters);
+  const removeChip = (chip: string) => {
+    const [type] = chip.split(":");
+    if (type === "area") handleAreaChange("all");
+    else if (type === "neighborhood") handleNeighborhoodChange("all");
+    else if (type === "cost") handleCostChange("all");
+    else if (type === "search") setFilters((f) => ({ ...f, searchQuery: "" }));
+    setActiveFilters((c) => c.filter((x) => x !== chip));
   };
 
-  const removeActiveFilter = (type: string) => {
-    setActiveFilters(prev => prev.filter(f => !f.startsWith(`${type}:`)));
-  };
-
-  const clearAllFilters = () => {
-    setSelectedArea("all");
-    setSelectedNeighborhood("all");
-    setSelectedCostFilter("all");
-    setSearchQuery("");
-    setActiveFilters([]);
-    onFiltersChange({});
-  };
-
-  const clearFilter = (filterToRemove: string) => {
-    const [type] = filterToRemove.split(':');
-    if (type === 'area') {
-      setSelectedArea("all");
-      updateFilters({ activityAreaId: undefined });
-    } else if (type === 'neighborhood') {
-      setSelectedNeighborhood("all");
-      updateFilters({ neighborhoodId: undefined });
-    } else if (type === 'cost') {
-      setSelectedCostFilter("all");
-      updateFilters({ hasCost: undefined });
-    } else if (type === 'search') {
-      setSearchQuery("");
-      updateFilters({ searchQuery: "" });
-    }
-    removeActiveFilter(type);
-  };
-
+  /* ─────────── Render ─────────── */
   return (
     <div className="bg-white rounded-xl border border-gray-200/60 p-6 shadow-sm backdrop-blur-sm">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Filter className="w-5 h-5 text-gray-600" />
-        <h2 className="text-lg font-semibold text-gray-800">Filtrar escenarios</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Filtrar escenarios
+        </h2>
       </div>
 
-      {/* Main filters row */}
+      {/* Fila principal */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
         {/* Search */}
         <div className="md:col-span-4">
@@ -165,27 +139,26 @@ export default function ModernFilters({
             Buscar por nombre
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Ej: Polideportivo, Cancha..."
-              value={searchQuery}
+              value={filters.searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 
-                         transition-all duration-200 bg-gray-50/50 hover:bg-white"
+              className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white"
             />
           </div>
         </div>
 
-        {/* Activity Area - SearchSelect */}
+        {/* Área deportiva */}
         <div className="md:col-span-3">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
             Área deportiva
           </label>
           <SearchSelect
             placeholder="Todas las áreas"
-            searchPlaceholder="Ej: fútbol, baloncesto, natación..."
+            searchPlaceholder="Ej: fútbol, baloncesto..."
             icon={Tag}
-            value={selectedArea}
+            value={filters.activityAreaId ?? "all"}
             onValueChange={handleAreaChange}
             onSearch={searchActivityAreas}
             emptyMessage="No se encontraron áreas deportivas"
@@ -193,16 +166,16 @@ export default function ModernFilters({
           />
         </div>
 
-        {/* Neighborhood - SearchSelect */}
+        {/* Barrio */}
         <div className="md:col-span-2">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
             Barrio
           </label>
           <SearchSelect
             placeholder="Todos"
-            searchPlaceholder="Ej: centro, laureles, poblado..."
+            searchPlaceholder="Ej: centro, laureles..."
             icon={MapPin}
-            value={selectedNeighborhood}
+            value={filters.neighborhoodId ?? "all"}
             onValueChange={handleNeighborhoodChange}
             onSearch={searchNeighborhoods}
             emptyMessage="No se encontraron barrios"
@@ -210,14 +183,22 @@ export default function ModernFilters({
           />
         </div>
 
-        {/* Cost Filter */}
+        {/* Costo */}
         <div className="md:col-span-2">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
             Costo
           </label>
-          <Select value={selectedCostFilter} onValueChange={handleCostFilterChange}>
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 
-                                   bg-gray-50/50 hover:bg-white transition-all duration-200">
+          <Select
+            value={
+              filters.hasCost === undefined
+                ? "all"
+                : filters.hasCost
+                ? "paid"
+                : "free"
+            }
+            onValueChange={handleCostChange}
+          >
+            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-all duration-200">
               <div className="flex items-center">
                 <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
                 <SelectValue placeholder="Todos" />
@@ -231,14 +212,13 @@ export default function ModernFilters({
           </Select>
         </div>
 
-        {/* Clear button */}
+        {/* Botón limpiar */}
         <div className="md:col-span-1">
           {activeFilters.length > 0 && (
             <Button
               variant="outline"
-              onClick={clearAllFilters}
-              className="w-full border-gray-300 text-gray-600 hover:bg-gray-50 
-                         transition-all duration-200"
+              onClick={clearFilters}
+              className="w-full border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-200"
             >
               Limpiar
             </Button>
@@ -246,22 +226,20 @@ export default function ModernFilters({
         </div>
       </div>
 
-      {/* Active filters */}
+      {/* Chips */}
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-gray-100">
           <span className="text-sm text-gray-500 mr-2">Filtros activos:</span>
-          {activeFilters.map((filter) => {
-            const [type, value, displayName] = filter.split(':');
-
+          {activeFilters.map((chip) => {
+            const [, , display] = chip.split(":");
             return (
               <Badge
-                key={filter}
+                key={chip}
                 variant="secondary"
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer 
-                         transition-all duration-200 group px-3 py-1"
-                onClick={() => clearFilter(filter)}
+                className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer transition-all duration-200 group px-3 py-1"
+                onClick={() => removeChip(chip)}
               >
-                {displayName}
+                {display}
                 <X className="w-3 h-3 ml-1 group-hover:text-blue-900" />
               </Badge>
             );
