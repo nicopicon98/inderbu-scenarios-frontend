@@ -85,6 +85,7 @@ interface ISubScenarioParams {
   search?: string;
   activityAreaId?: number;
   neighborhoodId?: number;
+  hasCost?: boolean;
 }
 
 export async function getSubScenarios({
@@ -94,12 +95,19 @@ export async function getSubScenarios({
   search = "",
   activityAreaId = 0,
   neighborhoodId = 0,
+  hasCost,
 }: ISubScenarioParams = {}): Promise<SubScenarioList> {
   const url = new URL("http://localhost:3001/sub-scenarios");
   url.searchParams.set("scenarioId", scenarioId.toString() == "0" ? "" : scenarioId.toString());
   url.searchParams.set("search", search);
   url.searchParams.set("activityAreaId", activityAreaId.toString() == "0" ? "" : activityAreaId.toString());
   url.searchParams.set("neighborhoodId", neighborhoodId.toString() == "0" ? "" : neighborhoodId.toString());
+  
+  // Add hasCost filter if provided
+  if (hasCost !== undefined) {
+    url.searchParams.set("hasCost", hasCost.toString());
+  }
+  
   // Set default values for page and limit if not provided
   url.searchParams.set("page", page.toString());
   url.searchParams.set("limit", limit.toString());

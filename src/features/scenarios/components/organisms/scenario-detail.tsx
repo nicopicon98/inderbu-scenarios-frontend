@@ -171,7 +171,7 @@ export function ScenarioDetail({ subScenario }: ScenarioDetailProps) {
                   <FiTag className="text-teal-600" /> Costo
                 </h3>
                 <p className="text-gray-600 text-sm pt-1">
-                  {subScenario.hasCost ? "Con costo" : "Gratuito"}
+                  {subScenario.hasCost ? "$pago" : "Gratuito"}
                 </p>
               </div>
             </div>

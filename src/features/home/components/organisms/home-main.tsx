@@ -9,10 +9,9 @@ import {
 } from "../../types/filters.types";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { MainCarousel } from "@/shared/components/organisms/main-carousel";
-import { SubHeader } from "@/shared/components/organisms/sub-header";
-import { Header } from "@/shared/components/organisms/header";
+import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
 import { getSubScenarios } from "../../api/home.service";
-import FiltersSection from "./filters-section";
+import ModernFilters from "./modern-filters";
 import FacilityGrid from "./facility-grid";
 import Footer from "./footer";
 
@@ -50,8 +49,9 @@ export default function HomeMain({
     activityAreaId?: number;
     neighborhoodId?: number;
     searchQuery?: string;
+    hasCost?: boolean;
   }) => {
-    const { activityAreaId, neighborhoodId, searchQuery } = filters;
+    const { activityAreaId, neighborhoodId, searchQuery, hasCost } = filters;
 
     getSubScenarios({
       page: 1,
@@ -59,6 +59,7 @@ export default function HomeMain({
       activityAreaId,
       neighborhoodId,
       search: searchQuery,
+      hasCost,
     })
       .then(({ data, meta }) => {
         setSubScenarios(data);
@@ -70,24 +71,44 @@ export default function HomeMain({
 
   return (
     <main className="min-h-screen flex flex-col w-full">
-      <Header />
-      <SubHeader />
-      <MainCarousel />
+      <UnifiedHeader />
 
-      <div className="container mx-auto px-4 py-8 flex-grow">
-        <h1 className="text-4xl font-bold text-teal-700 mb-4">Reservas</h1>
-        <p className="text-gray-600 mb-8">
-          Encuentra los{" "}
-          <span className="font-medium">Escenarios deportivos</span> disponibles
-          del INDERBÚ.
-        </p>
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-blue-50 via-white to-gray-50 py-12">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-green-600 
+                       bg-clip-text text-transparent mb-4">
+            Reserva tu espacio deportivo
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Descubre y reserva los mejores{" "}
+            <span className="font-semibold text-blue-600">escenarios deportivos</span>{" "}
+            de Medellín con INDERBÚ
+          </p>
+          <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Reservas gratuitas disponibles</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span>Múltiples ubicaciones</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <FiltersSection
+      <div className="container mx-auto px-4 py-12 flex-grow">
+
+        <ModernFilters
           initialActivityAreas={initialActivityAreas!}
           initialNeighborhoods={initialNeighborhoods!}
           onFiltersChange={handleFiltersChange}
         />
-        <FacilityGrid subScenarios={subScenarios} />
+        
+        <div className="mt-12">
+          <FacilityGrid subScenarios={subScenarios} />
+        </div>
 
         <Pagination
           currentPage={page}

@@ -48,47 +48,68 @@ export function Pagination({
 
   const pageNumbers = getPageNumbers();
 
+  if (totalPages <= 1) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1">
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={currentPage === 1}
-        className="px-3 border-gray-300 cursor-pointer hover:bg-gray-100"
-        onClick={() => onPageChange(currentPage - 1)}
-      >
-        Anterior
-      </Button>
+    <div className="flex flex-col items-center gap-4 py-8">
+      {/* Page info */}
+      <div className="text-sm text-gray-600">
+        Página <span className="font-medium">{currentPage}</span> de{" "}
+        <span className="font-medium">{totalPages}</span>
+      </div>
+      
+      {/* Navigation */}
+      <div className="flex items-center justify-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === 1}
+          className="px-4 py-2 border-gray-200 text-gray-600 hover:bg-gray-50 
+                   disabled:opacity-50 disabled:cursor-not-allowed 
+                   transition-all duration-200 rounded-lg"
+          onClick={() => onPageChange(currentPage - 1)}
+        >
+          ← Anterior
+        </Button>
 
-      {pageNumbers.map((page, index) =>
-        typeof page === "number" ? (
-          <Button
-            key={index}
-            variant={currentPage === page ? "default" : "outline"}
-            size="sm"
-            className={`hover:bg-gray-100 cursor-pointer w-8 h-8 p-0 border-gray-300 ${
-              currentPage === page ? "bg-lime-500 hover:bg-lime-600" : ""
-            }`}
-            onClick={() => onPageChange(page)}
-          >
-            {page}
-          </Button>
-        ) : (
-          <span key={index} className="px-1">
-            ...
-          </span>
-        )
-      )}
+        <div className="flex items-center gap-1">
+          {pageNumbers.map((page, index) =>
+            typeof page === "number" ? (
+              <Button
+                key={index}
+                variant={currentPage === page ? "default" : "ghost"}
+                size="sm"
+                className={`w-10 h-10 p-0 rounded-lg transition-all duration-200 ${
+                  currentPage === page 
+                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm" 
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+                onClick={() => onPageChange(page)}
+              >
+                {page}
+              </Button>
+            ) : (
+              <span key={index} className="px-2 text-gray-400 text-sm">
+                ⋯
+              </span>
+            )
+          )}
+        </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={currentPage === totalPages}
-        className="px-3 border-gray-300 cursor-pointer hover:bg-gray-100"
-        onClick={() => onPageChange(currentPage + 1)}
-      >
-        Siguiente
-      </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 border-gray-200 text-gray-600 hover:bg-gray-50 
+                   disabled:opacity-50 disabled:cursor-not-allowed 
+                   transition-all duration-200 rounded-lg"
+          onClick={() => onPageChange(currentPage + 1)}
+        >
+          Siguiente →
+        </Button>
+      </div>
     </div>
   );
 }

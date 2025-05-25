@@ -15,8 +15,7 @@ import {
   fetchScenarioById,
   ScenarioWithRelations,
 } from "@/features/scenarios/api/scenario.service";
-import { SubHeader } from "@/shared/components/organisms/sub-header";
-import { Header } from "@/shared/components/organisms/header";
+import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
 import { Badge } from "@/shared/ui/badge";
 import { ScenarioDetail } from '@/features/scenarios/components/organisms/scenario-detail';
 
@@ -29,8 +28,7 @@ export default async function ScenarioPage({ params: { id } }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      <SubHeader />
+      <UnifiedHeader />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header básico */}
@@ -55,7 +53,7 @@ export default async function ScenarioPage({ params: { id } }: PageProps) {
               </Badge>
               <Badge className="flex items-center bg-green-50 text-green-700 border-green-200">
                 <FiTag className="h-4 w-4 mr-1" />
-                {subscenario.hasCost ? "Con costo" : "Gratuito"}
+                {subscenario.hasCost ? "De pago" : "Gratuito"}
               </Badge>
             </div>
           </div>
