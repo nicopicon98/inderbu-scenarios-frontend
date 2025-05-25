@@ -80,7 +80,7 @@ export default function HomeMain({
             <span className="font-semibold text-blue-600">
               escenarios deportivos
             </span>{" "}
-            de Medellín con INDERBÚ
+            de Bucaramanga y su area metropolitana con INDERBÚ
           </p>
           <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
             <div className="flex items-center gap-2">

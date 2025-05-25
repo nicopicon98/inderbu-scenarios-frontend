@@ -13,7 +13,8 @@ import {
   CheckCircle2, 
   Tag,
   Users,
-  ChevronRight
+  ChevronRight,
+  Settings
 } from "lucide-react";
 
 import { 
@@ -34,9 +35,10 @@ interface ModernReservationItemProps {
   reservation: Reservation;
   isActive: boolean;
   onCancelled: (id: number) => void;
+  onModify?: (reservation: Reservation) => void;
 }
 
-export function ModernReservationItem({ reservation, isActive, onCancelled }: ModernReservationItemProps) {
+export function ModernReservationItem({ reservation, isActive, onCancelled, onModify }: ModernReservationItemProps) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { toast } = useToast();
@@ -73,7 +75,9 @@ export function ModernReservationItem({ reservation, isActive, onCancelled }: Mo
 
   // Format the date for display
   const formattedDate = format(new Date(reservation.reservationDate), "EEEE d 'de' MMMM", { locale: es });
-  const formattedShortDate = format(new Date(reservation.reservationDate), "dd MMM", { locale: es });
+  const formattedShortDate = format(new Date(reservation.reservationDate), "dd MMM", { locale: es }); 
+
+  console.log("Reservation", reservation);
 
   return (
     <>
@@ -141,7 +145,7 @@ export function ModernReservationItem({ reservation, isActive, onCancelled }: Mo
           <div className="flex items-center justify-between mb-3">
             <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
               <Tag className="w-3 h-3 mr-1" />
-              {reservation.subScenario.activityArea.name}
+              {/* {reservation.subScenario.activityArea.name} */}
             </Badge>
             <div className="flex items-center text-gray-500 text-xs">
               <Users className="w-3 h-3 mr-1" />
@@ -188,15 +192,28 @@ export function ModernReservationItem({ reservation, isActive, onCancelled }: Mo
 
           {/* Action */}
           {isActive ? (
-            <Button 
-              variant="outline" 
-              className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300
-                       transition-all duration-200 group/btn"
-              onClick={() => setIsConfirmOpen(true)}
-            >
-              <X className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-              Cancelar reserva
-            </Button>
+            <div className="space-y-2">
+              {onModify && (
+                <Button 
+                  variant="outline" 
+                  className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300
+                           transition-all duration-200 group/btn"
+                  onClick={() => onModify(reservation)}
+                >
+                  <Settings className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                  Gestionar reserva
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300
+                         transition-all duration-200 group/btn"
+                onClick={() => setIsConfirmOpen(true)}
+              >
+                <X className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                Cancelar reserva
+              </Button>
+            </div>
           ) : (
             <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100">
               <span className="text-gray-500 font-medium">Reserva completada</span>

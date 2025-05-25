@@ -186,6 +186,8 @@ const ReservationService = {
     }
     const responseData = await response.json();
 
+    console.log({ responseData });
+
     // Mapeamos los datos para ser compatibles con el código existente
     const reservations = responseData.data.map((item: ReservationDto) => {
       return {

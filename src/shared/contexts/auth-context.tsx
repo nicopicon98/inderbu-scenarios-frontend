@@ -9,6 +9,7 @@ import {
 } from "react";
 
 interface User {
+  id: number;
   email: string;
   role?: number;
 }
@@ -18,7 +19,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   authReady: boolean;                 // ← bandera para saber cuándo terminó el chequeo
-  login: (email: string, role: number, token: string) => void;
+  login: (id: number, email: string, role: number, token: string) => void;
   logout: () => void;
 }
 
@@ -37,7 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken) {
       try {
         const payload = JSON.parse(atob(storedToken.split(".")[1]));
-        setUser({ email: payload.email, role: payload.role });
+        console.log("JWT Payload:", payload); // Debug log
+        
+        const userId = payload.userId || payload.id || payload.sub;
+        if (!userId) {
+          console.error("No user ID found in token payload", payload);
+          localStorage.removeItem("auth_token");
+          setAuthReady(true);
+          return;
+        }
+        
+        setUser({ 
+          id: userId,
+          email: payload.email, 
+          role: payload.role 
+        });
         setToken(storedToken);
       } catch (err) {
         console.error("Failed to parse stored token:", err);
@@ -49,8 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthReady(true);
   }, []);
 
-  const login = (email: string, role: number, token: string) => {
-    setUser({ email, role });
+  const login = (id: number, email: string, role: number, token: string) => {
+    console.log("Login called with:", { id, email, role }); // Debug log
+    setUser({ id, email, role });
     setToken(token);
     localStorage.setItem("auth_token", token);
   };
