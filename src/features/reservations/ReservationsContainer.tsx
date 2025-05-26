@@ -50,7 +50,8 @@ export const ReservationsContainer = () => {
 
   // Verificar si hay filtros activos
   const hasActiveFilters = filters.scenarioId || filters.activityAreaId || 
-                          filters.neighborhoodId || filters.userId;
+                          filters.neighborhoodId || filters.userId ||
+                          filters.dateFrom || filters.dateTo;
 
   return (
     <section className="space-y-6">

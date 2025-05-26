@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 
 import {
   Card,
@@ -58,9 +58,81 @@ import {
   Neighborhood,
   PageOptions,
   PageMeta,
+  CreateScenarioDto,
+  UpdateScenarioDto,
 } from "@/services/api";
+import { toast } from "sonner";
 
 import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
+
+// ⭐ COMPONENTES SEPARADOS PARA EVITAR RE-CREACIÓN
+interface ValidatedInputProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;
+}
+
+const ValidatedInput = memo(({ 
+  id, label, value, onChange, error, placeholder, required, className 
+}: ValidatedInputProps) => (
+  <div className="space-y-1">
+    <Label htmlFor={id} className="text-sm font-medium">
+      {label}{required && <span className="text-red-500 ml-1">*</span>}
+    </Label>
+    <Input
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`bg-white h-9 ${error ? 'border-red-500 focus:border-red-500' : ''} ${className || ''}`}
+    />
+    {error && <p className="text-sm text-red-600">{error}</p>}
+  </div>
+));
+ValidatedInput.displayName = 'ValidatedInput';
+
+interface ValidatedSelectProps {
+  id: string;
+  label: string;
+  value: string | number;
+  onChange: (value: string | number) => void;
+  options: { id: number; name: string }[];
+  error?: string;
+  placeholder?: string;
+  required?: boolean;
+}
+
+const ValidatedSelect = memo(({ 
+  id, label, value, onChange, options, error, placeholder, required 
+}: ValidatedSelectProps) => (
+  <div className="space-y-1">
+    <Label htmlFor={id} className="text-sm font-medium">
+      {label}{required && <span className="text-red-500 ml-1">*</span>}
+    </Label>
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        error ? 'border-red-500 focus-visible:ring-red-500' : ''
+      }`}
+    >
+      <option value="">{placeholder || 'Seleccione una opción...'}</option>
+      {options.map(option => (
+        <option key={option.id} value={option.id}>
+          {option.name}
+        </option>
+      ))}
+    </select>
+    {error && <p className="text-sm text-red-600">{error}</p>}
+  </div>
+));
+ValidatedSelect.displayName = 'ValidatedSelect';
 
 // Interfaz para nuestro estado y filtros
 interface FilterState {
@@ -68,6 +140,21 @@ interface FilterState {
   neighborhoodId?: number;
   page: number;
   limit: number;
+}
+
+// Interfaces para formularios
+interface FormData {
+  name: string;
+  address: string;
+  neighborhoodId: number | '';
+  description?: string;
+}
+
+// Estado para errores de validación
+interface FormErrors {
+  name?: string;
+  address?: string;
+  neighborhoodId?: string;
 }
 
 export default function FacilityManagement() {
@@ -94,6 +181,24 @@ export default function FacilityManagement() {
     limit: 7,
   });
 
+  // Estados para formularios
+  const [createFormData, setCreateFormData] = useState<FormData>({
+    name: '',
+    address: '',
+    neighborhoodId: '',
+    description: ''
+  });
+
+  const [updateFormData, setUpdateFormData] = useState<FormData>({
+    name: '',
+    address: '',
+    neighborhoodId: '',
+    description: ''
+  });
+
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Manejar búsqueda
   const handleSearch = async (searchTerm: string) => {
     const newFilters = { ...filters, search: searchTerm, page: 1 };
@@ -119,6 +224,176 @@ export default function FacilityManagement() {
     setFilters(clearedFilters);
     await fetchScenarios(clearedFilters);
   };
+
+  // Función de validación
+  const validateForm = (data: FormData): FormErrors => {
+    const errors: FormErrors = {};
+    
+    if (!data.name.trim()) {
+      errors.name = 'El nombre es requerido';
+    } else if (data.name.length < 3) {
+      errors.name = 'El nombre debe tener al menos 3 caracteres';
+    } else if (data.name.length > 100) {
+      errors.name = 'El nombre no puede exceder 100 caracteres';
+    }
+    
+    if (!data.address.trim()) {
+      errors.address = 'La dirección es requerida';
+    } else if (data.address.length < 10) {
+      errors.address = 'La dirección debe tener al menos 10 caracteres';
+    } else if (data.address.length > 150) {
+      errors.address = 'La dirección no puede exceder 150 caracteres';
+    }
+    
+    if (!data.neighborhoodId) {
+      errors.neighborhoodId = 'Debe seleccionar un barrio';
+    }
+    
+    return errors;
+  };
+
+  // Handler para crear scenario
+  const handleCreateScenario = async () => {
+    try {
+      setIsSubmitting(true);
+      setFormErrors({});
+      
+      // Validar formulario
+      const errors = validateForm(createFormData);
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return;
+      }
+      
+      // Preparar datos para el backend
+      const createData: CreateScenarioDto = {
+        name: createFormData.name.trim(),
+        address: createFormData.address.trim(),
+        neighborhoodId: Number(createFormData.neighborhoodId)
+      };
+      
+      // Crear scenario
+      const newScenario = await scenarioService.create(createData);
+      
+      // Actualizar lista
+      await fetchScenarios(filters);
+      
+      // Limpiar formulario
+      setCreateFormData({
+        name: '',
+        address: '',
+        neighborhoodId: '',
+        description: ''
+      });
+      
+      // Cerrar modal
+      setIsModalOpen(false);
+      
+      // Mostrar notificación de éxito
+      toast.success("Escenario creado exitosamente", {
+        description: `${newScenario.name} ha sido registrado en el sistema.`
+      });
+      
+    } catch (error: any) {
+      console.error('Error creating scenario:', error);
+      toast.error("Error al crear escenario", {
+        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handler para actualizar scenario
+  const handleUpdateScenario = async () => {
+    if (!selectedScenario) return;
+    
+    try {
+      setIsSubmitting(true);
+      setFormErrors({});
+      
+      // Validar formulario
+      const errors = validateForm(updateFormData);
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return;
+      }
+      
+      // Preparar datos para el backend (solo campos que cambiaron)
+      const updateData: UpdateScenarioDto = {};
+      
+      if (updateFormData.name.trim() !== selectedScenario.name) {
+        updateData.name = updateFormData.name.trim();
+      }
+      
+      if (updateFormData.address.trim() !== selectedScenario.address) {
+        updateData.address = updateFormData.address.trim();
+      }
+      
+      if (Number(updateFormData.neighborhoodId) !== selectedScenario.neighborhood?.id) {
+        updateData.neighborhoodId = Number(updateFormData.neighborhoodId);
+      }
+      
+      // Solo actualizar si hay cambios
+      if (Object.keys(updateData).length === 0) {
+        toast.info("No se detectaron cambios", {
+          description: "No hay modificaciones para guardar."
+        });
+        setIsDrawerOpen(false);
+        return;
+      }
+      
+      // Actualizar scenario
+      const updatedScenario = await scenarioService.update(selectedScenario.id, updateData);
+      
+      // Actualizar lista
+      await fetchScenarios(filters);
+      
+      // Cerrar modal
+      setIsDrawerOpen(false);
+      setSelectedScenario(null);
+      
+      // Mostrar notificación de éxito
+      toast.success("Escenario actualizado exitosamente", {
+        description: `${updatedScenario.name} ha sido actualizado.`
+      });
+      
+    } catch (error: any) {
+      console.error('Error updating scenario:', error);
+      toast.error("Error al actualizar escenario", {
+        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Funciones utilitarias para manejar cambios en formularios (optimizadas con useCallback)
+  const handleCreateFieldChange = useCallback((field: keyof FormData, value: string | number) => {
+    setCreateFormData(prev => ({ ...prev, [field]: value }));
+    // Limpiar error específico cuando el usuario empiece a escribir
+    setFormErrors(prev => {
+      if (prev[field as keyof FormErrors]) {
+        const newErrors = { ...prev };
+        delete newErrors[field as keyof FormErrors];
+        return newErrors;
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleUpdateFieldChange = useCallback((field: keyof FormData, value: string | number) => {
+    setUpdateFormData(prev => ({ ...prev, [field]: value }));
+    // Limpiar error específico cuando el usuario empiece a escribir
+    setFormErrors(prev => {
+      if (prev[field as keyof FormErrors]) {
+        const newErrors = { ...prev };
+        delete newErrors[field as keyof FormErrors];
+        return newErrors;
+      }
+      return prev;
+    });
+  }, []);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -248,10 +523,20 @@ export default function FacilityManagement() {
     await fetchScenarios(newFilters);
   };
 
+  // Handler para abrir modal de edición (actualizar datos)
   const handleOpenDrawer = (scenario: Scenario) => {
     setSelectedScenario(scenario);
+    setUpdateFormData({
+      name: scenario.name,
+      address: scenario.address,
+      neighborhoodId: scenario.neighborhood?.id || '',
+      description: scenario.description || ''
+    });
+    setFormErrors({});
     setIsDrawerOpen(true);
   };
+
+
 
   // Columnas para la tabla
   const columns = [
@@ -617,9 +902,7 @@ export default function FacilityManagement() {
           <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-xl text-teal-700">
-                {selectedScenario
-                  ? `Editar Escenario: ${selectedScenario.name}`
-                  : "Editar Escenario"}
+                {selectedScenario ? `Editar Escenario: ${selectedScenario.name}` : "Editar Escenario"}
               </DialogTitle>
             </DialogHeader>
 
@@ -633,30 +916,25 @@ export default function FacilityManagement() {
                       Ubicación
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label htmlFor="venue-neighborhood" className="text-sm font-medium">Barrio*</Label>
-                        <select
-                          id="venue-neighborhood"
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          defaultValue={selectedScenario.neighborhood?.id}
-                        >
-                          <option value="">Seleccione barrio...</option>
-                          {neighborhoods.map(n => (
-                            <option key={n.id} value={n.id}>
-                              {n.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <ValidatedSelect
+                        id="venue-neighborhood"
+                        label="Barrio"
+                        value={updateFormData.neighborhoodId}
+                        onChange={(value) => handleUpdateFieldChange('neighborhoodId', value)}
+                        options={neighborhoods}
+                        error={formErrors.neighborhoodId}
+                        placeholder="Seleccione barrio..."
+                        required
+                      />
                       
-                      <div className="space-y-1">
-                        <Label htmlFor="venue-address" className="text-sm font-medium">Dirección*</Label>
-                        <Input
-                          id="venue-address"
-                          defaultValue={selectedScenario.address}
-                          className="bg-white h-9"
-                        />
-                      </div>
+                      <ValidatedInput
+                        id="venue-address"
+                        label="Dirección"
+                        value={updateFormData.address}
+                        onChange={(value) => handleUpdateFieldChange('address', value)}
+                        error={formErrors.address}
+                        required
+                      />
                     </div>
                   </div>
 
@@ -673,48 +951,24 @@ export default function FacilityManagement() {
                       Información General
                     </h3>
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="space-y-1">
-                        <Label htmlFor="venue-name" className="text-sm font-medium">Nombre del Escenario*</Label>
-                        <Input
-                          id="venue-name"
-                          defaultValue={selectedScenario.name}
-                          className="bg-white h-9"
-                        />
-                      </div>
+                      <ValidatedInput
+                        id="venue-name"
+                        label="Nombre del Escenario"
+                        value={updateFormData.name}
+                        onChange={(value) => handleUpdateFieldChange('name', value)}
+                        error={formErrors.name}
+                        required
+                      />
                       
                       <div className="space-y-1">
                         <Label htmlFor="venue-description" className="text-sm font-medium">Descripción</Label>
                         <Textarea
                           id="venue-description"
+                          value={updateFormData.description || ''}
+                          onChange={(e) => handleUpdateFieldChange('description', e.target.value)}
                           placeholder="Descripción del escenario"
                           className="bg-white resize-none h-20 min-h-[80px]"
-                          defaultValue={selectedScenario.description || ""}
                         />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Configuración */}
-                  <div className="bg-gray-50 p-3 rounded-md">
-                    <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                      </svg>
-                      Configuración
-                    </h3>
-                    <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
-                      <Label htmlFor="venue-status" className="text-sm font-medium">Estado Activo</Label>
-                      <div className="flex flex-col items-end">
-                        <Switch 
-                          id="venue-status" 
-                          defaultChecked={selectedScenario.status === "active"}
-                        />
-                        <span className="text-xs text-gray-500 mt-1">
-                          {selectedScenario.status === "active" 
-                            ? "El escenario está disponible para reservas"
-                            : "El escenario no está disponible actualmente"}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -725,17 +979,31 @@ export default function FacilityManagement() {
             <DialogFooter className="flex justify-end gap-3 pt-3">
               <Button 
                 variant="outline"
-                onClick={() => setIsDrawerOpen(false)}
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  setSelectedScenario(null);
+                  setFormErrors({});
+                }}
                 className="px-4"
                 size="sm"
+                disabled={isSubmitting}
               >
                 Cancelar
               </Button>
               <Button
                 className="bg-teal-600 hover:bg-teal-700 px-4" 
                 size="sm"
+                onClick={handleUpdateScenario}
+                disabled={isSubmitting}
               >
-                Guardar
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -756,29 +1024,26 @@ export default function FacilityManagement() {
                   Ubicación
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="new-venue-neighborhood" className="text-sm font-medium">Barrio*</Label>
-                    <select
-                      id="new-venue-neighborhood"
-                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="">Seleccione barrio...</option>
-                      {neighborhoods.map(n => (
-                        <option key={n.id} value={n.id}>
-                          {n.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <ValidatedSelect
+                    id="new-venue-neighborhood"
+                    label="Barrio"
+                    value={createFormData.neighborhoodId}
+                    onChange={(value) => handleCreateFieldChange('neighborhoodId', value)}
+                    options={neighborhoods}
+                    error={formErrors.neighborhoodId}
+                    placeholder="Seleccione barrio..."
+                    required
+                  />
                   
-                  <div className="space-y-1">
-                    <Label htmlFor="new-venue-address" className="text-sm font-medium">Dirección*</Label>
-                    <Input 
-                      id="new-venue-address" 
-                      placeholder="Dirección completa" 
-                      className="bg-white h-9"
-                    />
-                  </div>
+                  <ValidatedInput
+                    id="new-venue-address"
+                    label="Dirección"
+                    value={createFormData.address}
+                    onChange={(value) => handleCreateFieldChange('address', value)}
+                    error={formErrors.address}
+                    placeholder="Dirección completa"
+                    required
+                  />
                 </div>
               </div>
 
@@ -795,38 +1060,25 @@ export default function FacilityManagement() {
                   Información General
                 </h3>
                 <div className="grid grid-cols-1 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="new-venue-name" className="text-sm font-medium">Nombre del Escenario*</Label>
-                    <Input id="new-venue-name" placeholder="Ingrese nombre del escenario" className="bg-white h-9" />
-                  </div>
+                  <ValidatedInput
+                    id="new-venue-name"
+                    label="Nombre del Escenario"
+                    value={createFormData.name}
+                    onChange={(value) => handleCreateFieldChange('name', value)}
+                    error={formErrors.name}
+                    placeholder="Ingrese nombre del escenario"
+                    required
+                  />
                   
                   <div className="space-y-1">
                     <Label htmlFor="new-venue-description" className="text-sm font-medium">Descripción</Label>
                     <Textarea
                       id="new-venue-description"
+                      value={createFormData.description || ''}
+                      onChange={(e) => handleCreateFieldChange('description', e.target.value)}
                       placeholder="Descripción del escenario"
                       className="bg-white resize-none h-20 min-h-[80px]"
                     />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Configuración */}
-              <div className="bg-gray-50 p-3 rounded-md">
-                <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                  </svg>
-                  Configuración
-                </h3>
-                <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
-                  <Label htmlFor="new-venue-status" className="text-sm font-medium">Estado Activo</Label>
-                  <div className="flex flex-col items-end">
-                    <Switch id="new-venue-status" defaultChecked={true} />
-                    <span className="text-xs text-gray-500 mt-1">
-                      El escenario estará disponible para reservas
-                    </span>
                   </div>
                 </div>
               </div>
@@ -835,21 +1087,31 @@ export default function FacilityManagement() {
             <DialogFooter className="flex justify-end gap-3 pt-3">
               <Button 
                 variant="outline" 
-                onClick={() => setIsModalOpen(false)} 
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setCreateFormData({ name: '', address: '', neighborhoodId: '', description: '' });
+                  setFormErrors({});
+                }} 
                 size="sm"
                 className="px-4"
+                disabled={isSubmitting}
               >
                 Cancelar
               </Button>
               <Button
                 className="bg-teal-600 hover:bg-teal-700 px-4"
-                onClick={() => {
-                  // Handle save logic here
-                  setIsModalOpen(false);
-                }}
+                onClick={handleCreateScenario}
                 size="sm"
+                disabled={isSubmitting}
               >
-                Guardar
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

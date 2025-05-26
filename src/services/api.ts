@@ -8,7 +8,7 @@ const getAuthHeaders = (): HeadersInit => {
   };
   
   // Agregar token de autenticación si existe
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token');
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -92,9 +92,19 @@ export interface PagedResponse<T> {
   meta: PageMeta;
 }
 
+export interface Commune {
+  id: number;
+  name: string;
+  city?: {
+    id: number;
+    name: string;
+  };
+}
+
 export interface Neighborhood {
   id: number;
   name: string;
+  commune?: Commune;
 }
 
 export interface ActivityArea {
@@ -107,6 +117,43 @@ export interface Scenario {
   name: string;
   address: string;
   neighborhood?: Neighborhood;
+  description?: string;
+  status?: string;
+}
+
+// DTOs para Communes
+export interface CreateCommuneDto {
+  name: string;
+  cityId: number;
+}
+
+export interface UpdateCommuneDto {
+  name?: string;
+  cityId?: number;
+}
+
+// DTOs para Neighborhoods
+export interface CreateNeighborhoodDto {
+  name: string;
+  communeId: number;
+}
+
+export interface UpdateNeighborhoodDto {
+  name?: string;
+  communeId?: number;
+}
+
+// DTOs para Scenarios
+export interface CreateScenarioDto {
+  name: string;
+  address: string;
+  neighborhoodId: number;
+}
+
+export interface UpdateScenarioDto {
+  name?: string;
+  address?: string;
+  neighborhoodId?: number;
 }
 
 export interface FieldSurfaceType {
@@ -159,6 +206,36 @@ export interface SubScenario {
 // Tipo para manejar tanto respuestas paginadas como arrays simples
 export type ApiResponse<T> = T[] | PagedResponse<T>;
 
+// Servicios para Communes
+export const communeService = {
+  getAll: async (options: PageOptions = {}): Promise<ApiResponse<Commune>> => {
+    // Si no hay parámetros, devolver array simple
+    if (!options.page && !options.limit && !options.search) {
+      return fetchApi<Commune[]>('/communes', { method: 'GET' });
+    }
+    // Con parámetros, devolver respuesta paginada
+    return fetchApi<PagedResponse<Commune>>('/communes', { method: 'GET' }, options);
+  },
+  getById: async (id: number): Promise<Commune> => {
+    return fetchApi<Commune>(`/communes/${id}`, { method: 'GET' });
+  },
+  create: async (data: CreateCommuneDto): Promise<Commune> => {
+    return fetchApi<Commune>('/communes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  update: async (id: number, data: UpdateCommuneDto): Promise<Commune> => {
+    return fetchApi<Commune>(`/communes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(`/communes/${id}`, { method: 'DELETE' });
+  },
+};
+
 // Servicios para Scenarios
 export const scenarioService = {
   getAll: async (options: PageOptions = {}): Promise<PagedResponse<Scenario>> => {
@@ -166,6 +243,21 @@ export const scenarioService = {
   },
   getById: async (id: number): Promise<Scenario> => {
     return fetchApi<Scenario>(`/scenarios/${id}`, { method: 'GET' });
+  },
+  create: async (data: CreateScenarioDto): Promise<Scenario> => {
+    return fetchApi<Scenario>('/scenarios', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  update: async (id: number, data: UpdateScenarioDto): Promise<Scenario> => {
+    return fetchApi<Scenario>(`/scenarios/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(`/scenarios/${id}`, { method: 'DELETE' });
   },
 };
 
@@ -203,7 +295,7 @@ export const subScenarioService = {
     const headers: HeadersInit = {};
     
     // Agregar token de autenticación si existe
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -235,11 +327,34 @@ export const activityAreaService = {
   }
 };
 
-// Servicios para Neighborhoods
+// Servicios para Neighborhoods (actualizado con CRUD)
 export const neighborhoodService = {
   getAll: async (options: PageOptions = {}): Promise<ApiResponse<Neighborhood>> => {
-    return fetchApi<ApiResponse<Neighborhood>>('/neighborhoods', { method: 'GET' }, options);
-  }
+    // Si no hay parámetros, devolver array simple
+    if (!options.page && !options.limit && !options.search) {
+      return fetchApi<Neighborhood[]>('/neighborhoods', { method: 'GET' });
+    }
+    // Con parámetros, devolver respuesta paginada
+    return fetchApi<PagedResponse<Neighborhood>>('/neighborhoods', { method: 'GET' }, options);
+  },
+  getById: async (id: number): Promise<Neighborhood> => {
+    return fetchApi<Neighborhood>(`/neighborhoods/${id}`, { method: 'GET' });
+  },
+  create: async (data: CreateNeighborhoodDto): Promise<Neighborhood> => {
+    return fetchApi<Neighborhood>('/neighborhoods', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  update: async (id: number, data: UpdateNeighborhoodDto): Promise<Neighborhood> => {
+    return fetchApi<Neighborhood>(`/neighborhoods/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  delete: async (id: number): Promise<void> => {
+    return fetchApi<void>(`/neighborhoods/${id}`, { method: 'DELETE' });
+  },
 };
 
 // Métodos CRUD genéricos para futura extensión

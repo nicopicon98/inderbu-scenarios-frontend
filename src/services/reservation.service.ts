@@ -180,6 +180,9 @@ const ReservationService = {
     page?: number;
     limit?: number;
     searchQuery?: string;
+    // ⭐ NUEVOS FILTROS DE FECHA
+    dateFrom?: string;  // YYYY-MM-DD
+    dateTo?: string;    // YYYY-MM-DD
   }): Promise<ReservationDto[]> => {
     const url = new URL(`${API_URL}/reservations`);
     
@@ -205,6 +208,13 @@ const ReservationService = {
       }
       if (filters.searchQuery && filters.searchQuery.trim()) {
         url.searchParams.set('search', filters.searchQuery.trim());
+      }
+      // ⭐ NUEVOS FILTROS DE FECHA
+      if (filters.dateFrom && filters.dateFrom.trim()) {
+        url.searchParams.set('dateFrom', filters.dateFrom.trim());
+      }
+      if (filters.dateTo && filters.dateTo.trim()) {
+        url.searchParams.set('dateTo', filters.dateTo.trim());
       }
     }
 
@@ -249,6 +259,9 @@ const ReservationService = {
     page?: number;
     limit?: number;
     searchQuery?: string;
+    // ⭐ NUEVOS FILTROS DE FECHA
+    dateFrom?: string;  // YYYY-MM-DD
+    dateTo?: string;    // YYYY-MM-DD
   }): Promise<{
     data: ReservationDto[];
     meta: {
@@ -282,6 +295,13 @@ const ReservationService = {
       }
       if (filters.searchQuery && filters.searchQuery.trim()) {
         url.searchParams.set('search', filters.searchQuery.trim());
+      }
+      // ⭐ NUEVOS FILTROS DE FECHA  
+      if (filters.dateFrom && filters.dateFrom.trim()) {
+        url.searchParams.set('dateFrom', filters.dateFrom.trim());
+      }
+      if (filters.dateTo && filters.dateTo.trim()) {
+        url.searchParams.set('dateTo', filters.dateTo.trim());
       }
     }
 

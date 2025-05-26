@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { MapPin, Tag, X, Filter, Building, User } from "lucide-react";
+import { MapPin, Tag, X, Filter, Building, User, Calendar } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import {
   Card,
   CardContent,
@@ -24,6 +25,9 @@ type Filters = {
   activityAreaId?: number;
   neighborhoodId?: number;
   userId?: number;
+  // ⭐ NUEVOS FILTROS DE FECHA
+  dateFrom?: string;  // YYYY-MM-DD
+  dateTo?: string;    // YYYY-MM-DD
 };
 
 interface FiltersCardProps {
@@ -91,6 +95,29 @@ export const FiltersCard = ({
     );
   };
 
+  // ⭐ NUEVOS HANDLERS PARA FECHAS
+  const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value || undefined;
+    onFiltersChange({ ...filters, dateFrom: value });
+    updateChip(
+      "dateFrom",
+      value ?? "",
+      `Desde: ${value}`,
+      value !== undefined
+    );
+  };
+
+  const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value || undefined;
+    onFiltersChange({ ...filters, dateTo: value });
+    updateChip(
+      "dateTo",
+      value ?? "",
+      `Hasta: ${value}`,
+      value !== undefined
+    );
+  };
+
   /* Debounce de búsqueda - searchTimeout ya está declarado arriba */
 
   /* ─────────── Chips visuales ─────────── */
@@ -113,6 +140,13 @@ export const FiltersCard = ({
     else if (type === "activity") handleActivityAreaChange("all");
     else if (type === "neighborhood") handleNeighborhoodChange("all");
     else if (type === "user") handleUserChange("all");
+    // ⭐ NUEVOS CASOS PARA FECHAS
+    else if (type === "dateFrom") {
+      onFiltersChange({ ...filters, dateFrom: undefined });
+    }
+    else if (type === "dateTo") {
+      onFiltersChange({ ...filters, dateTo: undefined });
+    }
     setActiveFilters((c) => c.filter((x) => x !== chip));
   };
 
@@ -131,7 +165,7 @@ export const FiltersCard = ({
           </CardTitle>
           <CardDescription className="flex items-center justify-between">
             <span>Refina los resultados de reservas usando los siguientes filtros</span>
-            {(filters.scenarioId || filters.activityAreaId || filters.neighborhoodId || filters.userId) && (
+            {(filters.scenarioId || filters.activityAreaId || filters.neighborhoodId || filters.userId || filters.dateFrom || filters.dateTo) && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -149,7 +183,7 @@ export const FiltersCard = ({
             {/* Fila principal */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
               {/* Escenario */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Escenario
                 </label>
@@ -166,7 +200,7 @@ export const FiltersCard = ({
               </div>
 
               {/* Área deportiva */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Actividad
                 </label>
@@ -183,7 +217,7 @@ export const FiltersCard = ({
               </div>
 
               {/* Barrio */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Barrio
                 </label>
@@ -200,7 +234,7 @@ export const FiltersCard = ({
               </div>
 
               {/* Usuario */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Usuario
                 </label>
@@ -214,6 +248,40 @@ export const FiltersCard = ({
                   emptyMessage="No se encontraron usuarios"
                   className="w-full"
                 />
+              </div>
+
+              {/* ⭐ FECHA DESDE */}
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Fecha Desde
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="date"
+                    value={filters.dateFrom ?? ""}
+                    onChange={handleDateFromChange}
+                    className="pl-10 w-full"
+                    placeholder="Fecha inicial"
+                  />
+                </div>
+              </div>
+
+              {/* ⭐ FECHA HASTA */}
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Fecha Hasta
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="date"
+                    value={filters.dateTo ?? ""}
+                    onChange={handleDateToChange}
+                    className="pl-10 w-full"
+                    placeholder="Fecha final"
+                  />
+                </div>
               </div>
             </div>
 
