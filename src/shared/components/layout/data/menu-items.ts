@@ -8,11 +8,11 @@ import {
 } from "lucide-react";
 
 export const reportItems = [
-  {
-    title: "Reportes",
-    href: "/reportes/reservas",
-    icon: BarChart,
-  },
+  // {
+  //   title: "Reportes",
+  //   href: "/reportes/reservas",
+  //   icon: BarChart,
+  // },
 ];
 
 export const menuItems = [
@@ -41,9 +41,9 @@ export const menuItems = [
     href: "/dashboard/ubicaciones",
     icon: Map,
   },
-  {
-    title: "Opciones",
-    href: "/dashboard/opciones",
-    icon: Settings,
-  },
+  // {
+  //   title: "Opciones",
+  //   href: "/dashboard/opciones",
+  //   icon: Settings,
+  // },
 ];
