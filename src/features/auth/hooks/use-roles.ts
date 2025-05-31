@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { IRole } from "../interfaces/role.interface";
-import { AuthService } from "../services/auth-service";
+import { AuthService } from "../services/auth.service";
 
 export function useRoles() {
     const [roles, setRoles] = useState<IRole[]>([]);

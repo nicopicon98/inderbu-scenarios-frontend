@@ -1,8 +1,8 @@
-import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
 import { useAuthContext } from "@/shared/contexts/auth-context";
-import { AuthService } from "../services/auth-service";
-import { decodeJWT } from "../../../lib/utils";
 import { toast } from "sonner";
+import { decodeJWT } from "../../../lib/utils";
+import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
+import { AuthService } from "../services/auth.service";
 
 export function useAuth() {
   const authContext = useAuthContext();
@@ -125,7 +125,20 @@ export function useAuth() {
       }
 
       // Verificar con el servidor
-      await AuthService.getCurrentUser(authContext.token);
+      // await AuthService.getCurrentUser(authContext.token);
+
+      // Por ahora verificar con local storage si existe el token
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) {
+        authContext.clearUserSession();
+        return false;
+      }
+      const tokenPayload = decodeJWT(storedToken);
+      if (!tokenPayload || !tokenPayload.sub) {
+        authContext.clearUserSession();
+        return false;
+      }
+      // Si llegamos aquí, la sesión es válida
       return true;
     } catch (error) {
       console.error("Sesión inválida:", error);

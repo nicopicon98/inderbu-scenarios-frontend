@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { PermissionGuard } from "../molecules/permission-guard";
-import { AuthModal } from "./auth-modal";
+import { AuthModal } from "@/features/auth";
 
 
 export function MainHeader() {

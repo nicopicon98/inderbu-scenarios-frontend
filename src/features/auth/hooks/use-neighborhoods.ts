@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { INeighborhood } from "../interfaces/neighborhood.interface";
-import { AuthService } from "../services/auth-service";
+import { AuthService } from "../services/auth.service";
 
 export function useNeighborhoods() {
     const [neighborhoods, setNeighborhoods] = useState<INeighborhood[]>([]);

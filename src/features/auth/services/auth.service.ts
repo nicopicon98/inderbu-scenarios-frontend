@@ -1,7 +1,7 @@
-import { IGetAllNeighborhoodsResponse } from "../interfaces/neighborhood.interface";
-import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
-import { IGetAllRolesResponse, IRole } from "../interfaces/role.interface";
 import { authApiClient } from "@/shared/api";
+import { IGetAllNeighborhoodsResponse } from "../interfaces/neighborhood.interface";
+import { IGetAllRolesResponse } from "../interfaces/role.interface";
+import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
 
 interface LoginApiResponse {
   data: {
@@ -40,13 +40,14 @@ export class AuthService {
   }
 
   static async logout(token: string): Promise<void> {
-    await authApiClient.post<void, {}>(
-      "/auth/logout",
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    //TODO: Implement logout logic if needed
+    // await authApiClient.post<void, {}>(
+    //   "/auth/logout",
+    //   {},
+    //   {
+    //     headers: { Authorization: `Bearer ${token}` },
+    //   },
+    // );
   }
 
   static async refreshToken(

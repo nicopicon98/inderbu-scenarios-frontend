@@ -3,22 +3,22 @@ export * from "./components";
 
 // Hooks
 export * from "./hooks/use-auth";
-export * from "./hooks/use-roles";
 export * from "./hooks/use-neighborhoods";
+export * from "./hooks/use-roles";
 
 // Servicios
-export * from "./services/auth-service";
+export * from "./services/auth.service";
 
 // Interfaces
+export * from "./interfaces/auth-strategy.interface";
+export * from "./interfaces/form-config.interface";
 export * from "./interfaces/form-handler.interface";
 export * from "./interfaces/form-navigation.interface";
 export * from "./interfaces/modal-controller.interface";
-export * from "./interfaces/auth-strategy.interface";
-export * from "./interfaces/form-config.interface";
 
 // Types y Schemas
-export * from "./types/auth-mode.type";
 export * from "./schemas/auth-schemas";
+export * from "./types/auth-mode.type";
 
 // Utils (Factories y Strategies)
 export * from "./utils/auth-form-factory";

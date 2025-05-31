@@ -1,18 +1,16 @@
 "use client";
 
-import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
-import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
-import { createReservation } from "../../services/reservation.service";
-import { AuthModal } from "@/shared/components/organisms/auth-modal";
+import { AuthModal } from "@/features/auth";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
 import { getTodayLocalISO } from "@/lib/utils";
+import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useState } from "react";
+import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
 import { toast } from "sonner";
-
-
+import { createReservation } from "../../services/reservation.service";
 
 interface IReservationPanelProps {
   subScenarioId: number;
@@ -59,10 +57,10 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
   };
 
   const handleLoginSuccess = (
-    id: number,
-    email: string,
-    role: number,
-    token: string,
+    // id: number,
+    // email: string,
+    // role: number,
+    // token: string,
   ) => {
     // login(id, email, role, token);
     doReservation();

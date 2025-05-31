@@ -1,5 +1,5 @@
 // Componentes principales
-export { AuthModal } from "../../../shared/components/organisms/auth-modal";
+export { AuthModal } from "./organisms/auth-modal";
 
 // Formularios individuales
 export { LoginForm } from "./organisms/login-form";

@@ -15,59 +15,56 @@ import {
 import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
 import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
 import { useUserReservations } from "@/features/reservations/hooks/useUserReservations";
+import { ProtectedRouteProvider } from "@/shared/providers/protected-route-provider";
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import Footer from "@/features/home/components/organisms/footer";
 import { ReservationDto } from "@/services/reservation.service";
-import { useAuth } from "@/shared/contexts/auth-context";
-import { use, useEffect, useState } from "react";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
+import { use, useState } from "react";
 
 
 interface PageProps {
   params: Promise<{ userId: string }>;
 }
 
-export default function UserReservationsPage({ params }: PageProps) {
+// Componente de contenido principal (sin protección)
+function UserReservationsContent({ userId }: { userId: string }) {
   const router = useRouter();
-  const { user, isAuthenticated, authReady } = useAuth();
-  const [selectedReservation, setSelectedReservation] =
-    useState<ReservationDto | null>(null);
+  const { user } = useAuth();
+  const [selectedReservation, setSelectedReservation] = useState<ReservationDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Unwrap params usando React.use()
-  const { userId } = use(params);
   const userIdNumber = parseInt(userId);
 
   // Debug: Si userId es "undefined", mostrar información de debug
-  if (userId === "undefined") {
+  if (userId === "undefined" || isNaN(userIdNumber)) {
     return (
-      <main className="min-h-screen flex flex-col">
-        <MainHeader />
-        <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
-          <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Error de Usuario
-            </h2>
-            <p className="text-gray-600 mb-4">
-              No se pudo obtener el ID del usuario del token.
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
+        <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Error de Usuario
+          </h2>
+          <p className="text-gray-600 mb-4">
+            No se pudo obtener el ID del usuario del token.
+          </p>
+          <div className="text-left bg-gray-100 p-4 rounded-lg mb-4">
+            <p className="text-sm font-mono">
+              <strong>User object:</strong>
+              <br />
+              {JSON.stringify(user, null, 2)}
             </p>
-            <div className="text-left bg-gray-100 p-4 rounded-lg mb-4">
-              <p className="text-sm font-mono">
-                <strong>User object:</strong>
-                <br />
-                {JSON.stringify(user, null, 2)}
-              </p>
-            </div>
-            <Button onClick={() => router.push("/")}>Volver al inicio</Button>
           </div>
+          <Button onClick={() => router.push("/")}>Volver al inicio</Button>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -92,22 +89,6 @@ export default function UserReservationsPage({ params }: PageProps) {
     initialLimit: 6,
   });
 
-  // Verificar autenticación y permisos
-  useEffect(() => {
-    if (!authReady) return;
-
-    if (!isAuthenticated) {
-      router.push("/");
-      return;
-    }
-
-    // Solo permitir ver reservas propias o si es admin
-    if (user?.id !== userIdNumber && user?.role !== 1) {
-      router.push("/");
-      return;
-    }
-  }, [authReady, isAuthenticated, user, userIdNumber, router]);
-
   // Handlers
   const handleModifyReservation = (reservation: ReservationDto) => {
     setSelectedReservation(reservation);
@@ -127,45 +108,37 @@ export default function UserReservationsPage({ params }: PageProps) {
   };
 
   // Loading y error states
-  if (!authReady || isLoading) {
+  if (isLoading) {
     return (
-      <main className="min-h-screen flex flex-col">
-        <MainHeader />
-        <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Cargando tus reservas
-            </h2>
-            <p className="text-gray-600">Un momento por favor...</p>
-          </div>
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Cargando tus reservas
+          </h2>
+          <p className="text-gray-600">Un momento por favor...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <main className="min-h-screen flex flex-col">
-        <MainHeader />
-        <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
-          <div className="text-center max-w-md">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Error al cargar reservas
-            </h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={refetch}>Intentar de nuevo</Button>
-          </div>
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
+        <div className="text-center max-w-md">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Error al cargar reservas
+          </h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={refetch}>Intentar de nuevo</Button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <MainHeader />
-
+    <>
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-gray-50 py-12">
         <div className="container mx-auto px-4 text-center">
@@ -179,8 +152,7 @@ export default function UserReservationsPage({ params }: PageProps) {
             </h1>
           </div>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Gestiona todas tus reservas de escenarios deportivos desde un solo
-            lugar
+            Gestiona todas tus reservas de escenarios deportivos desde un solo lugar
           </p>
 
           {/* Stats */}
@@ -211,12 +183,8 @@ export default function UserReservationsPage({ params }: PageProps) {
           <div className="mb-8">
             <div className="bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50 border-2 border-dashed border-blue-300 rounded-xl p-6 relative overflow-hidden">
               {/* Elementos decorativos */}
-              <div className="absolute top-2 right-2 text-4xl opacity-20">
-                ✨
-              </div>
-              <div className="absolute bottom-2 left-2 text-3xl opacity-20">
-                🎆
-              </div>
+              <div className="absolute top-2 right-2 text-4xl opacity-20">✨</div>
+              <div className="absolute bottom-2 left-2 text-3xl opacity-20">🎆</div>
 
               <div className="relative z-10">
                 <div className="flex items-start gap-4">
@@ -228,8 +196,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                       🎉 ¡Bienvenido a tu panel de reservas!
                     </h3>
                     <p className="text-gray-700 mb-4 leading-relaxed">
-                      Desde aquí puedes{" "}
-                      <strong>gestionar todas tus reservas</strong> de manera
+                      Desde aquí puedes <strong>gestionar todas tus reservas</strong> de manera
                       fácil y rápida. 📱 Solo haz clic en el botón azul{" "}
                       <strong>"Gestionar reserva"</strong> en cualquier tarjeta.
                     </p>
@@ -242,9 +209,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                             Cambiar Estado
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600">
-                          Pendiente → Confirmada
-                        </p>
+                        <p className="text-xs text-gray-600">Pendiente → Confirmada</p>
                       </div>
 
                       <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
@@ -254,21 +219,15 @@ export default function UserReservationsPage({ params }: PageProps) {
                             Cambiar Fecha
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600">
-                          Nueva reserva automática
-                        </p>
+                        <p className="text-xs text-gray-600">Nueva reserva automática</p>
                       </div>
 
                       <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          <span className="font-semibold text-red-700 text-sm">
-                            Cancelar
-                          </span>
+                          <span className="font-semibold text-red-700 text-sm">Cancelar</span>
                         </div>
-                        <p className="text-xs text-gray-600">
-                          Con confirmación segura
-                        </p>
+                        <p className="text-xs text-gray-600">Con confirmación segura</p>
                       </div>
                     </div>
                   </div>
@@ -277,6 +236,7 @@ export default function UserReservationsPage({ params }: PageProps) {
             </div>
           </div>
         )}
+
         {/* Filtros y búsqueda */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -325,9 +285,7 @@ export default function UserReservationsPage({ params }: PageProps) {
               <Calendar className="w-16 h-16 text-gray-400" />
             </div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-3">
-              {filters.searchQuery
-                ? "No se encontraron reservas"
-                : "No tienes reservas"}
+              {filters.searchQuery ? "No se encontraron reservas" : "No tienes reservas"}
             </h3>
             <p className="text-center text-gray-600 mb-6 max-w-md leading-relaxed">
               {filters.searchQuery
@@ -357,9 +315,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      Reservas Activas
-                    </h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Reservas Activas</h2>
                     <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                       {activeReservations.length}
                     </div>
@@ -369,9 +325,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                   <div className="hidden md:flex items-center gap-2 text-sm text-blue-600">
                     <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
                       <Settings className="h-3 w-3" />
-                      <span className="font-medium">
-                        Gestiona tus reservas →
-                      </span>
+                      <span className="font-medium">Gestiona tus reservas →</span>
                     </div>
                   </div>
                 </div>
@@ -392,9 +346,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                         isActive={true}
                         onModify={() => handleModifyReservation(reservation)}
                         onCancelled={handleReservationUpdated}
-                        highlightManageButton={
-                          index < 2 && reservations.length <= 3
-                        } // Destacar primeras 2 reservas si hay pocas
+                        highlightManageButton={index < 2 && reservations.length <= 3}
                       />
                     </div>
                   ))}
@@ -408,9 +360,7 @@ export default function UserReservationsPage({ params }: PageProps) {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gray-400 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      Historial
-                    </h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Historial</h2>
                     <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
                       {pastReservations.length}
                     </div>
@@ -457,8 +407,79 @@ export default function UserReservationsPage({ params }: PageProps) {
         onReservationUpdated={handleReservationUpdated}
         onCreateNewReservation={handleCreateNewReservation}
       />
+    </>
+  );
+}
+
+// Componente principal con protección
+export default function UserReservationsPage({ params }: PageProps) {
+  const { userId } = use(params);
+
+  return (
+    <main className="min-h-screen flex flex-col">
+      <MainHeader />
+      
+      <ProtectedRouteProvider
+        validateSession={true}
+        fallbackPath="/"
+        // Custom logic: Solo el propietario o admins pueden ver las reservas
+        allowedRoles={[EUserRole.USER, EUserRole.ADMIN, EUserRole.SUPER_ADMIN, EUserRole.MODERATOR]}
+      >
+        <UserReservationsPageGuard userId={userId}>
+          <UserReservationsContent userId={userId} />
+        </UserReservationsPageGuard>
+      </ProtectedRouteProvider>
 
       <Footer />
     </main>
   );
+}
+
+// Guard personalizado para verificar acceso a reservas específicas del usuario
+function UserReservationsPageGuard({ 
+  userId, 
+  children 
+}: { 
+  userId: string; 
+  children: React.ReactNode; 
+}) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const userIdNumber = parseInt(userId);
+
+  // Verificar si el usuario puede ver estas reservas
+  const canViewReservations = (): boolean => {
+    if (!user) return false;
+
+    // El usuario puede ver sus propias reservas
+    if (user.id === userIdNumber) return true;
+
+    // Los admins pueden ver cualquier reserva
+    if (user.role === EUserRole.SUPER_ADMIN || user.role === EUserRole.ADMIN) return true;
+
+    // Los moderadores pueden ver cualquier reserva
+    if (user.role === EUserRole.MODERATOR) return true;
+
+    return false;
+  };
+
+  // Si no tiene acceso, redirigir
+  if (!canViewReservations()) {
+    router.push("/");
+    return (
+      <div className="flex-grow flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Acceso Denegado
+          </h2>
+          <p className="text-gray-600">
+            No tienes permisos para ver estas reservas.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }
