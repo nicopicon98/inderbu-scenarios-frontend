@@ -1,4 +1,5 @@
 "use client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
@@ -11,6 +12,8 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
 
 
+/* -------------------------------------------------------------------------- */
+/*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 interface IUser {
   id: number;
@@ -431,4 +434,4 @@ export default function UsersPage() {
       />
     </SimpleLayout>
   );
-}
+}

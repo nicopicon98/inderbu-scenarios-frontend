@@ -3,7 +3,7 @@ const path = require("path");
 
 const filePath = process.argv[2];
 if (!filePath) {
-  console.error("Debes proporcionar la ruta del archivo.");
+  console.error("❌ Debes proporcionar la ruta del archivo.");
   process.exit(1);
 }
 
@@ -60,12 +60,13 @@ importBlock.sort((a, b) => b.length - a.length);
 /* 4. Reconstruye archivo ---------------------------------------- */
 const finalContent = [
   ...directiveLines,
-  directiveLines.length ? "" : null,     // <— una sola línea en blanco
+  directiveLines.length ? "" : null,   // línea en blanco preservada
   ...importBlock,
-  ...restOfCode
+  ...restOfCode,
 ]
-  .filter(Boolean)                       // quita null/undefined
+  // quitamos solo null/undefined, NO strings vacíos
+  .filter((v) => v !== null && v !== undefined)
   .join("\n");
 
 fs.writeFileSync(absolutePath, finalContent, "utf8");
-console.log(`Imports ordenados y directiva preservada en: ${filePath}`);
+console.log(`✅ Imports ordenados (+ línea en blanco) en: ${filePath}`);
