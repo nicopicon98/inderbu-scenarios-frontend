@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
 
 
+/* -------------------------------------------------------------------------- */
 interface IUser {
   id: number;
   dni: number;

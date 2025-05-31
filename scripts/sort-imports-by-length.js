@@ -3,7 +3,7 @@ const path = require("path");
 
 const filePath = process.argv[2];
 if (!filePath) {
-  console.error("❌ Debes proporcionar la ruta del archivo.");
+  console.error("Debes proporcionar la ruta del archivo.");
   process.exit(1);
 }
 
@@ -68,4 +68,4 @@ const finalContent = [
   .join("\n");
 
 fs.writeFileSync(absolutePath, finalContent, "utf8");
-console.log(`✅ Imports ordenados y directiva preservada en: ${filePath}`);
+console.log(`Imports ordenados y directiva preservada en: ${filePath}`);
