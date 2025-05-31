@@ -1,13 +1,3 @@
-import { ResendConfirmationForm } from "@/features/confirm/components/organisms/resend-confirmation-form";
-import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -19,9 +9,19 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import { ResendConfirmationForm } from "@/features/confirm/components/organisms/resend-confirmation-form";
+import { Button } from "@/shared/ui/button";
+import React, { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Suspense } from "react";
 
 interface ConfirmPageProps {
   searchParams: {
