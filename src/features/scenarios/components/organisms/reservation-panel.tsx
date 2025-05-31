@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
 import { createReservation } from "../../services/reservation.service";
 import { AuthModal } from "@/shared/components/organisms/auth-modal";
-import { useAuth } from "@/shared/contexts/auth-context";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import { getTodayLocalISO } from "@/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+
 
 
 interface IReservationPanelProps {
@@ -26,7 +27,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, handleLogin } = useAuth();
 
   // --- handlers -------------------------------------------------------------
   const doReservation = async () => {
@@ -63,7 +64,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
     role: number,
     token: string,
   ) => {
-    login(id, email, role, token);
+    // login(id, email, role, token);
     doReservation();
   };
 

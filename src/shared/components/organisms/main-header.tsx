@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,17 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { BookIcon, LogOut, Menu, Settings, User, X } from "lucide-react";
-import { PermissionGuard } from "../molecules/permission-guard";
-import { useAuth } from "@/shared/contexts/auth-context";
-import { Button } from "@/shared/ui/button";
-import { AuthModal } from "./auth-modal";
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { PermissionGuard } from "../molecules/permission-guard";
+import { AuthModal } from "./auth-modal";
 
 
 export function MainHeader() {
-  const { user, logout, login, isAuthenticated } = useAuth();
+  const { user, handleLogout, handleLogin, isAuthenticated } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -27,7 +27,7 @@ export function MainHeader() {
     role: number,
     token: string,
   ) => {
-    login(id, email, role, token);
+    // handleLogin(id, email, role, token);
     setModalOpen(false);
   };
 
@@ -154,7 +154,7 @@ export function MainHeader() {
 
                     {/* Logout */}
                     <DropdownMenuItem
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="cursor-pointer text-red-600 hover:bg-red-50"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -247,7 +247,7 @@ export function MainHeader() {
                     variant="outline"
                     className="w-full border-red-200 text-red-600 hover:bg-red-50"
                     onClick={() => {
-                      logout();
+                      handleLogout();
                       setIsMenuOpen(false);
                     }}
                   >
