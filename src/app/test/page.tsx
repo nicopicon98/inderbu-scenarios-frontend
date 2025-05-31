@@ -1,15 +1,15 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+"use client";
+
 import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { FilterToolbar } from "@/shared/ui/filter-toolbar";
-import { Download, FileEdit, Plus } from "lucide-react";
-import { StatusBadge } from "@/shared/ui/status-badge";
-import { DataTable } from "@/shared/ui/data-table";
-import { Button } from "@/shared/ui/button";
-import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
-
-("use client");
+import { Button } from "@/shared/ui/button";
+import { DataTable } from "@/shared/ui/data-table";
+import { FilterToolbar } from "@/shared/ui/filter-toolbar";
+import { StatusBadge } from "@/shared/ui/status-badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Download, FileEdit, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface IUser {
   id: number;
@@ -358,7 +358,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "admin").length /
-                pageSize,
+              pageSize,
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
@@ -413,7 +413,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "entrenador").length /
-                pageSize,
+              pageSize,
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
