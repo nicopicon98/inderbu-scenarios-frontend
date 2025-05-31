@@ -1,9 +1,5 @@
 "use client";
 
-import { Reservation } from "../../types/reservation.types";
-import { useToast } from "@/shared/hooks/use-toast";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -12,11 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { CalendarIcon, Clock, Loader2, MapPin, X } from "lucide-react";
-import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/shared/ui/card";
+import { Reservation } from "../../types/reservation.types";
+import { useToast } from "@/shared/hooks/use-toast";
+import { Button } from "@/shared/ui/button";
+import { es } from "date-fns/locale";
+import { format } from "date-fns";
 import { useState } from "react";
+import Image from "next/image";
+
 
 interface ReservationItemProps {
   reservation: Reservation;

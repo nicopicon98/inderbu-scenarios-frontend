@@ -1,5 +1,5 @@
-import { IGetAllTimeSlotRequest } from "../interfaces/get-all-time-slot-req.interface";
 import { IGetAllTimeSlotResponse } from "../interfaces/get-all-time-slot-res.interface";
+import { IGetAllTimeSlotRequest } from "../interfaces/get-all-time-slot-req.interface";
 import { apiClient } from "@/shared/api";
 
 export class TimeSlotService {

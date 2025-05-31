@@ -1,7 +1,5 @@
 "use client";
 
-import { decodeJWT } from "../../../lib/utils";
-import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
@@ -27,10 +24,14 @@ import {
 } from "@/shared/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { decodeJWT } from "../../../lib/utils";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Input } from "@/shared/ui/input";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
 
 const loginSchema = z.object({
   email: z.string().min(1, "El correo es requerido").email("Correo inválido"),

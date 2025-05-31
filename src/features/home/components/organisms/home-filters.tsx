@@ -1,6 +1,13 @@
 "use client";
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import {
   searchActivityAreas,
   searchNeighborhoods,
 } from "../../services/home.service";
@@ -10,18 +17,12 @@ import {
   INeighborhood,
 } from "../../types/filters.types";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
 import { DollarSign, Filter, MapPin, Search, Tag, X } from "lucide-react";
 import { Dispatch, SetStateAction, useRef } from "react";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+
 
 interface HomeFiltersProps {
   activityAreas: IActivityArea[];

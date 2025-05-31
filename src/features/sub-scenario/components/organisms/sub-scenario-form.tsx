@@ -2,10 +2,11 @@
 
 import { ImageUploader } from "@/components/image-uploader";
 import { ActivityArea, Scenario } from "@/services/api";
+import { Textarea } from "@/shared/ui/textarea";
+import { Switch } from "@/shared/ui/switch";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
-import { Textarea } from "@/shared/ui/textarea";
+
 
 interface Props {
   value: any;

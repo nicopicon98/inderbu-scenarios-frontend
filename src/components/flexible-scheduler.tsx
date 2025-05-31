@@ -1,8 +1,5 @@
 "use client";
 
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Calendar } from "@/shared/ui/calendar";
 import {
   Card,
   CardContent,
@@ -10,13 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { endOfMonth, format, startOfMonth } from "date-fns";
-import { es } from "date-fns/locale";
 import { CalendarIcon, Check, Clock } from "lucide-react";
+import { Calendar } from "@/shared/ui/calendar";
+import { Button } from "@/shared/ui/button";
+import { Switch } from "@/shared/ui/switch";
+import { Badge } from "@/shared/ui/badge";
+import { Label } from "@/shared/ui/label";
+import { es } from "date-fns/locale";
 import { useState } from "react";
+
 
 interface TimeSlot {
   hour: number;

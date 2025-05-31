@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import {
   CalendarRange,
   ChevronDown,
@@ -11,9 +10,11 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
+import Link from "next/link";
+
 
 interface MenuItem {
   title: string;

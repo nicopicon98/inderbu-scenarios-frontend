@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,8 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
+
 
 export interface FilterOption {
   id: string;

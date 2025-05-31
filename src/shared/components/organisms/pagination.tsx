@@ -2,6 +2,7 @@
 
 import { Button } from "@/shared/ui/button";
 
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;

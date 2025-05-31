@@ -9,8 +9,9 @@ import {
   User,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+
 
 export function Sidebar() {
   const pathname = usePathname();

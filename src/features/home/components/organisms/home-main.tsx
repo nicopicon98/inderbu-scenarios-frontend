@@ -1,17 +1,18 @@
 "use client";
 
-import { useHomeData } from "../../hooks/use-home-data";
 import { HomeMainProps } from "../../interfaces/home-main-props.interface";
-import { LoadingIndicator } from "../molecules/loading-indicator";
-import { EmptyState } from "./empty-state";
-import { ErrorMessage } from "./error-message";
-import FacilityGrid from "./facility-grid";
-import Footer from "./footer";
-import { HeroSection } from "./hero-section";
-import HomeFilters from "./home-filters";
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
+import { LoadingIndicator } from "../molecules/loading-indicator";
+import { useHomeData } from "../../hooks/use-home-data";
+import { ErrorMessage } from "./error-message";
+import { HeroSection } from "./hero-section";
+import { EmptyState } from "./empty-state";
+import FacilityGrid from "./facility-grid";
+import HomeFilters from "./home-filters";
 import { useMemo } from "react";
+import Footer from "./footer";
+
 
 export default function HomeMain({
   initialActivityAreas,

@@ -1,6 +1,3 @@
-import { SimpleSidebar, useSidebar } from "./simple-sidebar";
-import { cn } from "@/lib/utils";
-import { Button } from "@/shared/ui/button";
 import {
   BellIcon,
   GlobeIcon,
@@ -9,8 +6,11 @@ import {
   PlusIcon,
   UserCircle,
 } from "lucide-react";
-import Link from "next/link";
+import { SimpleSidebar, useSidebar } from "./simple-sidebar";
+import { Button } from "@/shared/ui/button";
+import { cn } from "@/lib/utils";
 import type React from "react";
+import Link from "next/link";
 
 interface SimpleLayoutProps {
   children: React.ReactNode;

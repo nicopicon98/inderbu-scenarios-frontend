@@ -1,10 +1,5 @@
 "use client";
 
-import { useReservationStates } from "../../hooks/useReservationStates";
-import { cn } from "@/lib/utils";
-import ReservationService, {
-  ReservationStateDto,
-} from "@/services/reservation.service";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,16 +10,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
-import { Badge } from "@/shared/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import ReservationService, {
+  ReservationStateDto,
+} from "@/services/reservation.service";
+import { useReservationStates } from "../../hooks/useReservationStates";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
+import { Badge } from "@/shared/ui/badge";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
 
 interface ClickableStatusBadgeProps {
   /** id actual de la reserva – viene del backend */

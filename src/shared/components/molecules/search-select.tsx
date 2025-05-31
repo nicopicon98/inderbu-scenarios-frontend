@@ -1,10 +1,11 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+
 
 export interface SearchSelectOption {
   id: number | string;

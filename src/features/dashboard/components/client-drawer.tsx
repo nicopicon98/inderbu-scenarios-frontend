@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -9,8 +8,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/shared/ui/drawer";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,10 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
 import { Textarea } from "@/shared/ui/textarea";
-import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Switch } from "@/shared/ui/switch";
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+
 
 /* ---------- Tipos ---------- */
 export interface IClient {

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   Select,
   SelectContent,
@@ -9,7 +8,9 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+
 
 export interface SimpleCalendarProps {
   selectedDate: string;

@@ -1,6 +1,5 @@
 "use client";
 
-import { slides } from "@/mock-data/slides";
 import {
   Carousel,
   CarouselContent,
@@ -9,8 +8,11 @@ import {
   CarouselPrevious,
 } from "@/shared/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { slides } from "@/mock-data/slides";
 import Image from "next/image";
 import * as React from "react";
+
+
 
 export function MainCarousel() {
   return (

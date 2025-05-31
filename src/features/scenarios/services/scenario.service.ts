@@ -1,5 +1,5 @@
-import { IGetScenarioByIdRequest } from "../interfaces/get-scenario-by-id-req.interface";
 import { IGetScenarioByIdResponse } from "../interfaces/get-scenario-by-id-res.interface";
+import { IGetScenarioByIdRequest } from "../interfaces/get-scenario-by-id-req.interface";
 import { apiClient } from "@/shared/api";
 
 export class ScenarioService {

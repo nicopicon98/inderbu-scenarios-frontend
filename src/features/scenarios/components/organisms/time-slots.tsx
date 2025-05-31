@@ -1,10 +1,11 @@
 "use client";
 
-import { TimeSlotService } from "../../services/time-slot.service";
 import { ITimeSlot } from "@/features/reservations/types/reservation.types";
-import { Button } from "@/shared/ui/button";
+import { TimeSlotService } from "../../services/time-slot.service";
 import { Clock, Loader2 } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+
 
 interface TimeSlotsProps {
   subScenarioId: string | number;

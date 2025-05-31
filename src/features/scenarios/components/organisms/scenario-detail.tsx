@@ -1,9 +1,10 @@
 "use client";
 
 import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-res.interface";
-import { ReservationPanel } from "./reservation-panel";
 import { ScenarioImageCarousel } from "./scenario-image-carousel";
 import { ScenarioInfoCard } from "./scenario-info-card";
+import { ReservationPanel } from "./reservation-panel";
+
 
 interface Props {
   subScenario: IGetScenarioByIdResponse;

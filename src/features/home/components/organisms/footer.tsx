@@ -1,8 +1,8 @@
+import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { RiTwitterXLine } from "react-icons/ri";
 import Image from "next/image";
 import Link from "next/link";
-import { RiTwitterXLine } from "react-icons/ri";
-import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 
 export default function Footer() {
   const socialLinks = [

@@ -1,5 +1,5 @@
-import { useAuth } from "../contexts/auth-context";
 import { EUserRole } from "../enums/user-role.enum";
+import { useAuth } from "../contexts/auth-context";
 
 export function useRoleChecks() {
   const { user, isAuthenticated } = useAuth();

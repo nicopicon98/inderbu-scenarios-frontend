@@ -1,16 +1,17 @@
 "use client";
 
-import { createReservation } from "../../services/reservation.service";
 import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
-import { getTodayLocalISO } from "@/lib/utils";
-import { AuthModal } from "@/shared/components/organisms/auth-modal";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
-import { useAuth } from "@/shared/contexts/auth-context";
-import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { useState } from "react";
 import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
+import { createReservation } from "../../services/reservation.service";
+import { AuthModal } from "@/shared/components/organisms/auth-modal";
+import { useAuth } from "@/shared/contexts/auth-context";
+import { getTodayLocalISO } from "@/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { useState } from "react";
 import { toast } from "sonner";
+
 
 interface IReservationPanelProps {
   subScenarioId: number;

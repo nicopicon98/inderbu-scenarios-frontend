@@ -1,7 +1,7 @@
-import { decodeJWT } from "../../../lib/utils";
 import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
-import { AuthService } from "../services/auth-service";
 import { useAuthContext } from "@/shared/contexts/auth-context";
+import { AuthService } from "../services/auth-service";
+import { decodeJWT } from "../../../lib/utils";
 import { toast } from "sonner";
 
 export function useAuth() {

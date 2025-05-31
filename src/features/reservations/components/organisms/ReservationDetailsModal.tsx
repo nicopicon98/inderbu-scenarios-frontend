@@ -1,8 +1,5 @@
 "use client";
 
-import type { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { formatDate } from "@/utils/reservation.utils";
 import {
   Calendar,
   CalendarCheck,
@@ -24,7 +18,14 @@ import {
   MapPin,
   User,
 } from "lucide-react";
+import type { ReservationDto } from "@/services/reservation.service";
+import { formatDate } from "@/utils/reservation.utils";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+
 
 interface ReservationDetailsModalProps {
   reservation: ReservationDto | null;

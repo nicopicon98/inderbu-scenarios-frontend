@@ -1,10 +1,11 @@
 "use client";
 
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { ImageIcon, Settings, Users } from "lucide-react";
 import Link from "next/link";
+
 
 export default function OptionsPage() {
   const optionCategories = [

@@ -1,10 +1,5 @@
 "use client";
 
-import { PageMeta, SubScenario } from "@/services/api";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -14,9 +9,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/ui/pagination";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FileEdit, Loader2, MoreHorizontal } from "lucide-react";
+import { PageMeta, SubScenario } from "@/services/api";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import { Search } from "lucide-react";
 import { JSX } from "react";
+
 
 interface Column {
   id: string;

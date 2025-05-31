@@ -1,15 +1,17 @@
 "use client";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { DataTable } from "@/shared/ui/data-table";
 import { FilterToolbar } from "@/shared/ui/filter-toolbar";
-import { StatusBadge } from "@/shared/ui/status-badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Download, FileEdit, Plus } from "lucide-react";
+import { StatusBadge } from "@/shared/ui/status-badge";
+import { DataTable } from "@/shared/ui/data-table";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Badge } from "@/shared/ui/badge";
+
+
 
 interface IUser {
   id: number;

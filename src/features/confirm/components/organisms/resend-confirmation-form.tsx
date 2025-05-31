@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -9,11 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { Loader2, Send } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { useRouter } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Loader2, Send } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 
 interface Props {
   initialEmail?: string;

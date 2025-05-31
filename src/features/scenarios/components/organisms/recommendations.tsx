@@ -2,6 +2,7 @@
 
 import { FC } from "react";
 
+
 export const Recommendations: FC = () => {
   return (
     <div>

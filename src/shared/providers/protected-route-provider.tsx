@@ -1,9 +1,10 @@
 "use client";
 
 import { useAuth } from "@/shared/contexts/auth-context";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
+
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;

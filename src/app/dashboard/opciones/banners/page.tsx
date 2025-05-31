@@ -1,16 +1,5 @@
 "use client";
 
-import { slides } from "@/mock-data/slides";
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -19,10 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import {
   ArrowDown,
   ArrowUp,
@@ -31,8 +23,17 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Image from "next/image";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { Textarea } from "@/shared/ui/textarea";
+import { slides } from "@/mock-data/slides";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { useState } from "react";
+import Image from "next/image";
+
 
 export default function BannersPage() {
   const [activeTab, setActiveTab] = useState("home");

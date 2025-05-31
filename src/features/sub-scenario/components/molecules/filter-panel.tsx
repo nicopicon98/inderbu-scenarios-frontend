@@ -1,7 +1,5 @@
 "use client";
 
-import { FilterState } from "../../hooks/use-sub-scenario-data";
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -9,9 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { FilterState } from "../../hooks/use-sub-scenario-data";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Filter } from "lucide-react";
+
 
 interface Props {
   visible: boolean;

@@ -1,16 +1,5 @@
 "use client";
 
-import Footer from "@/features/home/components/organisms/footer";
-import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
-import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
-import { useUserReservations } from "@/features/reservations/hooks/useUserReservations";
-import { ReservationDto } from "@/services/reservation.service";
-import { MainHeader } from "@/shared/components/organisms/main-header";
-import { Pagination } from "@/shared/components/organisms/pagination";
-import { useAuth } from "@/shared/contexts/auth-context";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import {
   AlertCircle,
   Calendar,
@@ -23,8 +12,20 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
+import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
+import { useUserReservations } from "@/features/reservations/hooks/useUserReservations";
+import { MainHeader } from "@/shared/components/organisms/main-header";
+import { Pagination } from "@/shared/components/organisms/pagination";
+import Footer from "@/features/home/components/organisms/footer";
+import { ReservationDto } from "@/services/reservation.service";
+import { useAuth } from "@/shared/contexts/auth-context";
 import { use, useEffect, useState } from "react";
+import { Button } from "@/shared/ui/button";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+
 
 interface PageProps {
   params: Promise<{ userId: string }>;

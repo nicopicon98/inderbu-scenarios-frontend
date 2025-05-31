@@ -1,17 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -26,11 +14,13 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/shared/ui/tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import {
   BarChart,
   Bell,
@@ -45,9 +35,20 @@ import {
   UserCircle,
   Users,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { usePathname } from "next/navigation";
-import type React from "react";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Badge } from "@/shared/ui/badge";
+import { cn } from "@/lib/utils";
+import type React from "react";
+
 
 interface AppShellProps {
   children: React.ReactNode;

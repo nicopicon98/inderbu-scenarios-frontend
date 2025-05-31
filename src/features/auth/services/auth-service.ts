@@ -1,6 +1,6 @@
 import { IGetAllNeighborhoodsResponse } from "../interfaces/neighborhood.interface";
-import { IGetAllRolesResponse, IRole } from "../interfaces/role.interface";
 import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
+import { IGetAllRolesResponse, IRole } from "../interfaces/role.interface";
 import { authApiClient } from "@/shared/api";
 
 interface LoginApiResponse {

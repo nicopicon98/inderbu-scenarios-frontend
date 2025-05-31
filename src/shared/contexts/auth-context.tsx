@@ -1,7 +1,5 @@
 "use client";
 
-import { IAuthContextType } from "../interfaces/auth-context-type.interface";
-import { IUser } from "../interfaces/user.interface";
 import {
   type ReactNode,
   createContext,
@@ -9,6 +7,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import { IAuthContextType } from "../interfaces/auth-context-type.interface";
+import { IUser } from "../interfaces/user.interface";
+
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 

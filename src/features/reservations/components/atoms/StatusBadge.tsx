@@ -1,7 +1,8 @@
 "use client";
 
-import { Badge } from "@/shared/ui/badge";
 import { AlertCircle, CheckCircle2, Clock, X } from "lucide-react";
+import { Badge } from "@/shared/ui/badge";
+
 
 interface StatusBadgeProps {
   status: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";

@@ -1,9 +1,10 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
 import { Star, Trash, Upload } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Card } from "@/shared/ui/card";
+
 
 interface ImageFile {
   file: File;

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import * as React from "react";
 
+
 interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
   onClose?: () => void;

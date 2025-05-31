@@ -1,10 +1,11 @@
 "use client";
 
 import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-res.interface";
-import { Recommendations } from "./recommendations";
-import { scenarioInfoCardItem } from "./scenario-info-card-item";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FiGrid, FiMapPin, FiTag, FiUser, FiUsers } from "react-icons/fi";
+import { scenarioInfoCardItem } from "./scenario-info-card-item";
+import { Recommendations } from "./recommendations";
+
 
 type Props = { subScenario: IGetScenarioByIdResponse };
 

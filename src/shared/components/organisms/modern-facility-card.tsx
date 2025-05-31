@@ -1,6 +1,3 @@
-import { ISubScenario } from "@/features/home/types/filters.types";
-import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent } from "@/shared/ui/card";
 import {
   ChevronRight,
   DollarSign,
@@ -9,6 +6,9 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import { ISubScenario } from "@/features/home/types/filters.types";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Badge } from "@/shared/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 

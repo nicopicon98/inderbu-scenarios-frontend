@@ -1,21 +1,5 @@
 "use client";
 
-import { cancelReservation } from "../../api/user-reservations.service";
-import { StatusBadge } from "../atoms/StatusBadge";
-import { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import {
   CalendarIcon,
   CheckCircle2,
@@ -28,9 +12,26 @@ import {
   Users,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { cancelReservation } from "../../api/user-reservations.service";
+import { ReservationDto } from "@/services/reservation.service";
+import { Card, CardContent } from "@/shared/ui/card";
+import { StatusBadge } from "../atoms/StatusBadge";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { es } from "date-fns/locale";
+import { format } from "date-fns";
 import { useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
+
 
 interface ModernReservationItemProps {
   reservation: ReservationDto;

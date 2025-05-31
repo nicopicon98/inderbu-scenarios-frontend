@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   Table,
   TableBody,
@@ -16,8 +15,10 @@ import {
   ChevronsRight,
   Loader2,
 } from "lucide-react";
-import type React from "react";
+import { Button } from "@/shared/ui/button";
 import { useState } from "react";
+import type React from "react";
+
 
 interface DataTableProps<T> {
   data: T[];

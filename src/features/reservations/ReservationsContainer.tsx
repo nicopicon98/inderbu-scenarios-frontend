@@ -1,17 +1,18 @@
 "use client";
 
-import { FiltersCard } from "./components/molecules/FiltersCard";
-import { StatsGrid } from "./components/molecules/StatsGrid";
-import { CreateReservationModal } from "./components/organisms/CreateReservationModal";
 import { ReservationDetailsModal } from "./components/organisms/ReservationDetailsModal";
+import { CreateReservationModal } from "./components/organisms/CreateReservationModal";
 import { ReservationsTable } from "./components/organisms/ReservationsTable";
-import { useReservations } from "./hooks/useReservations";
+import { FiltersCard } from "./components/molecules/FiltersCard";
 import { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Filter, Plus, X } from "lucide-react";
+import { StatsGrid } from "./components/molecules/StatsGrid";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useReservations } from "./hooks/useReservations";
+import { Filter, Plus, X } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Badge } from "@/shared/ui/badge";
+
 
 export const ReservationsContainer = () => {
   const router = useRouter();

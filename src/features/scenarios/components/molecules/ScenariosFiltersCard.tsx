@@ -1,9 +1,5 @@
 "use client";
 
-import { searchNeighborhoodsForScenarios } from "../../services/scenarios-search.service";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -11,9 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
+import { searchNeighborhoodsForScenarios } from "../../services/scenarios-search.service";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Filter, MapPin, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+
 
 type ScenariosFilters = {
   search: string;

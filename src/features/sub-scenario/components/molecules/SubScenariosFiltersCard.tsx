@@ -5,10 +5,6 @@ import {
   searchNeighborhoodsForSubScenarios,
   searchScenariosForSubScenarios,
 } from "../../api/sub-scenarios-search.service";
-import { FilterState } from "../../hooks/use-sub-scenario-data";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -16,9 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Building, Filter, MapPin, Search, Tag, X } from "lucide-react";
+import { FilterState } from "../../hooks/use-sub-scenario-data";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+
 
 interface SubScenariosFiltersCardProps {
   visible: boolean;

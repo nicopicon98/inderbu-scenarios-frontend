@@ -1,10 +1,3 @@
-import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";
-import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
-import { useHomeDataReducer } from "../reducers/use-home-data.reducer";
-import { getSubScenarios } from "../services/home.service";
-import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
-import { TUseHomeDataAction } from "../types/use-home-data-action.types";
-import { useRouter, useSearchParams } from "next/navigation";
 import {
   Dispatch,
   SetStateAction,
@@ -13,6 +6,13 @@ import {
   useReducer,
   useRef,
 } from "react";
+import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";
+import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
+import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
+import { TUseHomeDataAction } from "../types/use-home-data-action.types";
+import { useHomeDataReducer } from "../reducers/use-home-data.reducer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getSubScenarios } from "../services/home.service";
 
 export function useHomeData({
   initialSubScenarios,

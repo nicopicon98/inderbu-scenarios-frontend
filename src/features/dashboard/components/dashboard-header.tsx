@@ -3,9 +3,10 @@
 import { useAuth } from "@/shared/contexts/auth-context";
 import { Button } from "@/shared/ui/button";
 import { LogOut, Menu } from "lucide-react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+
 
 export function DashboardHeader() {
   const { user, logout } = useAuth();

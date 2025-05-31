@@ -1,15 +1,16 @@
 "use client";
 
-import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { SubScenariosFiltersCard } from "../molecules/SubScenariosFiltersCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { CreateSubScenarioDialog } from "./create-sub-scenario-dialog";
 import { EditSubScenarioDialog } from "./edit-sub-scenario-dialog";
 import { SubScenarioTable } from "./sub-scenario-table";
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Button } from "@/shared/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Download, Filter, Plus } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { useState } from "react";
+
 
 export function SubScenarioManagement() {
   const data = useSubScenarioData();

@@ -1,26 +1,5 @@
 "use client";
 
-import ReservationService from "@/services/reservation.service";
-import ScenarioService, {
-  ScenarioDto,
-  SubScenarioDto,
-} from "@/services/scenario.service";
-import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
-import UserService, { UserDto } from "@/services/user.service";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Modal } from "@/shared/ui/modal";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
-import { Textarea } from "@/shared/ui/textarea";
-import debounce from "lodash/debounce";
 import {
   Building,
   Clock,
@@ -31,8 +10,31 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import ScenarioService, {
+  ScenarioDto,
+  SubScenarioDto,
+} from "@/services/scenario.service";
+import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
+import ReservationService from "@/services/reservation.service";
+import UserService, { UserDto } from "@/services/user.service";
 import { useCallback, useEffect, useState } from "react";
+import { Textarea } from "@/shared/ui/textarea";
+import { Button } from "@/shared/ui/button";
+import { Switch } from "@/shared/ui/switch";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Modal } from "@/shared/ui/modal";
+import debounce from "lodash/debounce";
 import { toast } from "sonner";
+
+
 
 interface CreateReservationModalProps {
   open: boolean;

@@ -6,9 +6,6 @@ import {
   searchScenarios,
   searchUsers,
 } from "../../api/dashboard-search.service";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -16,9 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
 import { Building, Calendar, Filter, MapPin, Tag, User, X } from "lucide-react";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import { useRef, useState } from "react";
+
 
 type Filters = {
   scenarioId?: number;

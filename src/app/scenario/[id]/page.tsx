@@ -1,11 +1,11 @@
-import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
-import { IGetScenarioByIdRequest } from "@/features/scenarios/interfaces/get-scenario-by-id-req.interface";
 import { IGetScenarioByIdResponse } from "@/features/scenarios/interfaces/get-scenario-by-id-res.interface";
+import { IGetScenarioByIdRequest } from "@/features/scenarios/interfaces/get-scenario-by-id-req.interface";
+import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
 import { ScenarioService } from "@/features/scenarios/services/scenario.service";
 import { MainHeader } from "@/shared/components/organisms/main-header";
+import { FiChevronLeft, FiGrid, FiTag } from "react-icons/fi";
 import { Badge } from "@/shared/ui/badge";
 import Link from "next/link";
-import { FiChevronLeft, FiGrid, FiTag } from "react-icons/fi";
 
 interface PageProps {
   params: { id: string };

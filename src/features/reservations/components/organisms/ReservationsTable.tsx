@@ -1,10 +1,5 @@
 "use client";
 
-import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
-import type { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { DataTable } from "@/shared/ui/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { formatDate, reservationStateById } from "@/utils/reservation.utils";
+import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
+import type { ReservationDto } from "@/services/reservation.service";
 import { FileEdit, MoreHorizontal } from "lucide-react";
+import { DataTable } from "@/shared/ui/data-table";
+import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
+import { Badge } from "@/shared/ui/badge";
+
 
 interface ReservationsTableProps {
   reservations: ReservationDto[];

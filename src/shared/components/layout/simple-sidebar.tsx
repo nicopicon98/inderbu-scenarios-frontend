@@ -1,13 +1,14 @@
 "use client";
 
-import { menuItems, reportItems } from "./data/menu-items";
-import { cn } from "@/lib/utils";
-import { Button } from "@/shared/ui/button";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { menuItems, reportItems } from "./data/menu-items";
+import { usePathname } from "next/navigation";
+import { Button } from "@/shared/ui/button";
+import { cn } from "@/lib/utils";
+import type React from "react";
+import Link from "next/link";
+
 
 // Crear un contexto para compartir el estado del sidebar
 type SidebarContextType = {

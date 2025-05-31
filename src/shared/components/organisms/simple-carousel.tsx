@@ -1,7 +1,5 @@
 "use client";
 
-import { slides } from "@/mock-data/slides";
-import { slidesScenario } from "@/mock-data/slides-scenario";
 import {
   Carousel,
   CarouselContent,
@@ -9,9 +7,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/carousel";
+import { slidesScenario } from "@/mock-data/slides-scenario";
 import Autoplay from "embla-carousel-autoplay";
+import { slides } from "@/mock-data/slides";
 import Image from "next/image";
 import * as React from "react";
+
 
 export function SimpleCarousel() {
   return (

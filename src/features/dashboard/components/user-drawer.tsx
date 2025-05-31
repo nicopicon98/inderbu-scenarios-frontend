@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,8 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Button } from "@/shared/ui/button";
 import { Switch } from "@/shared/ui/switch";
 import { useEffect, useState } from "react";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+
 
 /* ---------- Tipos ---------- */
 export interface IUser {

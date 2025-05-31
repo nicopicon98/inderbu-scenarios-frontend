@@ -1,9 +1,5 @@
 "use client";
 
-import { PermissionGuard } from "../molecules/permission-guard";
-import { AuthModal } from "./auth-modal";
-import { useAuth } from "@/shared/contexts/auth-context";
-import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +7,14 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { BookIcon, LogOut, Menu, Settings, User, X } from "lucide-react";
+import { PermissionGuard } from "../molecules/permission-guard";
+import { useAuth } from "@/shared/contexts/auth-context";
+import { Button } from "@/shared/ui/button";
+import { AuthModal } from "./auth-modal";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+
 
 export function MainHeader() {
   const { user, logout, login, isAuthenticated } = useAuth();
