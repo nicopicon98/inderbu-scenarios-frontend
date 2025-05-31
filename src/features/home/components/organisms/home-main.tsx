@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 
 import { Pagination } from "@/shared/components/organisms/pagination";
-import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
+import { MainHeader } from "@/shared/components/organisms/unified-header";
 import { useHomeData } from "../../hooks/use-home-data";
 import FacilityGrid from "./facility-grid";
 import HomeFilters from "./home-filters";
@@ -18,11 +18,11 @@ export default function HomeMain({
   initialNeighborhoods,
   initialSubScenarios,
   initialMeta,
-  // ✅ Props opcionales con defaults
+  // Props opcionales con defaults
   initialFilters = {},
   initialPage = 1,
 }: HomeMainProps) {
-  // ✅ Pasar todos los parámetros al hook
+  // Pasar todos los parámetros al hook
   const {
     subScenarios,
     meta,
@@ -42,11 +42,11 @@ export default function HomeMain({
   } = useHomeData({
     initialSubScenarios,
     initialMeta,
-    initialFilters, // ✅ Pasar filtros iniciales
-    initialPage,    // ✅ Pasar página inicial
+    initialFilters, // Pasar filtros iniciales
+    initialPage,    // Pasar página inicial
   });
 
-  // ✅ Resto del componente igual que antes...
+  // Resto del componente igual que antes...
   const contentSection = useMemo(() => {
     if (loading) return <LoadingIndicator />;
     if (hasError && error) return <ErrorMessage error={error} onRetry={retryFetch} />;
@@ -83,7 +83,7 @@ export default function HomeMain({
 
   return (
     <main className="min-h-screen flex flex-col w-full">
-      <UnifiedHeader />
+      <MainHeader />
       <HeroSection />
 
       <div className="container mx-auto px-4 py-12 flex-grow">
@@ -99,8 +99,6 @@ export default function HomeMain({
 
         {contentSection}
       </div>
-
-      <Footer />
     </main>
   );
 }

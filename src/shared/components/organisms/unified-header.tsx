@@ -1,20 +1,21 @@
 "use client";
 
+import { User, BookIcon, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { User, LayoutDashboard, BookIcon, LogOut, Menu, X } from "lucide-react";
+import Link from "next/link";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
 import { useAuth } from "@/shared/contexts/auth-context";
+import { Button } from "@/shared/ui/button";
 import { AuthModal } from "./auth-modal";
 
-export function UnifiedHeader() {
+export function MainHeader() {
   const { user, logout, login, isAuthenticated } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

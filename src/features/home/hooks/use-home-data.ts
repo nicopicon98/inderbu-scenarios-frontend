@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, Dispatch, SetStateAction } from "react";
+import { useCallback, useEffect, useReducer, useRef, Dispatch, SetStateAction } from "react";
 
 import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,6 +16,9 @@ export function useHomeData({
 }: IUseHomeDataParams) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // UseRef para detectar el primer render
+  const initialRender = useRef(true);
 
   // Usar los valores iniciales de props
   const initialState: IUseHomeDataState = {
@@ -78,8 +81,15 @@ export function useHomeData({
     }
   }, []);
 
-  // Effect para fetch cuando cambian dependencias
+  // ✅ Effect para fetch SOLO en renders subsecuentes (NO en primer render)
   useEffect(() => {
+    // Evitar fetch en el primer render (datos ya vienen del SSR)
+    if (initialRender.current) {
+      initialRender.current = false;
+      return;
+    }
+    
+    // Solo hacer fetch si ya pasó el primer render
     fetchSubScenarios(state.page, state.filters, initialMeta.limit);
   }, [state.page, state.filters, fetchSubScenarios, initialMeta.limit]);
 

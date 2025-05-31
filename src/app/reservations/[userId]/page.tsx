@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
+import { MainHeader } from "@/shared/components/organisms/unified-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
 import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
@@ -45,7 +45,7 @@ export default function UserReservationsPage({ params }: PageProps) {
   if (userId === "undefined") {
     return (
       <main className="min-h-screen flex flex-col">
-        <UnifiedHeader />
+        <MainHeader />
         <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
           <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -123,7 +123,7 @@ export default function UserReservationsPage({ params }: PageProps) {
   if (!authReady || isLoading) {
     return (
       <main className="min-h-screen flex flex-col">
-        <UnifiedHeader />
+        <MainHeader />
         <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
@@ -138,7 +138,7 @@ export default function UserReservationsPage({ params }: PageProps) {
   if (error) {
     return (
       <main className="min-h-screen flex flex-col">
-        <UnifiedHeader />
+        <MainHeader />
         <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
           <div className="text-center max-w-md">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -153,7 +153,7 @@ export default function UserReservationsPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <UnifiedHeader />
+      <MainHeader />
 
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-gray-50 py-12">

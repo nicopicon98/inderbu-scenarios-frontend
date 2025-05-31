@@ -17,7 +17,7 @@ interface HomePageProps {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  // ✅ Parse parámetros de URL para SSR completo
+  // Parse parámetros de URL para SSR completo
   const page = Number(searchParams.page) || 1;
   const limit = Number(searchParams.limit) || 6;
   const searchQuery = searchParams.search || '';
@@ -26,7 +26,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const hasCost = searchParams.hasCost ? searchParams.hasCost === 'true' : undefined;
 
   try {
-    // ✅ Fetch paralelo con filtros incluidos para SSR
+    // Fetch paralelo con filtros incluidos para SSR
     const [activityAreas, neighborhoods, subScenariosResult] = await Promise.all([
       getActivityAreas(),
       getNeighborhoods(),
@@ -42,13 +42,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
     return (
       <HomeMain
-        // ✅ Props existentes
         initialActivityAreas={activityAreas}
         initialNeighborhoods={neighborhoods}
         initialSubScenarios={subScenariosResult.data}
         initialMeta={subScenariosResult.meta}
-        
-        // ✅ Props para SSR completo con sincronización URL
+        // Props para SSR completo con sincronización URL
         initialFilters={{
           searchQuery,
           activityAreaId,
@@ -61,7 +59,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   } catch (error) {
     console.error('Error loading home page:', error);
     
-    // ✅ Fallback: cargar solo datos básicos sin filtros
+    // Fallback: cargar solo datos básicos sin filtros
     const [activityAreas, neighborhoods] = await Promise.allSettled([
       getActivityAreas(),
       getNeighborhoods(),

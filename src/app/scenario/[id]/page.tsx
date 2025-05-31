@@ -4,20 +4,14 @@ import {
   FiChevronLeft,
   FiGrid,
   FiTag,
-  FiUser,
-  FiUsers,
-  FiMapPin,
-  FiCalendar,
-  FiClock,
-  FiCheck,
 } from "react-icons/fi";
 import {
   fetchScenarioById,
   ScenarioWithRelations,
 } from "@/features/scenarios/api/scenario.service";
-import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
-import { Badge } from "@/shared/ui/badge";
 import { ScenarioDetail } from '@/features/scenarios/components/organisms/scenario-detail';
+import { MainHeader } from "@/shared/components/organisms/unified-header";
+import { Badge } from "@/shared/ui/badge";
 
 interface PageProps {
   params: { id: string };
@@ -28,7 +22,7 @@ export default async function ScenarioPage({ params: { id } }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
-      <UnifiedHeader />
+      <MainHeader />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header básico */}

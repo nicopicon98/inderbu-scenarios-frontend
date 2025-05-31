@@ -7,39 +7,27 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { IAuthContextType } from "../interfaces/auth-context-type.interface";
+import { IUser } from "../interfaces/user.interface";
+import { EUserRole } from "../enums/user-role.enum";
 
-interface User {
-  id: number;
-  email: string;
-  role?: number;
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  authReady: boolean;                 // ← bandera para saber cuándo terminó el chequeo
-  login: (id: number, email: string, role: number, token: string) => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   // Cargar usuario/token del localStorage al primer render
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return; // Asegurarse de que estamos en el cliente
 
     const storedToken = localStorage.getItem("auth_token");
     if (storedToken) {
       try {
         const payload = JSON.parse(atob(storedToken.split(".")[1]));
         console.log("JWT Payload:", payload); // Debug log
-        
+
         const userId = payload.userId || payload.id || payload.sub;
         if (!userId) {
           console.error("No user ID found in token payload", payload);
@@ -47,11 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuthReady(true);
           return;
         }
-        
-        setUser({ 
+
+        setUser({
           id: userId,
-          email: payload.email, 
-          role: payload.role 
+          email: payload.email,
+          role: payload.role
         });
         setToken(storedToken);
       } catch (err) {
@@ -64,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthReady(true);
   }, []);
 
-  const login = (id: number, email: string, role: number, token: string) => {
+  const login = (id: number, email: string, role: EUserRole, token: string) => {
     console.log("Login called with:", { id, email, role }); // Debug log
     setUser({ id, email, role });
     setToken(token);
@@ -93,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): IAuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");

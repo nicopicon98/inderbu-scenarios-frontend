@@ -1,4 +1,4 @@
-import { SubScenario } from "@/features/home/types/filters.types";
+import { ISubScenario } from "@/features/home/types/filters.types";
 import { TimeSlot } from "@/features/reservations/types/reservation.types";
 import ScenarioService from "@/services/scenario.service";
 import ReservationService, { TimeslotResponseDto } from "@/services/reservation.service";
@@ -6,9 +6,7 @@ import ReservationService, { TimeslotResponseDto } from "@/services/reservation.
 // Definir la URL base del API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-export interface ScenarioWithRelations extends SubScenario {
-  // Aquí se pueden agregar más campos específicos para un escenario completo
-}
+export interface ScenarioWithRelations extends ISubScenario {}
 
 export async function fetchScenarioById(
   id: string

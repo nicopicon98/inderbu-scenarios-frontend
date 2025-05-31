@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/contexts/auth-context";
 import { Loader2 } from "lucide-react";
-import { UnifiedHeader } from "@/shared/components/organisms/unified-header";
+import { MainHeader } from "@/shared/components/organisms/unified-header";
 
 export default function ReservationsPage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function ReservationsPage() {
   // Mostrar loading mientras se redirige
   return (
     <main className="min-h-screen flex flex-col">
-      <UnifiedHeader />
+      <MainHeader />
       <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />

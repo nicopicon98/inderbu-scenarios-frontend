@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "INDER Medellín - Reservas",
   description: "Instituto de Deportes y Recreación de Medellín",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -26,6 +26,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </AuthProvider>
+        <Footer />
       </body>
     </html>
   )
