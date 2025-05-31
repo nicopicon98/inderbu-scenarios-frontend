@@ -1,11 +1,3 @@
-  importBlock.length ? "" : null,
-  ...restOfCode,
-]
-  .filter(Boolean)          // elimina posibles null
-  .join("\n");
-      importBlock.push(currentImportLines.join("\n"));
-      importBlock.push(currentImportLines.join("\n"));
-importBlock.sort((a, b) => b.length - a.length);
 const fs = require("fs");
 const path = require("path");
 
@@ -51,6 +43,7 @@ for (; index < lines.length; index++) {
     currentImportLines.push(line);
 
     if (line.trim().endsWith(";")) {
+      importBlock.push(currentImportLines.join("\n"));
       currentImportLines = [];
       isInImport = false;
     }
@@ -58,6 +51,7 @@ for (; index < lines.length; index++) {
     currentImportLines.push(line);
 
     if (line.trim().endsWith(";")) {
+      importBlock.push(currentImportLines.join("\n"));
       currentImportLines = [];
       isInImport = false;
     }
@@ -69,6 +63,7 @@ for (; index < lines.length; index++) {
 /* -------------------------------------------------- */
 /*  3. Ordena de más larga a más corta                */
 /* -------------------------------------------------- */
+importBlock.sort((a, b) => b.length - a.length);
 
 /* -------------------------------------------------- */
 /*  4. Reconstruye el archivo                         */
@@ -82,6 +77,11 @@ const finalContent = [
   ...directiveLines,
   directiveLines.length ? "" : null,
   ...importBlock,
+  importBlock.length ? "" : null,
+  ...restOfCode,
+]
+  .filter(Boolean)          // elimina posibles null
+  .join("\n");
 
 fs.writeFileSync(absolutePath, finalContent, "utf8");
-console.log(`✅ Imports ordenados (y directivas preservadas) en: ${filePath}`);
+console.log(`✅ Imports ordenados (y directivas preservadas) en: ${filePath}`);
