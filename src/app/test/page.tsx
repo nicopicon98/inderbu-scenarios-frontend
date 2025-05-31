@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Download, FileEdit, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
+/* -------------------------------------------------------------------------- */
 interface IUser {
   id: number;
   dni: number;
