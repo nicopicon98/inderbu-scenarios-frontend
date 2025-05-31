@@ -1,8 +1,8 @@
 import Footer from "@/features/home/components/organisms/footer";
 import { AuthProvider } from "@/shared/contexts/auth-context";
+import { Toaster } from "@/shared/ui/sonner";
 import type { Metadata } from "next/types";
 import { Inter } from "next/font/google";
-import { Toaster } from "sonner";
 import type React from "react";
 import "./globals.css";
 
@@ -22,12 +22,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
+        {/* <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        > */}
         <AuthProvider>
           {children}
           <Toaster />
         </AuthProvider>
+        {/* </ThemeProvider> */}
         <Footer />
       </body>
     </html>

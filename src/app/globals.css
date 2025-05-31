@@ -60,8 +60,10 @@
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   /* Improved spacing system */
   --space-xs: 0.25rem;
@@ -77,6 +79,7 @@
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
@@ -86,12 +89,11 @@
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
   }
-
-  
 }
 
 /* Dark theme configuration outside of @theme */
@@ -168,18 +170,14 @@ body {
   0% {
     background-position: -468px 0;
   }
+
   100% {
     background-position: 468px 0;
   }
 }
 
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 25%,
-    #e0e0e0 50%,
-    #f0f0f0 75%
-  );
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 400% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
 }
@@ -190,6 +188,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -202,29 +201,29 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: #F3F4F6;
+  background: #f3f4f6;
   border-radius: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #d1d5db;
   border-radius: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #9ca3af;
 }
 
 .scrollbar-track-gray-100 {
-  scrollbar-color: #D1D5DB #F3F4F6;
+  scrollbar-color: #d1d5db #f3f4f6;
 }
 
 .scrollbar-thumb-gray-300 {
-  scrollbar-color: #D1D5DB #F3F4F6;
+  scrollbar-color: #d1d5db #f3f4f6;
 }
 
 .scrollbar-thumb-gray-400 {
-  scrollbar-color: #9CA3AF #F3F4F6;
+  scrollbar-color: #9ca3af #f3f4f6;
 }
 
 .scrollbar-thumb-rounded-full {

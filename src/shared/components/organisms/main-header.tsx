@@ -17,19 +17,33 @@ import { AuthModal } from "./auth-modal";
 
 
 export function MainHeader() {
-  const { user, handleLogout, handleLogin, isAuthenticated } = useAuth();
+  const { user, handleLogout, isAuthenticated, authReady } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleLoginSuccess = (
-    id: number,
-    email: string,
-    role: number,
-    token: string,
-  ) => {
-    // handleLogin(id, email, role, token);
-    setModalOpen(false);
+  const handleLoginSuccess = () => {
+    setModalOpen(false); // Solo cerrar modal - el login ya se manejó internamente
   };
+
+  // Mostrar loading mientras se inicializa la autenticación
+  if (!authReady) {
+    return (
+      <header className="sticky top-0 z-50 shadow-sm">
+        <div className="bg-blue-600 text-white">
+          <div className="container mx-auto px-4 flex items-center justify-between py-2">
+            <div className="h-5 w-24 bg-blue-500 rounded animate-pulse"></div>
+            <div className="h-5 w-32 bg-blue-500 rounded animate-pulse"></div>
+          </div>
+        </div>
+        <div className="bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4 flex items-center justify-between py-4">
+            <div className="h-16 w-64 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 shadow-sm">
