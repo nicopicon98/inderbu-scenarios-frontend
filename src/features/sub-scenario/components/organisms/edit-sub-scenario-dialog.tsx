@@ -1,56 +1,79 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-
-import {
-    Dialog, DialogContent, DialogHeader,
-    DialogFooter, DialogTitle, DialogDescription
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
+import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { SubScenario } from "@/services/api";
-import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
+import { Button } from "@/shared/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { useEffect, useState } from "react";
 
 interface Props {
-    open: boolean;
-    subScenario: SubScenario | null;
-    onOpenChange(v: boolean): void;
+  open: boolean;
+  subScenario: SubScenario | null;
+  onOpenChange(v: boolean): void;
 }
 
-export function EditSubScenarioDialog({ open, subScenario, onOpenChange }: Props) {
-    const { scenarios, activityAreas, fieldSurfaceTypes, updateSubScenario } = useSubScenarioData();
-    const [form, setForm] = useState<any>({});
+export function EditSubScenarioDialog({
+  open,
+  subScenario,
+  onOpenChange,
+}: Props) {
+  const { scenarios, activityAreas, fieldSurfaceTypes, updateSubScenario } =
+    useSubScenarioData();
+  const [form, setForm] = useState<any>({});
 
-    useEffect(() => {
-        if (subScenario) setForm({ ...subScenario });
-    }, [subScenario]);
+  useEffect(() => {
+    if (subScenario) setForm({ ...subScenario });
+  }, [subScenario]);
 
-    const save = async () => {
-        if (!subScenario) return;
-        await updateSubScenario(subScenario.id, form);
-        onOpenChange(false);
-    };
+  const save = async () => {
+    if (!subScenario) return;
+    await updateSubScenario(subScenario.id, form);
+    onOpenChange(false);
+  };
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[650px] max-h-[80vh] mx-auto overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl text-teal-700">
-                        Editar: {subScenario?.name}
-                    </DialogTitle>
-                    <DialogDescription>Modifica y guarda los cambios</DialogDescription>
-                </DialogHeader>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[650px] max-h-[80vh] mx-auto overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-teal-700">
+            Editar: {subScenario?.name}
+          </DialogTitle>
+          <DialogDescription>Modifica y guarda los cambios</DialogDescription>
+        </DialogHeader>
 
-                <SubScenarioForm value={form} onChange={setForm}
-                    scenarios={scenarios} activityAreas={activityAreas}
-                    fieldSurfaceTypes={fieldSurfaceTypes} />
+        <SubScenarioForm
+          value={form}
+          onChange={setForm}
+          scenarios={scenarios}
+          activityAreas={activityAreas}
+          fieldSurfaceTypes={fieldSurfaceTypes}
+        />
 
-                <DialogFooter className="pt-3">
-                    <Button variant="outline" onClick={() => onOpenChange(false)} size="sm">Cancelar</Button>
-                    <Button className="bg-teal-600 hover:bg-teal-700" size="sm" onClick={save}>Guardar</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+        <DialogFooter className="pt-3">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            size="sm"
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="bg-teal-600 hover:bg-teal-700"
+            size="sm"
+            onClick={save}
+          >
+            Guardar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

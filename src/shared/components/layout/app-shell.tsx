@@ -1,39 +1,9 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarSeparator,
-  SidebarTrigger,
-  SidebarRail,
-  useSidebar,
-} from "@/shared/ui/sidebar";
-import {
-  Calendar,
-  MapPin,
-  Users,
-  User,
-  Map,
-  Settings,
-  BarChart,
-  ChevronLeft,
-  UserCircle,
-  LogOut,
-  HelpCircle,
-  Bell,
-} from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,12 +13,41 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "@/shared/ui/sidebar";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import { cn } from "@/lib/utils";
+import {
+  BarChart,
+  Bell,
+  Calendar,
+  ChevronLeft,
+  HelpCircle,
+  LogOut,
+  Map,
+  MapPin,
+  Settings,
+  User,
+  UserCircle,
+  Users,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -118,7 +117,7 @@ export function AppShell({ children }: AppShellProps) {
             <span
               className={cn(
                 "font-semibold text-lg transition-opacity duration-300",
-                state === "collapsed" ? "opacity-0" : "opacity-100"
+                state === "collapsed" ? "opacity-0" : "opacity-100",
               )}
             >
               Inderbu
@@ -133,7 +132,7 @@ export function AppShell({ children }: AppShellProps) {
             <ChevronLeft
               className={cn(
                 "h-5 w-5 transition-transform duration-300",
-                state === "collapsed" ? "rotate-180" : ""
+                state === "collapsed" ? "rotate-180" : "",
               )}
             />
           </Button>
@@ -154,13 +153,13 @@ export function AppShell({ children }: AppShellProps) {
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3",
-                        isActive ? "text-primary font-medium" : "text-gray-600"
+                        isActive ? "text-primary font-medium" : "text-gray-600",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-5 w-5",
-                          isActive ? "text-primary" : "text-gray-500"
+                          isActive ? "text-primary" : "text-gray-500",
                         )}
                       />
                       <span>{item.title}</span>
@@ -176,7 +175,7 @@ export function AppShell({ children }: AppShellProps) {
           <div
             className={cn(
               "px-3 text-xs font-medium text-gray-500 mb-2 transition-opacity duration-300",
-              state === "collapsed" ? "opacity-0" : "opacity-100"
+              state === "collapsed" ? "opacity-0" : "opacity-100",
             )}
           >
             REPORTES
@@ -196,13 +195,13 @@ export function AppShell({ children }: AppShellProps) {
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3",
-                        isActive ? "text-primary font-medium" : "text-gray-600"
+                        isActive ? "text-primary font-medium" : "text-gray-600",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-5 w-5",
-                          isActive ? "text-primary" : "text-gray-500"
+                          isActive ? "text-primary" : "text-gray-500",
                         )}
                       />
                       <span>{item.title}</span>
@@ -223,7 +222,7 @@ export function AppShell({ children }: AppShellProps) {
             <div
               className={cn(
                 "flex flex-col transition-opacity duration-300",
-                state === "collapsed" ? "opacity-0" : "opacity-100"
+                state === "collapsed" ? "opacity-0" : "opacity-100",
               )}
             >
               <span className="text-sm font-medium">Admin Usuario</span>

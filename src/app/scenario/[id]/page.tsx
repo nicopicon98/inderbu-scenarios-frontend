@@ -1,23 +1,21 @@
-import Link from "next/link";
-
-import {
-  FiChevronLeft,
-  FiGrid,
-  FiTag,
-} from "react-icons/fi";
-import { ScenarioDetail } from '@/features/scenarios/components/organisms/scenario-detail';
-import { MainHeader } from "@/shared/components/organisms/unified-header";
-import { Badge } from "@/shared/ui/badge";
+import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
 import { IGetScenarioByIdRequest } from "@/features/scenarios/interfaces/get-scenario-by-id-req.interface";
-import { ScenarioService } from "@/features/scenarios/services/scenario.service";
 import { IGetScenarioByIdResponse } from "@/features/scenarios/interfaces/get-scenario-by-id-res.interface";
+import { ScenarioService } from "@/features/scenarios/services/scenario.service";
+import { MainHeader } from "@/shared/components/organisms/main-header";
+import { Badge } from "@/shared/ui/badge";
+import Link from "next/link";
+import { FiChevronLeft, FiGrid, FiTag } from "react-icons/fi";
 
 interface PageProps {
   params: { id: string };
 }
 
-export default async function ScenarioPage({ params: { id } }: PageProps) {
-  const subscenario: IGetScenarioByIdResponse = await ScenarioService.getById({ id } as IGetScenarioByIdRequest);
+export default async function ScenarioPage({ params }: PageProps) {
+  const { id } = await params;
+  const subscenario: IGetScenarioByIdResponse = await ScenarioService.getById({
+    id,
+  } as IGetScenarioByIdRequest);
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">

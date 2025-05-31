@@ -1,7 +1,11 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+
+import {
+  UserReservationList,
+  getUserReservations,
+} from "../api/user-reservations.service";
 import { ReservationDto } from "@/services/reservation.service";
-import { getUserReservations, UserReservationList } from "../api/user-reservations.service";
+import { useEffect, useMemo, useState } from "react";
 
 interface UseUserReservationsProps {
   userId: number;
@@ -13,10 +17,10 @@ type Filters = {
   searchQuery: string;
 };
 
-export const useUserReservations = ({ 
-  userId, 
-  initialPage = 1, 
-  initialLimit = 6 
+export const useUserReservations = ({
+  userId,
+  initialPage = 1,
+  initialLimit = 6,
 }: UseUserReservationsProps) => {
   // Estados principales
   const [reservations, setReservations] = useState<ReservationDto[]>([]);
@@ -34,12 +38,15 @@ export const useUserReservations = ({
   const [filters, setFilters] = useState<Filters>({ searchQuery: "" });
 
   // Función para obtener reservas
-  const fetchReservations = async (pageNumber = page, currentFilters = filters) => {
+  const fetchReservations = async (
+    pageNumber = page,
+    currentFilters = filters,
+  ) => {
     if (!userId) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const result: UserReservationList = await getUserReservations({
         userId,
@@ -86,24 +93,38 @@ export const useUserReservations = ({
   // Estados derivados con useMemo
   const { activeReservations, pastReservations, stats } = useMemo(() => {
     const now = new Date();
-    
-    const active = reservations.filter(r => {
-      const reservationDateTime = new Date(`${r.reservationDate}T${r.timeSlot.endTime}`);
-      return reservationDateTime >= now && r.reservationState.state !== 'CANCELADA';
+
+    const active = reservations.filter((r) => {
+      const reservationDateTime = new Date(
+        `${r.reservationDate}T${r.timeSlot.endTime}`,
+      );
+      return (
+        reservationDateTime >= now && r.reservationState.state !== "CANCELADA"
+      );
     });
-    
-    const past = reservations.filter(r => {
-      const reservationDateTime = new Date(`${r.reservationDate}T${r.timeSlot.endTime}`);
-      return reservationDateTime < now || r.reservationState.state === 'CANCELADA';
+
+    const past = reservations.filter((r) => {
+      const reservationDateTime = new Date(
+        `${r.reservationDate}T${r.timeSlot.endTime}`,
+      );
+      return (
+        reservationDateTime < now || r.reservationState.state === "CANCELADA"
+      );
     });
 
     const statistics = {
       total: meta.totalItems,
       active: active.length,
       past: past.length,
-      pending: reservations.filter(r => r.reservationState.state === 'PENDIENTE').length,
-      confirmed: reservations.filter(r => r.reservationState.state === 'CONFIRMADA').length,
-      cancelled: reservations.filter(r => r.reservationState.state === 'CANCELADA').length,
+      pending: reservations.filter(
+        (r) => r.reservationState.state === "PENDIENTE",
+      ).length,
+      confirmed: reservations.filter(
+        (r) => r.reservationState.state === "CONFIRMADA",
+      ).length,
+      cancelled: reservations.filter(
+        (r) => r.reservationState.state === "CANCELADA",
+      ).length,
     };
 
     return {
@@ -120,13 +141,13 @@ export const useUserReservations = ({
     pastReservations,
     meta,
     stats,
-    
+
     // Estados
     isLoading,
     error,
     page,
     filters,
-    
+
     // Funciones
     handlePageChange,
     handleFiltersChange,

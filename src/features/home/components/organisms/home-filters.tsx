@@ -1,8 +1,18 @@
 "use client";
 
-import { Search, MapPin, Tag, X, Filter, DollarSign } from "lucide-react";
-import { Dispatch, SetStateAction, useRef } from "react";
-
+import {
+  searchActivityAreas,
+  searchNeighborhoods,
+} from "../../services/home.service";
+import {
+  IActivityArea,
+  IFilters,
+  INeighborhood,
+} from "../../types/filters.types";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
@@ -10,12 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { IActivityArea, IFilters, INeighborhood } from "../../types/filters.types";
-import { searchActivityAreas, searchNeighborhoods } from "../../services/home.service";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
+import { DollarSign, Filter, MapPin, Search, Tag, X } from "lucide-react";
+import { Dispatch, SetStateAction, useRef } from "react";
 
 interface HomeFiltersProps {
   activityAreas: IActivityArea[];
@@ -44,7 +50,7 @@ export default function HomeFilters({
       "area",
       val?.toString() ?? "",
       "Área seleccionada",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -55,7 +61,7 @@ export default function HomeFilters({
       "neighborhood",
       val?.toString() ?? "",
       "Barrio seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -70,9 +76,9 @@ export default function HomeFilters({
       value === "paid"
         ? "Solo de pago"
         : value === "free"
-        ? "Solo gratuitos"
-        : "",
-      value !== "all"
+          ? "Solo gratuitos"
+          : "",
+      value !== "all",
     );
   };
 
@@ -93,7 +99,7 @@ export default function HomeFilters({
     type: string,
     value: string,
     display: string,
-    add: boolean
+    add: boolean,
   ) => {
     setActiveFilters((chips) => {
       const next = [...chips.filter((c) => !c.startsWith(`${type}:`))];
@@ -184,8 +190,8 @@ export default function HomeFilters({
               filters.hasCost === undefined
                 ? "all"
                 : filters.hasCost
-                ? "paid"
-                : "free"
+                  ? "paid"
+                  : "free"
             }
             onValueChange={handleCostChange}
           >

@@ -46,7 +46,11 @@ const UserService = {
   },
 
   // Buscar usuarios paginados con término de búsqueda
-  searchUsers: async (search?: string, page: number = 1, limit: number = 10): Promise<PagedResponse<UserDto>> => {
+  searchUsers: async (
+    search?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PagedResponse<UserDto>> => {
     try {
       let url = `${API_URL}/users?page=${page}&limit=${limit}`;
       if (search) {
@@ -69,7 +73,7 @@ const UserService = {
       throw error;
     }
   },
-  
+
   // Obtener usuario por ID
   getUserById: async (id: number): Promise<UserDto | null> => {
     try {

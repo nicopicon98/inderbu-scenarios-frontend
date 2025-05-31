@@ -1,43 +1,54 @@
-import { apiClient } from '@/shared/api';
-import { 
-  IActivityArea, 
-  INeighborhood, 
+import {
+  IActivityAreaData,
+  IActivityAreaOption,
+  INeighborhoodData,
+  INeighborhoodOption,
+  ISubScenarioData,
+} from "../types/api.types";
+import {
+  IActivityArea,
+  IFilters,
+  INeighborhood,
   ISubScenario,
-  IFilters 
-} from '../types/filters.types';
-import { IActivityAreaData, IActivityAreaOption, INeighborhoodData, INeighborhoodOption, ISubScenarioData } from '../types/api.types';
+} from "../types/filters.types";
+import { apiClient } from "@/shared/api";
 
 export class HomeService {
-  
   // ===== MÉTODOS PARA DATOS INICIALES (SSR) =====
-  
+
   /**
    * Obtener todas las áreas de actividad para datos iniciales
    * Cache largo porque son datos estáticos
    */
   static async getActivityAreas(): Promise<IActivityArea[]> {
-    const items = await apiClient.getCollection<IActivityAreaData>('/activity-areas', {
-      cacheStrategy: 'LongTerm', // 1 hora de cache
-    });
+    const items = await apiClient.getCollection<IActivityAreaData>(
+      "/activity-areas",
+      {
+        cacheStrategy: "LongTerm", // 1 hora de cache
+      },
+    );
 
-    return items.map(item => ({
+    return items.map((item) => ({
       id: String(item.id),
-      name: item.name || 'Sin nombre',
+      name: item.name || "Sin nombre",
     }));
   }
 
   /**
-   * Obtener todos los barrios para datos iniciales  
+   * Obtener todos los barrios para datos iniciales
    * Cache largo porque son datos estáticos
    */
   static async getNeighborhoods(): Promise<INeighborhood[]> {
-    const items = await apiClient.getCollection<INeighborhoodData>('/neighborhoods', {
-      cacheStrategy: 'LongTerm', // 1 hora de cache
-    });
+    const items = await apiClient.getCollection<INeighborhoodData>(
+      "/neighborhoods",
+      {
+        cacheStrategy: "LongTerm", // 1 hora de cache
+      },
+    );
 
-    return items.map(item => ({
-      id: String(item.id), 
-      name: item.name || 'Sin nombre',
+    return items.map((item) => ({
+      id: String(item.id),
+      name: item.name || "Sin nombre",
     }));
   }
 
@@ -45,19 +56,21 @@ export class HomeService {
    * Buscar sub-escenarios con filtros y paginación
    * Cache inteligente según si hay filtros específicos
    */
-  static async getSubScenarios(searchParams: {
-    page?: number;
-    limit?: number;
-    searchQuery?: string;
-    activityAreaId?: number;
-    neighborhoodId?: number;
-    hasCost?: boolean;
-    scenarioId?: number;
-  } = {}): Promise<{ data: ISubScenario[]; meta: any }> {
+  static async getSubScenarios(
+    searchParams: {
+      page?: number;
+      limit?: number;
+      searchQuery?: string;
+      activityAreaId?: number;
+      neighborhoodId?: number;
+      hasCost?: boolean;
+      scenarioId?: number;
+    } = {},
+  ): Promise<{ data: ISubScenario[]; meta: any }> {
     const {
       page = 1,
       limit = 10,
-      searchQuery = '',
+      searchQuery = "",
       activityAreaId,
       neighborhoodId,
       hasCost,
@@ -67,13 +80,13 @@ export class HomeService {
     // Lógica de cache: si hay filtros específicos del usuario, cache corto
     const hasUserFilters = Boolean(
       searchQuery ||
-      activityAreaId ||
-      neighborhoodId ||
-      hasCost !== undefined ||
-      scenarioId
+        activityAreaId ||
+        neighborhoodId ||
+        hasCost !== undefined ||
+        scenarioId,
     );
 
-    const cacheStrategy = hasUserFilters ? 'Search' : 'Medium';
+    const cacheStrategy = hasUserFilters ? "Search" : "Medium";
 
     const queryParams = {
       page,
@@ -85,7 +98,7 @@ export class HomeService {
       ...(scenarioId && scenarioId !== 0 && { scenarioId }),
     };
 
-    return apiClient.getPaginated<ISubScenarioData>('/sub-scenarios', {
+    return apiClient.getPaginated<ISubScenarioData>("/sub-scenarios", {
       params: queryParams,
       cacheStrategy,
     });
@@ -97,7 +110,9 @@ export class HomeService {
    * Buscar áreas de actividad para componentes de filtros
    * Compatible con la interfaz de search.service.ts
    */
-  static async searchActivityAreas(search: string = ""): Promise<IActivityAreaOption[]> {
+  static async searchActivityAreas(
+    search: string = "",
+  ): Promise<IActivityAreaOption[]> {
     const params: Record<string, any> = {
       limit: 20, // Cargar más resultados para búsqueda
     };
@@ -107,17 +122,20 @@ export class HomeService {
     }
 
     try {
-      const items = await apiClient.getCollection<IActivityAreaData>('/activity-areas', {
-        params,
-        cacheStrategy: 'Search', // Cache corto para búsquedas
-      });
+      const items = await apiClient.getCollection<IActivityAreaData>(
+        "/activity-areas",
+        {
+          params,
+          cacheStrategy: "Search", // Cache corto para búsquedas
+        },
+      );
 
-      return items.map(item => ({
+      return items.map((item) => ({
         id: Number(item.id),
-        name: item.name || '',
+        name: item.name || "",
       }));
     } catch (error) {
-      console.error('Error searching activity areas:', error);
+      console.error("Error searching activity areas:", error);
       return [];
     }
   }
@@ -126,7 +144,9 @@ export class HomeService {
    * Buscar barrios para componentes de filtros
    * Compatible con la interfaz de search.service.ts
    */
-  static async searchNeighborhoods(search: string = ""): Promise<INeighborhoodOption[]> {
+  static async searchNeighborhoods(
+    search: string = "",
+  ): Promise<INeighborhoodOption[]> {
     const params: Record<string, any> = {
       limit: 20,
     };
@@ -136,17 +156,20 @@ export class HomeService {
     }
 
     try {
-      const items = await apiClient.getCollection<INeighborhoodData>('/neighborhoods', {
-        params,
-        cacheStrategy: 'Search', // Cache corto para búsquedas
-      });
+      const items = await apiClient.getCollection<INeighborhoodData>(
+        "/neighborhoods",
+        {
+          params,
+          cacheStrategy: "Search", // Cache corto para búsquedas
+        },
+      );
 
-      return items.map(item => ({
+      return items.map((item) => ({
         id: Number(item.id),
-        name: item.name || '',
+        name: item.name || "",
       }));
     } catch (error) {
-      console.error('Error searching neighborhoods:', error);
+      console.error("Error searching neighborhoods:", error);
       return [];
     }
   }
@@ -156,11 +179,16 @@ export class HomeService {
   /**
    * Obtener escenarios destacados
    */
-  static async getFeaturedScenarios(limit: number = 6): Promise<ISubScenario[]> {
-    const { data } = await apiClient.getPaginated<ISubScenarioData>('/sub-scenarios/featured', {
-      params: { limit },
-      cacheStrategy: 'Medium',
-    });
+  static async getFeaturedScenarios(
+    limit: number = 6,
+  ): Promise<ISubScenario[]> {
+    const { data } = await apiClient.getPaginated<ISubScenarioData>(
+      "/sub-scenarios/featured",
+      {
+        params: { limit },
+        cacheStrategy: "Medium",
+      },
+    );
 
     return data;
   }
@@ -168,8 +196,8 @@ export class HomeService {
   /**
    * Obtener estadísticas básicas
    */
-  static async getHomeStats(): Promise<{ 
-    totalScenarios: number; 
+  static async getHomeStats(): Promise<{
+    totalScenarios: number;
     totalReservations: number;
     availableToday: number;
   }> {
@@ -177,8 +205,8 @@ export class HomeService {
       totalScenarios: number;
       totalReservations: number;
       availableToday: number;
-    }>('/stats/home', {
-      cacheStrategy: 'Medium',
+    }>("/stats/home", {
+      cacheStrategy: "Medium",
     });
   }
 }

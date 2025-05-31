@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Search, MapPin, Tag, X, Filter, Building } from "lucide-react";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  searchActivityAreasForSubScenarios,
+  searchNeighborhoodsForSubScenarios,
+  searchScenariosForSubScenarios,
+} from "../../api/sub-scenarios-search.service";
+import { FilterState } from "../../hooks/use-sub-scenario-data";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/shared/ui/card";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import {
-  searchScenariosForSubScenarios,
-  searchActivityAreasForSubScenarios,
-  searchNeighborhoodsForSubScenarios,
-} from "../../api/sub-scenarios-search.service";
-import { FilterState } from "../../hooks/use-sub-scenario-data";
+import { Input } from "@/shared/ui/input";
+import { Building, Filter, MapPin, Search, Tag, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface SubScenariosFiltersCardProps {
   visible: boolean;
@@ -27,16 +27,18 @@ interface SubScenariosFiltersCardProps {
   onToggle: () => void;
 }
 
-export const SubScenariosFiltersCard = ({ 
-  visible, 
-  filters, 
-  onChange, 
-  onToggle
+export const SubScenariosFiltersCard = ({
+  visible,
+  filters,
+  onChange,
+  onToggle,
 }: SubScenariosFiltersCardProps) => {
   // ⚠️ TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [localSearchValue, setLocalSearchValue] = useState(filters.search || "");
+  const [localSearchValue, setLocalSearchValue] = useState(
+    filters.search || "",
+  );
 
   // ✅ Sincronizar estado local con filtros externos (para limpiar correctamente)
   useEffect(() => {
@@ -55,7 +57,7 @@ export const SubScenariosFiltersCard = ({
       "scenario",
       val?.toString() ?? "",
       "Escenario seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -67,7 +69,7 @@ export const SubScenariosFiltersCard = ({
       "activity",
       val?.toString() ?? "",
       "Actividad seleccionada",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -79,7 +81,7 @@ export const SubScenariosFiltersCard = ({
       "neighborhood",
       val?.toString() ?? "",
       "Barrio seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -87,7 +89,7 @@ export const SubScenariosFiltersCard = ({
   const handleSearchChange = (q: string) => {
     // ✅ Actualizar inmediatamente el estado local (sin lag)
     setLocalSearchValue(q);
-    
+
     // ✅ Debounce solo para la petición al servidor
     if (searchTimeout.current !== null) {
       clearTimeout(searchTimeout.current);
@@ -104,7 +106,7 @@ export const SubScenariosFiltersCard = ({
     type: string,
     value: string,
     display: string,
-    add: boolean
+    add: boolean,
   ) => {
     setActiveFilters((chips) => {
       const next = [...chips.filter((c) => !c.startsWith(`${type}:`))];
@@ -148,11 +150,17 @@ export const SubScenariosFiltersCard = ({
             Filtros de búsqueda
           </CardTitle>
           <CardDescription className="flex items-center justify-between">
-            <span>Refina los resultados de sub-escenarios usando los siguientes filtros</span>
-            {(filters.search || filters.scenarioId || filters.activityAreaId || filters.neighborhoodId) && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+            <span>
+              Refina los resultados de sub-escenarios usando los siguientes
+              filtros
+            </span>
+            {(filters.search ||
+              filters.scenarioId ||
+              filters.activityAreaId ||
+              filters.neighborhoodId) && (
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={clearAllFilters}
                 className="text-xs"
               >
@@ -237,7 +245,9 @@ export const SubScenariosFiltersCard = ({
             {/* Chips */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-gray-100">
-                <span className="text-sm text-gray-500 mr-2">Filtros activos:</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  Filtros activos:
+                </span>
                 {activeFilters.map((chip) => {
                   const [, , display] = chip.split(":");
                   return (

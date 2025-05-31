@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/shared/ui/button"
+import { Button } from "@/shared/ui/button";
+import { useState } from "react";
 
 export function TimeSlots() {
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   const morningSlots = [
     "06:00 AM - 07:00 AM",
@@ -12,7 +12,7 @@ export function TimeSlots() {
     "08:00 AM - 09:00 AM",
     "10:00 AM - 11:00 AM",
     "11:00 AM - 12:00 PM",
-  ]
+  ];
 
   const afternoonSlots = [
     "12:00 PM - 01:00 PM",
@@ -24,11 +24,11 @@ export function TimeSlots() {
     "08:00 PM - 09:00 PM",
     "09:00 PM - 10:00 PM",
     "10:00 PM - 11:00 PM",
-  ]
+  ];
 
   const handleSelectSlot = (slot: string) => {
-    setSelectedSlot(slot)
-  }
+    setSelectedSlot(slot);
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-3">
@@ -62,6 +62,5 @@ export function TimeSlots() {
         </Button>
       ))}
     </div>
-  )
+  );
 }
-

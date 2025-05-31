@@ -7,9 +7,5 @@ export default function ReservationsLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <ProtectedRouteProvider>
-      {children}
-    </ProtectedRouteProvider>
-  );
+  return <ProtectedRouteProvider>{children}</ProtectedRouteProvider>;
 }

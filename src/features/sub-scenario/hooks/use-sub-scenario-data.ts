@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import {
-  subScenarioService,
-  scenarioService,
-  activityAreaService,
-  neighborhoodService,
-  SubScenario,
-  Scenario,
   ActivityArea,
   Neighborhood,
   PageMeta,
   PageOptions,
+  Scenario,
+  SubScenario,
+  activityAreaService,
+  neighborhoodService,
+  scenarioService,
+  subScenarioService,
 } from "@/services/api";
+import { useCallback, useEffect, useState } from "react";
 
 export interface FilterState extends PageOptions {
   search: string;
@@ -30,7 +30,9 @@ export function useSubScenarioData() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [activityAreas, setActivityAreas] = useState<ActivityArea[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
-  const [fieldSurfaceTypes, setSurface] = useState<{ id: number; name: string }[]>([]);
+  const [fieldSurfaceTypes, setSurface] = useState<
+    { id: number; name: string }[]
+  >([]);
   const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +42,11 @@ export function useSubScenarioData() {
     (async () => {
       try {
         setLoading(true);
-        const [{ data: scenariosData },
-          areas,
-          neighs] = await Promise.all([
-            scenarioService.getAll({ limit: 100 }),
-            activityAreaService.getAll(),
-            neighborhoodService.getAll(),
-          ]);
+        const [{ data: scenariosData }, areas, neighs] = await Promise.all([
+          scenarioService.getAll({ limit: 100 }),
+          activityAreaService.getAll(),
+          neighborhoodService.getAll(),
+        ]);
 
         setScenarios(scenariosData);
         setActivityAreas(Array.isArray(areas) ? areas : areas.data);
@@ -84,25 +84,35 @@ export function useSubScenarioData() {
     }
   }, []);
 
-  const onSearch = (q: string) => refreshSubScenarios({ ...filters, search: q, page: 1 });
-  const onPageChange = (page: number) => refreshSubScenarios({ ...filters, page });
-  const onFilterChange = (upd: Partial<FilterState>) => refreshSubScenarios({ ...filters, ...upd, page: 1 });
+  const onSearch = (q: string) =>
+    refreshSubScenarios({ ...filters, search: q, page: 1 });
+  const onPageChange = (page: number) =>
+    refreshSubScenarios({ ...filters, page });
+  const onFilterChange = (upd: Partial<FilterState>) =>
+    refreshSubScenarios({ ...filters, ...upd, page: 1 });
 
   // ─── CRUD actions ───────────────────────────────────────────────────────────
-  const createSubScenario = async (dto: Omit<SubScenario, "id"> & { images?: any[] }) => {
+  const createSubScenario = async (
+    dto: Omit<SubScenario, "id"> & { images?: any[] },
+  ) => {
     setLoading(true);
     try {
       const created = await subScenarioService.create(dto);
       if (dto.images?.length) {
         const fd = new FormData();
-        dto.images.forEach(img => {
+        dto.images.forEach((img) => {
           fd.append("files", img.file);
           fd.append("isFeature", img.isFeature ? "true" : "false");
         });
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sub-scenarios/${created.id}/images`, { method: "POST", body: fd });
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/sub-scenarios/${created.id}/images`,
+          { method: "POST", body: fd },
+        );
       }
       await refreshSubScenarios(filters);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateSubScenario = async (id: number, dto: Partial<SubScenario>) => {
@@ -110,13 +120,25 @@ export function useSubScenarioData() {
     try {
       await subScenarioService.update(id, dto);
       await refreshSubScenarios(filters);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
-    filters, subScenarios, scenarios, activityAreas, neighborhoods,
-    fieldSurfaceTypes, pageMeta, loading, error,
-    onSearch, onPageChange, onFilterChange,
-    createSubScenario, updateSubScenario,
+    filters,
+    subScenarios,
+    scenarios,
+    activityAreas,
+    neighborhoods,
+    fieldSurfaceTypes,
+    pageMeta,
+    loading,
+    error,
+    onSearch,
+    onPageChange,
+    onFilterChange,
+    createSubScenario,
+    updateSubScenario,
   };
 }

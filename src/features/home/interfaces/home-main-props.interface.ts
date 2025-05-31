@@ -1,4 +1,9 @@
-import { IActivityArea, IMetaDto, INeighborhood, ISubScenario } from "../types/filters.types";
+import {
+  IActivityArea,
+  IMetaDto,
+  INeighborhood,
+  ISubScenario,
+} from "../types/filters.types";
 
 export interface HomeMainProps {
   initialActivityAreas: IActivityArea[];

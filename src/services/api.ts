@@ -1,25 +1,25 @@
 // Configuración de la API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 // Función para agregar token de autenticación a los headers
 const getAuthHeaders = (): HeadersInit => {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
-  
+
   // Agregar token de autenticación si existe
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem("auth_token");
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  
+
   return headers;
 };
 
 // Función para construir URL con parámetros de consulta
 const buildUrl = (endpoint: string, params?: Record<string, any>): string => {
   const url = new URL(`${API_URL}${endpoint}`);
-  
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -27,18 +27,18 @@ const buildUrl = (endpoint: string, params?: Record<string, any>): string => {
       }
     });
   }
-  
+
   return url.toString();
 };
 
 // Función base para realizar peticiones
 const fetchApi = async <T>(
-  endpoint: string, 
+  endpoint: string,
   options?: RequestInit,
-  params?: Record<string, any>
+  params?: Record<string, any>,
 ): Promise<T> => {
   const url = buildUrl(endpoint, params);
-  
+
   const fetchOptions: RequestInit = {
     ...options,
     headers: {
@@ -46,23 +46,24 @@ const fetchApi = async <T>(
       ...(options?.headers || {}),
     },
   };
-  
+
   try {
     const response = await fetch(url, fetchOptions);
-    
+
     // Verificar si la respuesta es exitosa
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       throw new Error(
-        errorData?.message || `Error ${response.status}: ${response.statusText}`
+        errorData?.message ||
+          `Error ${response.status}: ${response.statusText}`,
       );
     }
-    
+
     // Parsear respuesta como JSON
     const data = await response.json();
     return data as T;
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error("API request failed:", error);
     throw error;
   }
 };
@@ -187,17 +188,17 @@ export interface SubScenario {
   numberOfPlayers?: number;
   recommendations?: string;
   createdAt: string; // o Date si prefieres parsearla
-  
+
   // IDs de relaciones
   scenarioId: number;
   activityAreaId?: number;
   fieldSurfaceTypeId?: number;
-  
+
   // Objetos de relaciones
   scenario?: Scenario;
   activityArea?: ActivityArea;
   fieldSurfaceType?: FieldSurfaceType;
-  
+
   // Imágenes asociadas
   imageGallery?: SubScenarioImageGallery;
   images?: SubScenarioImage[];
@@ -211,181 +212,225 @@ export const communeService = {
   getAll: async (options: PageOptions = {}): Promise<ApiResponse<Commune>> => {
     // Si no hay parámetros, devolver array simple
     if (!options.page && !options.limit && !options.search) {
-      return fetchApi<Commune[]>('/communes', { method: 'GET' });
+      return fetchApi<Commune[]>("/communes", { method: "GET" });
     }
     // Con parámetros, devolver respuesta paginada
-    return fetchApi<PagedResponse<Commune>>('/communes', { method: 'GET' }, options);
+    return fetchApi<PagedResponse<Commune>>(
+      "/communes",
+      { method: "GET" },
+      options,
+    );
   },
   getById: async (id: number): Promise<Commune> => {
-    return fetchApi<Commune>(`/communes/${id}`, { method: 'GET' });
+    return fetchApi<Commune>(`/communes/${id}`, { method: "GET" });
   },
   create: async (data: CreateCommuneDto): Promise<Commune> => {
-    return fetchApi<Commune>('/communes', {
-      method: 'POST',
+    return fetchApi<Commune>("/communes", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
   update: async (id: number, data: UpdateCommuneDto): Promise<Commune> => {
     return fetchApi<Commune>(`/communes/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
   delete: async (id: number): Promise<void> => {
-    return fetchApi<void>(`/communes/${id}`, { method: 'DELETE' });
+    return fetchApi<void>(`/communes/${id}`, { method: "DELETE" });
   },
 };
 
 // Servicios para Scenarios
 export const scenarioService = {
-  getAll: async (options: PageOptions = {}): Promise<PagedResponse<Scenario>> => {
-    return fetchApi<PagedResponse<Scenario>>('/scenarios', { method: 'GET' }, options);
+  getAll: async (
+    options: PageOptions = {},
+  ): Promise<PagedResponse<Scenario>> => {
+    return fetchApi<PagedResponse<Scenario>>(
+      "/scenarios",
+      { method: "GET" },
+      options,
+    );
   },
   getById: async (id: number): Promise<Scenario> => {
-    return fetchApi<Scenario>(`/scenarios/${id}`, { method: 'GET' });
+    return fetchApi<Scenario>(`/scenarios/${id}`, { method: "GET" });
   },
   create: async (data: CreateScenarioDto): Promise<Scenario> => {
-    return fetchApi<Scenario>('/scenarios', {
-      method: 'POST',
+    return fetchApi<Scenario>("/scenarios", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
   update: async (id: number, data: UpdateScenarioDto): Promise<Scenario> => {
     return fetchApi<Scenario>(`/scenarios/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
   delete: async (id: number): Promise<void> => {
-    return fetchApi<void>(`/scenarios/${id}`, { method: 'DELETE' });
+    return fetchApi<void>(`/scenarios/${id}`, { method: "DELETE" });
   },
 };
 
 // Servicios para Sub-Scenarios
 export const subScenarioService = {
-  getAll: async (options: PageOptions = {}): Promise<PagedResponse<SubScenario>> => {
-    return fetchApi<PagedResponse<SubScenario>>('/sub-scenarios', { method: 'GET' }, options);
+  getAll: async (
+    options: PageOptions = {},
+  ): Promise<PagedResponse<SubScenario>> => {
+    return fetchApi<PagedResponse<SubScenario>>(
+      "/sub-scenarios",
+      { method: "GET" },
+      options,
+    );
   },
   getById: async (id: number): Promise<SubScenario> => {
-    return fetchApi<SubScenario>(`/sub-scenarios/${id}`, { method: 'GET' });
+    return fetchApi<SubScenario>(`/sub-scenarios/${id}`, { method: "GET" });
   },
   create: async (data: Partial<SubScenario>): Promise<SubScenario> => {
-    return fetchApi<SubScenario>('/sub-scenarios', {
-      method: 'POST',
+    return fetchApi<SubScenario>("/sub-scenarios", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
-  update: async (id: number, data: Partial<SubScenario>): Promise<SubScenario> => {
+  update: async (
+    id: number,
+    data: Partial<SubScenario>,
+  ): Promise<SubScenario> => {
     return fetchApi<SubScenario>(`/sub-scenarios/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
   delete: async (id: number): Promise<void> => {
-    return fetchApi<void>(`/sub-scenarios/${id}`, { method: 'DELETE' });
+    return fetchApi<void>(`/sub-scenarios/${id}`, { method: "DELETE" });
   },
   getImages: async (subScenarioId: number): Promise<SubScenarioImage[]> => {
-    return fetchApi<SubScenarioImage[]>(`/sub-scenarios/${subScenarioId}/images`, { method: 'GET' });
+    return fetchApi<SubScenarioImage[]>(
+      `/sub-scenarios/${subScenarioId}/images`,
+      { method: "GET" },
+    );
   },
-  uploadImages: async (subScenarioId: number, formData: FormData): Promise<SubScenarioImage[]> => {
+  uploadImages: async (
+    subScenarioId: number,
+    formData: FormData,
+  ): Promise<SubScenarioImage[]> => {
     // Esta función no utiliza fetchApi porque necesitamos manejar formData para subir archivos
     const url = `${API_URL}/sub-scenarios/${subScenarioId}/images`;
-    
+
     // Para FormData no debemos establecer el Content-Type, el navegador lo hará automáticamente
     const headers: HeadersInit = {};
-    
+
     // Agregar token de autenticación si existe
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem("auth_token");
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers,
-      body: formData
+      body: formData,
     });
-    
+
     // Verificar si la respuesta es exitosa
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       throw new Error(
-        errorData?.message || `Error ${response.status}: ${response.statusText}`
+        errorData?.message ||
+          `Error ${response.status}: ${response.statusText}`,
       );
     }
-    
+
     // Parsear respuesta como JSON
     const data = await response.json();
     return data;
-  }
+  },
 };
 
 // Servicios para Activity Areas
 export const activityAreaService = {
-  getAll: async (options: PageOptions = {}): Promise<ApiResponse<ActivityArea>> => {
-    return fetchApi<ApiResponse<ActivityArea>>('/activity-areas', { method: 'GET' }, options);
-  }
+  getAll: async (
+    options: PageOptions = {},
+  ): Promise<ApiResponse<ActivityArea>> => {
+    return fetchApi<ApiResponse<ActivityArea>>(
+      "/activity-areas",
+      { method: "GET" },
+      options,
+    );
+  },
 };
 
 // Servicios para Neighborhoods (actualizado con CRUD)
 export const neighborhoodService = {
-  getAll: async (options: PageOptions = {}): Promise<ApiResponse<Neighborhood>> => {
+  getAll: async (
+    options: PageOptions = {},
+  ): Promise<ApiResponse<Neighborhood>> => {
     // Si no hay parámetros, devolver array simple
     if (!options.page && !options.limit && !options.search) {
-      return fetchApi<Neighborhood[]>('/neighborhoods', { method: 'GET' });
+      return fetchApi<Neighborhood[]>("/neighborhoods", { method: "GET" });
     }
     // Con parámetros, devolver respuesta paginada
-    return fetchApi<PagedResponse<Neighborhood>>('/neighborhoods', { method: 'GET' }, options);
+    return fetchApi<PagedResponse<Neighborhood>>(
+      "/neighborhoods",
+      { method: "GET" },
+      options,
+    );
   },
   getById: async (id: number): Promise<Neighborhood> => {
-    return fetchApi<Neighborhood>(`/neighborhoods/${id}`, { method: 'GET' });
+    return fetchApi<Neighborhood>(`/neighborhoods/${id}`, { method: "GET" });
   },
   create: async (data: CreateNeighborhoodDto): Promise<Neighborhood> => {
-    return fetchApi<Neighborhood>('/neighborhoods', {
-      method: 'POST',
+    return fetchApi<Neighborhood>("/neighborhoods", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
-  update: async (id: number, data: UpdateNeighborhoodDto): Promise<Neighborhood> => {
+  update: async (
+    id: number,
+    data: UpdateNeighborhoodDto,
+  ): Promise<Neighborhood> => {
     return fetchApi<Neighborhood>(`/neighborhoods/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
   delete: async (id: number): Promise<void> => {
-    return fetchApi<void>(`/neighborhoods/${id}`, { method: 'DELETE' });
+    return fetchApi<void>(`/neighborhoods/${id}`, { method: "DELETE" });
   },
 };
 
 // Métodos CRUD genéricos para futura extensión
 export const apiService = {
-  get: async <T>(endpoint: string, params?: Record<string, any>): Promise<T> => {
-    return fetchApi<T>(endpoint, { method: 'GET' }, params);
+  get: async <T>(
+    endpoint: string,
+    params?: Record<string, any>,
+  ): Promise<T> => {
+    return fetchApi<T>(endpoint, { method: "GET" }, params);
   },
-  
+
   post: async <T>(endpoint: string, data: any): Promise<T> => {
     return fetchApi<T>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
-  
+
   put: async <T>(endpoint: string, data: any): Promise<T> => {
     return fetchApi<T>(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
-  
+
   patch: async <T>(endpoint: string, data: any): Promise<T> => {
     return fetchApi<T>(endpoint, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   },
-  
+
   delete: async <T>(endpoint: string): Promise<T> => {
-    return fetchApi<T>(endpoint, { method: 'DELETE' });
+    return fetchApi<T>(endpoint, { method: "DELETE" });
   },
 };
 
@@ -394,68 +439,103 @@ export default apiService;
 // Servicios específicos para imágenes de sub-escenarios
 export const subScenarioImageService = {
   // Obtiene todas las imágenes de un sub-escenario
-  getBySubScenarioId: async (subScenarioId: number): Promise<SubScenarioImage[]> => {
-    return fetchApi<SubScenarioImage[]>(`/sub-scenarios/${subScenarioId}/images`, { method: 'GET' });
+  getBySubScenarioId: async (
+    subScenarioId: number,
+  ): Promise<SubScenarioImage[]> => {
+    return fetchApi<SubScenarioImage[]>(
+      `/sub-scenarios/${subScenarioId}/images`,
+      { method: "GET" },
+    );
   },
-  
+
   // Actualiza una imagen específica (para cambiar si es destacada o su orden)
-  updateImage: async (subScenarioId: number, imageId: number, data: { isFeature?: boolean, displayOrder?: number }): Promise<SubScenarioImage> => {
-    return fetchApi<SubScenarioImage>(`/sub-scenarios/${subScenarioId}/images/${imageId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
+  updateImage: async (
+    subScenarioId: number,
+    imageId: number,
+    data: { isFeature?: boolean; displayOrder?: number },
+  ): Promise<SubScenarioImage> => {
+    return fetchApi<SubScenarioImage>(
+      `/sub-scenarios/${subScenarioId}/images/${imageId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+    );
   },
-  
+
   // Sube múltiples imágenes
-  uploadMultiple: async (subScenarioId: number, files: File[], isFeatureIndexes: number[] = []): Promise<SubScenarioImage[]> => {
+  uploadMultiple: async (
+    subScenarioId: number,
+    files: File[],
+    isFeatureIndexes: number[] = [],
+  ): Promise<SubScenarioImage[]> => {
     const formData = new FormData();
-    
+
     // Agregar archivos al FormData
     files.forEach((file, index) => {
-      formData.append('files', file);
-      
+      formData.append("files", file);
+
       // Determinar si esta imagen es destacada
       const isFeature = isFeatureIndexes.includes(index);
-      formData.append('isFeature', isFeature.toString());
+      formData.append("isFeature", isFeature.toString());
     });
-    
+
     // Usar la misma lógica de uploadImages en subScenarioService
     return subScenarioService.uploadImages(subScenarioId, formData);
   },
-  
+
   // Sube una sola imagen
-  uploadSingle: async (subScenarioId: number, file: File, isFeature: boolean = false): Promise<SubScenarioImage> => {
+  uploadSingle: async (
+    subScenarioId: number,
+    file: File,
+    isFeature: boolean = false,
+  ): Promise<SubScenarioImage> => {
     const formData = new FormData();
-    formData.append('files', file);
-    formData.append('isFeature', isFeature.toString());
-    
-    const images = await subScenarioService.uploadImages(subScenarioId, formData);
+    formData.append("files", file);
+    formData.append("isFeature", isFeature.toString());
+
+    const images = await subScenarioService.uploadImages(
+      subScenarioId,
+      formData,
+    );
     return images[0]; // Devolver la primera (y única) imagen subida
   },
-  
+
   // Establece una imagen como destacada y las demás como no destacadas
-  setAsFeature: async (subScenarioId: number, imageId: number): Promise<SubScenarioImage> => {
-    return subScenarioImageService.updateImage(subScenarioId, imageId, { isFeature: true });
+  setAsFeature: async (
+    subScenarioId: number,
+    imageId: number,
+  ): Promise<SubScenarioImage> => {
+    return subScenarioImageService.updateImage(subScenarioId, imageId, {
+      isFeature: true,
+    });
   },
 };
 
 // Funciones utilitarias para trabajar con imágenes
 export const imageUtils = {
   // Obtiene la imagen destacada de un sub-escenario
-  getFeatureImage: (subScenario?: SubScenario): SubScenarioImage | undefined => {
+  getFeatureImage: (
+    subScenario?: SubScenario,
+  ): SubScenarioImage | undefined => {
     return subScenario?.imageGallery?.featured;
   },
-  
+
   // Obtiene la URL de la imagen destacada, o una imagen por defecto si no hay
-  getFeatureImageUrl: (subScenario?: SubScenario, defaultImage: string = '/placeholder.jpg'): string => {
+  getFeatureImageUrl: (
+    subScenario?: SubScenario,
+    defaultImage: string = "/placeholder.jpg",
+  ): string => {
     return subScenario?.imageGallery?.featured?.url || defaultImage;
   },
-  
+
   // Comprueba si un sub-escenario tiene imágenes
   hasImages: (subScenario?: SubScenario): boolean => {
-    return !!subScenario?.imageGallery?.count && subScenario.imageGallery.count > 0;
+    return (
+      !!subScenario?.imageGallery?.count && subScenario.imageGallery.count > 0
+    );
   },
-  
+
   // Obtiene el número de imágenes de un sub-escenario
   getImageCount: (subScenario?: SubScenario): number => {
     return subScenario?.imageGallery?.count || 0;

@@ -1,15 +1,5 @@
-
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Loader2,
-  RefreshCw,
-  LogIn,
-  Send,
-  ArrowLeft,
-  Home,
-} from "lucide-react";
+import { ResendConfirmationForm } from "@/features/confirm/components/organisms/resend-confirmation-form";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -18,12 +8,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import React, { Suspense } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Home,
+  Loader2,
+  LogIn,
+  RefreshCw,
+  Send,
+  XCircle,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-import { ResendConfirmationForm } from "@/features/confirm/components/organisms/resend-confirmation-form";
+import React, { Suspense } from "react";
 
 interface ConfirmPageProps {
   searchParams: {
@@ -33,7 +31,7 @@ interface ConfirmPageProps {
   };
 }
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default function ConfirmPage({ searchParams }: ConfirmPageProps) {
@@ -42,24 +40,24 @@ export default function ConfirmPage({ searchParams }: ConfirmPageProps) {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white from-slate-50 to-slate-100">
       <div className="mb-8 text-center">
-      <Link href={"/"}>
-            <Image
-              src="https://inderbu.gov.co/wp-content/uploads/2024/07/LOGO-3.png"
-              alt="INDERBU Logo"
-              width={300}
-              height={60}
-              style={{
-                height: "auto",
-                objectFit: "contain",
-              }}
-            />
-          </Link>
+        <Link href={"/"}>
+          <Image
+            src="https://inderbu.gov.co/wp-content/uploads/2024/07/LOGO-3.png"
+            alt="INDERBU Logo"
+            width={300}
+            height={60}
+            style={{
+              height: "auto",
+              objectFit: "contain",
+            }}
+          />
+        </Link>
         <h3 className="text-lg text-muted-foreground font-bold mt-3">
           {view === "resend"
             ? "Reenvío de confirmación"
             : view === "success"
-            ? "¡Correo enviado!"
-            : "Verificación de cuenta"}
+              ? "¡Correo enviado!"
+              : "Verificación de cuenta"}
         </h3>
       </div>
 
@@ -95,7 +93,6 @@ function ResendConfirmationSuccess() {
       </CardContent>
 
       <CardFooter className="flex flex-col gap-3 pt-2">
-
         <Link
           href="/"
           className="text-xs text-center text-muted-foreground hover:underline mt-2 inline-flex items-center justify-center"
@@ -134,7 +131,7 @@ async function TokenVerifier({ token }: { token: string }) {
   try {
     const res = await fetch(
       `http://localhost:3001/users/confirm?token=${encodeURIComponent(token)}`,
-      { cache: "no-store" }
+      { cache: "no-store" },
     );
 
     if (res.ok) {
@@ -148,7 +145,8 @@ async function TokenVerifier({ token }: { token: string }) {
     }
   } catch {
     status = "invalid";
-    message = "Error al conectar con el servidor. Por favor, inténtalo de nuevo más tarde.";
+    message =
+      "Error al conectar con el servidor. Por favor, inténtalo de nuevo más tarde.";
   }
 
   if (status === "success") {
@@ -226,17 +224,25 @@ function TokenMessage({
   };
 
   return (
-    <Card className={`w-full max-w-md border-2 shadow-lg ${statusColors[status]}`}>
+    <Card
+      className={`w-full max-w-md border-2 shadow-lg ${statusColors[status]}`}
+    >
       <CardHeader className="flex flex-col items-center text-center pb-2">
         <div className="mb-4">{icon}</div>
         <CardTitle className="text-xl font-bold">{title}</CardTitle>
-        <CardDescription className="text-center mt-2 text-sm">{message}</CardDescription>
+        <CardDescription className="text-center mt-2 text-sm">
+          {message}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="text-center text-sm text-muted-foreground">
         {status === "success" && <p>Ya puedes acceder a la plataforma.</p>}
-        {status === "expired" && <p>Los enlaces duran 24 horas. Solicita uno nuevo.</p>}
-        {status === "invalid" && <p>El enlace no es válido. Solicita uno nuevo.</p>}
+        {status === "expired" && (
+          <p>Los enlaces duran 24 horas. Solicita uno nuevo.</p>
+        )}
+        {status === "invalid" && (
+          <p>El enlace no es válido. Solicita uno nuevo.</p>
+        )}
       </CardContent>
 
       <CardFooter className="flex flex-col gap-3 pt-2">
@@ -265,7 +271,9 @@ function LoadingState() {
     <Card className="w-full max-w-md border shadow-lg">
       <CardHeader className="flex flex-col items-center text-center pb-6">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <CardTitle className="mt-4 text-xl font-bold">Verificando token...</CardTitle>
+        <CardTitle className="mt-4 text-xl font-bold">
+          Verificando token...
+        </CardTitle>
         <CardDescription className="text-center mt-2">
           Espera un momento, por favor.
         </CardDescription>

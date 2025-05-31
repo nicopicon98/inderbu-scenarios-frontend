@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
-import { 
-  LayoutDashboard, 
-  CalendarRange, 
-  Settings, 
-  Users, 
-  Map, 
-  Clock,
-  ChevronDown,
-  ChevronRight
-} from "lucide-react";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import {
+  CalendarRange,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  LayoutDashboard,
+  Map,
+  Settings,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface MenuItem {
   title: string;
@@ -26,7 +26,7 @@ interface MenuItem {
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  
+
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
       title: "Dashboard",
@@ -96,13 +96,17 @@ export function DashboardSidebar() {
                       onClick={() => toggleSubmenu(index)}
                       className={cn(
                         "flex items-center w-full px-4 py-2 text-sm rounded-md transition-colors",
-                        "hover:bg-gray-100 text-gray-700 hover:text-blue-600"
+                        "hover:bg-gray-100 text-gray-700 hover:text-blue-600",
                       )}
                     >
                       <span className="mr-3">{item.icon}</span>
                       <span>{item.title}</span>
                       <span className="ml-auto">
-                        {item.isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {item.isOpen ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}
                       </span>
                     </button>
                     {item.isOpen && item.submenu && (
@@ -115,7 +119,7 @@ export function DashboardSidebar() {
                                 "flex items-center px-4 py-2 text-sm rounded-md transition-colors",
                                 subItem.isActive
                                   ? "bg-blue-50 text-blue-600 font-medium"
-                                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-600",
                               )}
                             >
                               {subItem.title}
@@ -132,7 +136,7 @@ export function DashboardSidebar() {
                       "flex items-center px-4 py-2 text-sm rounded-md transition-colors",
                       item.isActive
                         ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-blue-600",
                     )}
                   >
                     <span className="mr-3">{item.icon}</span>

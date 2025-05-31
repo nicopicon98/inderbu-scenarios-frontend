@@ -1,11 +1,4 @@
-import {
-  Calendar,
-  MapPin,
-  Users,
-  Map,
-  Settings,
-  BarChart,
-} from "lucide-react";
+import { BarChart, Calendar, Map, MapPin, Settings, Users } from "lucide-react";
 
 export const reportItems = [
   // {

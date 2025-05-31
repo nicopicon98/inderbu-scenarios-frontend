@@ -1,40 +1,44 @@
-import { useState } from 'react';
-import { ActivityArea, Neighborhood, FiltersState } from '../types/filters.types';
+import {
+  ActivityArea,
+  FiltersState,
+  Neighborhood,
+} from "../types/filters.types";
+import { useState } from "react";
 
 interface UseHomeFiltersProps {
   initialActivityAreas: ActivityArea[];
   initialNeighborhoods: Neighborhood[];
 }
 
-export function useHomeFilters({ 
-  initialActivityAreas, 
-  initialNeighborhoods 
+export function useHomeFilters({
+  initialActivityAreas,
+  initialNeighborhoods,
 }: UseHomeFiltersProps) {
   const [activityAreas] = useState<ActivityArea[]>(initialActivityAreas);
   const [neighborhoods] = useState<Neighborhood[]>(initialNeighborhoods);
   const [filters, setFilters] = useState<FiltersState>({
     activityArea: null,
     neighborhood: null,
-    searchQuery: ''
+    searchQuery: "",
   });
 
   const updateActivityArea = (id: string | null) => {
-    setFilters(prev => ({ ...prev, activityArea: id }));
+    setFilters((prev) => ({ ...prev, activityArea: id }));
   };
 
   const updateNeighborhood = (id: string | null) => {
-    setFilters(prev => ({ ...prev, neighborhood: id }));
+    setFilters((prev) => ({ ...prev, neighborhood: id }));
   };
 
   const updateSearchQuery = (query: string) => {
-    setFilters(prev => ({ ...prev, searchQuery: query }));
+    setFilters((prev) => ({ ...prev, searchQuery: query }));
   };
 
   const clearFilters = () => {
     setFilters({
       activityArea: null,
       neighborhood: null,
-      searchQuery: ''
+      searchQuery: "",
     });
   };
 
@@ -45,6 +49,6 @@ export function useHomeFilters({
     updateActivityArea,
     updateNeighborhood,
     updateSearchQuery,
-    clearFilters
+    clearFilters,
   };
 }

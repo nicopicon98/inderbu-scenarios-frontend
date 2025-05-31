@@ -1,19 +1,29 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
-
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+  ApiResponse,
+  Commune,
+  CreateCommuneDto,
+  CreateNeighborhoodDto,
+  Neighborhood,
+  PageMeta,
+  PageOptions,
+  PagedResponse,
+  UpdateCommuneDto,
+  UpdateNeighborhoodDto,
+  communeService,
+  neighborhoodService,
+} from "@/services/api";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/shared/ui/dialog";
 import {
   DropdownMenu,
@@ -22,21 +32,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import {
-  Plus,
-  FileEdit,
-  Search,
-  Filter,
-  Download,
-  MoreHorizontal,
-  MapPin,
-  Loader2,
-  Building2,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Textarea } from "@/shared/ui/textarea";
-import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -46,24 +43,20 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/ui/pagination";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Badge } from "@/shared/ui/badge";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Textarea } from "@/shared/ui/textarea";
 import {
-  communeService,
-  neighborhoodService,
-  Commune,
-  Neighborhood,
-  PageOptions,
-  PageMeta,
-  CreateCommuneDto,
-  UpdateCommuneDto,
-  CreateNeighborhoodDto,
-  UpdateNeighborhoodDto,
-  PagedResponse,
-  ApiResponse,
-} from "@/services/api";
+  Building2,
+  Download,
+  FileEdit,
+  Filter,
+  Loader2,
+  MapPin,
+  MoreHorizontal,
+  Plus,
+  Search,
+} from "lucide-react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // ⭐ COMPONENTES SEPARADOS PARA EVITAR RE-CREACIÓN
@@ -78,24 +71,34 @@ interface ValidatedInputProps {
   className?: string;
 }
 
-const ValidatedInput = memo(({ 
-  id, label, value, onChange, error, placeholder, required, className 
-}: ValidatedInputProps) => (
-  <div className="space-y-1">
-    <Label htmlFor={id} className="text-sm font-medium">
-      {label}{required && <span className="text-red-500 ml-1">*</span>}
-    </Label>
-    <Input
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={`bg-white h-9 ${error ? 'border-red-500 focus:border-red-500' : ''} ${className || ''}`}
-    />
-    {error && <p className="text-sm text-red-600">{error}</p>}
-  </div>
-));
-ValidatedInput.displayName = 'ValidatedInput';
+const ValidatedInput = memo(
+  ({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    placeholder,
+    required,
+    className,
+  }: ValidatedInputProps) => (
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`bg-white h-9 ${error ? "border-red-500 focus:border-red-500" : ""} ${className || ""}`}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  ),
+);
+ValidatedInput.displayName = "ValidatedInput";
 
 interface ValidatedSelectProps {
   id: string;
@@ -108,32 +111,42 @@ interface ValidatedSelectProps {
   required?: boolean;
 }
 
-const ValidatedSelect = memo(({ 
-  id, label, value, onChange, options, error, placeholder, required 
-}: ValidatedSelectProps) => (
-  <div className="space-y-1">
-    <Label htmlFor={id} className="text-sm font-medium">
-      {label}{required && <span className="text-red-500 ml-1">*</span>}
-    </Label>
-    <select
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-        error ? 'border-red-500 focus-visible:ring-red-500' : ''
-      }`}
-    >
-      <option value="">{placeholder || 'Seleccione una opción...'}</option>
-      {options.map(option => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
-    {error && <p className="text-sm text-red-600">{error}</p>}
-  </div>
-));
-ValidatedSelect.displayName = 'ValidatedSelect';
+const ValidatedSelect = memo(
+  ({
+    id,
+    label,
+    value,
+    onChange,
+    options,
+    error,
+    placeholder,
+    required,
+  }: ValidatedSelectProps) => (
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          error ? "border-red-500 focus-visible:ring-red-500" : ""
+        }`}
+      >
+        <option value="">{placeholder || "Seleccione una opción..."}</option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
+        ))}
+      </select>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  ),
+);
+ValidatedSelect.displayName = "ValidatedSelect";
 
 // Interfaces para nuestro estado y filtros
 interface FilterState {
@@ -145,12 +158,12 @@ interface FilterState {
 // Interfaces para formularios
 interface CommuneFormData {
   name: string;
-  cityId: number | '';
+  cityId: number | "";
 }
 
 interface NeighborhoodFormData {
   name: string;
-  communeId: number | '';
+  communeId: number | "";
 }
 
 // Estado para errores de validación
@@ -166,21 +179,23 @@ interface NeighborhoodFormErrors {
 
 export default function LocationsManagement() {
   const [activeTab, setActiveTab] = useState("communes");
-  
+
   // Estados para modales
   const [isCommuneModalOpen, setIsCommuneModalOpen] = useState(false);
   const [isCommuneEditOpen, setIsCommuneEditOpen] = useState(false);
   const [isNeighborhoodModalOpen, setIsNeighborhoodModalOpen] = useState(false);
   const [isNeighborhoodEditOpen, setIsNeighborhoodEditOpen] = useState(false);
-  
+
   const [selectedCommune, setSelectedCommune] = useState<Commune | null>(null);
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
+  const [selectedNeighborhood, setSelectedNeighborhood] =
+    useState<Neighborhood | null>(null);
 
   // Datos desde API
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [communePageMeta, setCommunePageMeta] = useState<PageMeta | null>(null);
-  const [neighborhoodPageMeta, setNeighborhoodPageMeta] = useState<PageMeta | null>(null);
+  const [neighborhoodPageMeta, setNeighborhoodPageMeta] =
+    useState<PageMeta | null>(null);
 
   // Manejo de carga y errores
   const [loading, setLoading] = useState(true);
@@ -201,151 +216,170 @@ export default function LocationsManagement() {
 
   // Estados para formularios
   const [createCommuneData, setCreateCommuneData] = useState<CommuneFormData>({
-    name: '',
-    cityId: '',
+    name: "",
+    cityId: "",
   });
 
   const [updateCommuneData, setUpdateCommuneData] = useState<CommuneFormData>({
-    name: '',
-    cityId: '',
+    name: "",
+    cityId: "",
   });
 
-  const [createNeighborhoodData, setCreateNeighborhoodData] = useState<NeighborhoodFormData>({
-    name: '',
-    communeId: '',
-  });
+  const [createNeighborhoodData, setCreateNeighborhoodData] =
+    useState<NeighborhoodFormData>({
+      name: "",
+      communeId: "",
+    });
 
-  const [updateNeighborhoodData, setUpdateNeighborhoodData] = useState<NeighborhoodFormData>({
-    name: '',
-    communeId: '',
-  });
+  const [updateNeighborhoodData, setUpdateNeighborhoodData] =
+    useState<NeighborhoodFormData>({
+      name: "",
+      communeId: "",
+    });
 
-  const [communeFormErrors, setCommuneFormErrors] = useState<CommuneFormErrors>({});
-  const [neighborhoodFormErrors, setNeighborhoodFormErrors] = useState<NeighborhoodFormErrors>({});
+  const [communeFormErrors, setCommuneFormErrors] = useState<CommuneFormErrors>(
+    {},
+  );
+  const [neighborhoodFormErrors, setNeighborhoodFormErrors] =
+    useState<NeighborhoodFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Datos auxiliares (ciudades para comunas)
   const [cities] = useState([
-    { id: 1, name: 'Bucaramanga' } // Por ahora hardcodeado, después se puede traer de la API
+    { id: 1, name: "Bucaramanga" }, // Por ahora hardcodeado, después se puede traer de la API
   ]);
 
   // Funciones de validación
   const validateCommuneForm = (data: CommuneFormData): CommuneFormErrors => {
     const errors: CommuneFormErrors = {};
-    
+
     if (!data.name.trim()) {
-      errors.name = 'El nombre es requerido';
+      errors.name = "El nombre es requerido";
     } else if (data.name.length < 3) {
-      errors.name = 'El nombre debe tener al menos 3 caracteres';
+      errors.name = "El nombre debe tener al menos 3 caracteres";
     } else if (data.name.length > 150) {
-      errors.name = 'El nombre no puede exceder 150 caracteres';
+      errors.name = "El nombre no puede exceder 150 caracteres";
     }
-    
+
     if (!data.cityId) {
-      errors.cityId = 'Debe seleccionar una ciudad';
+      errors.cityId = "Debe seleccionar una ciudad";
     }
-    
+
     return errors;
   };
 
-  const validateNeighborhoodForm = (data: NeighborhoodFormData): NeighborhoodFormErrors => {
+  const validateNeighborhoodForm = (
+    data: NeighborhoodFormData,
+  ): NeighborhoodFormErrors => {
     const errors: NeighborhoodFormErrors = {};
-    
+
     if (!data.name.trim()) {
-      errors.name = 'El nombre es requerido';
+      errors.name = "El nombre es requerido";
     } else if (data.name.length < 3) {
-      errors.name = 'El nombre debe tener al menos 3 caracteres';
+      errors.name = "El nombre debe tener al menos 3 caracteres";
     } else if (data.name.length > 150) {
-      errors.name = 'El nombre no puede exceder 150 caracteres';
+      errors.name = "El nombre no puede exceder 150 caracteres";
     }
-    
+
     if (!data.communeId) {
-      errors.communeId = 'Debe seleccionar una comuna';
+      errors.communeId = "Debe seleccionar una comuna";
     }
-    
+
     return errors;
   };
 
   // Handlers optimizados con useCallback
-  const handleCreateCommuneFieldChange = useCallback((field: keyof CommuneFormData, value: string | number) => {
-    setCreateCommuneData(prev => ({ ...prev, [field]: value }));
-    setCommuneFormErrors(prev => {
-      if (prev[field as keyof CommuneFormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof CommuneFormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleCreateCommuneFieldChange = useCallback(
+    (field: keyof CommuneFormData, value: string | number) => {
+      setCreateCommuneData((prev) => ({ ...prev, [field]: value }));
+      setCommuneFormErrors((prev) => {
+        if (prev[field as keyof CommuneFormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof CommuneFormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
-  const handleUpdateCommuneFieldChange = useCallback((field: keyof CommuneFormData, value: string | number) => {
-    setUpdateCommuneData(prev => ({ ...prev, [field]: value }));
-    setCommuneFormErrors(prev => {
-      if (prev[field as keyof CommuneFormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof CommuneFormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleUpdateCommuneFieldChange = useCallback(
+    (field: keyof CommuneFormData, value: string | number) => {
+      setUpdateCommuneData((prev) => ({ ...prev, [field]: value }));
+      setCommuneFormErrors((prev) => {
+        if (prev[field as keyof CommuneFormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof CommuneFormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
-  const handleCreateNeighborhoodFieldChange = useCallback((field: keyof NeighborhoodFormData, value: string | number) => {
-    setCreateNeighborhoodData(prev => ({ ...prev, [field]: value }));
-    setNeighborhoodFormErrors(prev => {
-      if (prev[field as keyof NeighborhoodFormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof NeighborhoodFormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleCreateNeighborhoodFieldChange = useCallback(
+    (field: keyof NeighborhoodFormData, value: string | number) => {
+      setCreateNeighborhoodData((prev) => ({ ...prev, [field]: value }));
+      setNeighborhoodFormErrors((prev) => {
+        if (prev[field as keyof NeighborhoodFormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof NeighborhoodFormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
-  const handleUpdateNeighborhoodFieldChange = useCallback((field: keyof NeighborhoodFormData, value: string | number) => {
-    setUpdateNeighborhoodData(prev => ({ ...prev, [field]: value }));
-    setNeighborhoodFormErrors(prev => {
-      if (prev[field as keyof NeighborhoodFormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof NeighborhoodFormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleUpdateNeighborhoodFieldChange = useCallback(
+    (field: keyof NeighborhoodFormData, value: string | number) => {
+      setUpdateNeighborhoodData((prev) => ({ ...prev, [field]: value }));
+      setNeighborhoodFormErrors((prev) => {
+        if (prev[field as keyof NeighborhoodFormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof NeighborhoodFormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
   // Funciones CRUD para Comunas
   const handleCreateCommune = async () => {
     try {
       setIsSubmitting(true);
       setCommuneFormErrors({});
-      
+
       const errors = validateCommuneForm(createCommuneData);
       if (Object.keys(errors).length > 0) {
         setCommuneFormErrors(errors);
         return;
       }
-      
+
       const createData: CreateCommuneDto = {
         name: createCommuneData.name.trim(),
-        cityId: Number(createCommuneData.cityId)
+        cityId: Number(createCommuneData.cityId),
       };
-      
+
       const newCommune = await communeService.create(createData);
       await fetchCommunes(communeFilters);
-      
-      setCreateCommuneData({ name: '', cityId: '' });
+
+      setCreateCommuneData({ name: "", cityId: "" });
       setIsCommuneModalOpen(false);
-      
+
       toast.success("Comuna creada exitosamente", {
-        description: `${newCommune.name} ha sido registrada en el sistema.`
+        description: `${newCommune.name} ha sido registrada en el sistema.`,
       });
-      
     } catch (error: any) {
-      console.error('Error creating commune:', error);
+      console.error("Error creating commune:", error);
       toast.error("Error al crear comuna", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -354,49 +388,52 @@ export default function LocationsManagement() {
 
   const handleUpdateCommune = async () => {
     if (!selectedCommune) return;
-    
+
     try {
       setIsSubmitting(true);
       setCommuneFormErrors({});
-      
+
       const errors = validateCommuneForm(updateCommuneData);
       if (Object.keys(errors).length > 0) {
         setCommuneFormErrors(errors);
         return;
       }
-      
+
       const updateData: UpdateCommuneDto = {};
-      
+
       if (updateCommuneData.name.trim() !== selectedCommune.name) {
         updateData.name = updateCommuneData.name.trim();
       }
-      
+
       if (Number(updateCommuneData.cityId) !== selectedCommune.city?.id) {
         updateData.cityId = Number(updateCommuneData.cityId);
       }
-      
+
       if (Object.keys(updateData).length === 0) {
         toast.info("No se detectaron cambios", {
-          description: "No hay modificaciones para guardar."
+          description: "No hay modificaciones para guardar.",
         });
         setIsCommuneEditOpen(false);
         return;
       }
-      
-      const updatedCommune = await communeService.update(selectedCommune.id, updateData);
+
+      const updatedCommune = await communeService.update(
+        selectedCommune.id,
+        updateData,
+      );
       await fetchCommunes(communeFilters);
-      
+
       setIsCommuneEditOpen(false);
       setSelectedCommune(null);
-      
+
       toast.success("Comuna actualizada exitosamente", {
-        description: `${updatedCommune.name} ha sido actualizada.`
+        description: `${updatedCommune.name} ha sido actualizada.`,
       });
-      
     } catch (error: any) {
-      console.error('Error updating commune:', error);
+      console.error("Error updating commune:", error);
       toast.error("Error al actualizar comuna", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -408,32 +445,32 @@ export default function LocationsManagement() {
     try {
       setIsSubmitting(true);
       setNeighborhoodFormErrors({});
-      
+
       const errors = validateNeighborhoodForm(createNeighborhoodData);
       if (Object.keys(errors).length > 0) {
         setNeighborhoodFormErrors(errors);
         return;
       }
-      
+
       const createData: CreateNeighborhoodDto = {
         name: createNeighborhoodData.name.trim(),
-        communeId: Number(createNeighborhoodData.communeId)
+        communeId: Number(createNeighborhoodData.communeId),
       };
-      
+
       const newNeighborhood = await neighborhoodService.create(createData);
       await fetchNeighborhoods(neighborhoodFilters);
-      
-      setCreateNeighborhoodData({ name: '', communeId: '' });
+
+      setCreateNeighborhoodData({ name: "", communeId: "" });
       setIsNeighborhoodModalOpen(false);
-      
+
       toast.success("Barrio creado exitosamente", {
-        description: `${newNeighborhood.name} ha sido registrado en el sistema.`
+        description: `${newNeighborhood.name} ha sido registrado en el sistema.`,
       });
-      
     } catch (error: any) {
-      console.error('Error creating neighborhood:', error);
+      console.error("Error creating neighborhood:", error);
       toast.error("Error al crear barrio", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -442,49 +479,55 @@ export default function LocationsManagement() {
 
   const handleUpdateNeighborhood = async () => {
     if (!selectedNeighborhood) return;
-    
+
     try {
       setIsSubmitting(true);
       setNeighborhoodFormErrors({});
-      
+
       const errors = validateNeighborhoodForm(updateNeighborhoodData);
       if (Object.keys(errors).length > 0) {
         setNeighborhoodFormErrors(errors);
         return;
       }
-      
+
       const updateData: UpdateNeighborhoodDto = {};
-      
+
       if (updateNeighborhoodData.name.trim() !== selectedNeighborhood.name) {
         updateData.name = updateNeighborhoodData.name.trim();
       }
-      
-      if (Number(updateNeighborhoodData.communeId) !== selectedNeighborhood.commune?.id) {
+
+      if (
+        Number(updateNeighborhoodData.communeId) !==
+        selectedNeighborhood.commune?.id
+      ) {
         updateData.communeId = Number(updateNeighborhoodData.communeId);
       }
-      
+
       if (Object.keys(updateData).length === 0) {
         toast.info("No se detectaron cambios", {
-          description: "No hay modificaciones para guardar."
+          description: "No hay modificaciones para guardar.",
         });
         setIsNeighborhoodEditOpen(false);
         return;
       }
-      
-      const updatedNeighborhood = await neighborhoodService.update(selectedNeighborhood.id, updateData);
+
+      const updatedNeighborhood = await neighborhoodService.update(
+        selectedNeighborhood.id,
+        updateData,
+      );
       await fetchNeighborhoods(neighborhoodFilters);
-      
+
       setIsNeighborhoodEditOpen(false);
       setSelectedNeighborhood(null);
-      
+
       toast.success("Barrio actualizado exitosamente", {
-        description: `${updatedNeighborhood.name} ha sido actualizado.`
+        description: `${updatedNeighborhood.name} ha sido actualizado.`,
       });
-      
     } catch (error: any) {
-      console.error('Error updating neighborhood:', error);
+      console.error("Error updating neighborhood:", error);
       toast.error("Error al actualizar barrio", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -496,7 +539,7 @@ export default function LocationsManagement() {
     try {
       setLoading(true);
       const response = await communeService.getAll(options);
-      
+
       if (Array.isArray(response)) {
         // Lista simple sin paginación
         setCommunes(response);
@@ -518,7 +561,7 @@ export default function LocationsManagement() {
     try {
       setLoading(true);
       const response = await neighborhoodService.getAll(options);
-      
+
       if (Array.isArray(response)) {
         // Lista simple sin paginación
         setNeighborhoods(response);
@@ -541,7 +584,7 @@ export default function LocationsManagement() {
     setSelectedCommune(commune);
     setUpdateCommuneData({
       name: commune.name,
-      cityId: commune.city?.id || '',
+      cityId: commune.city?.id || "",
     });
     setCommuneFormErrors({});
     setIsCommuneEditOpen(true);
@@ -551,7 +594,7 @@ export default function LocationsManagement() {
     setSelectedNeighborhood(neighborhood);
     setUpdateNeighborhoodData({
       name: neighborhood.name,
-      communeId: neighborhood.commune?.id || '',
+      communeId: neighborhood.commune?.id || "",
     });
     setNeighborhoodFormErrors({});
     setIsNeighborhoodEditOpen(true);
@@ -593,7 +636,7 @@ export default function LocationsManagement() {
         if (Array.isArray(communesResponse)) {
           setCommunes(communesResponse);
         }
-        
+
         // Luego cargar datos paginados
         await Promise.all([
           fetchCommunes(communeFilters),
@@ -611,67 +654,75 @@ export default function LocationsManagement() {
   }, []);
 
   // Función para renderizar paginación
-  const renderPaginationItems = (currentPage: number, totalPages: number, onPageChange: (page: number) => void) => {
+  const renderPaginationItems = (
+    currentPage: number,
+    totalPages: number,
+    onPageChange: (page: number) => void,
+  ) => {
     const items = [];
-    
+
     // Siempre mostrar primera página
     items.push(
       <PaginationItem key="page-1">
-        <PaginationLink 
+        <PaginationLink
           isActive={currentPage === 1}
           onClick={() => onPageChange(1)}
         >
           1
         </PaginationLink>
-      </PaginationItem>
+      </PaginationItem>,
     );
-    
+
     // Mostrar elipsis si es necesario antes del rango
     if (currentPage > 3) {
       items.push(
         <PaginationItem key="ellipsis-1">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Mostrar páginas intermedias
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
       items.push(
         <PaginationItem key={`page-${i}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === i}
             onClick={() => onPageChange(i)}
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Mostrar elipsis si es necesario después del rango
     if (currentPage < totalPages - 2 && totalPages > 4) {
       items.push(
         <PaginationItem key="ellipsis-2">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Siempre mostrar última página si hay más de una
     if (totalPages > 1) {
       items.push(
         <PaginationItem key={`page-${totalPages}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === totalPages}
             onClick={() => onPageChange(totalPages)}
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     return items;
   };
 
@@ -690,7 +741,10 @@ export default function LocationsManagement() {
                 Nueva Comuna
               </Button>
             ) : (
-              <Button onClick={() => setIsNeighborhoodModalOpen(true)} size="sm">
+              <Button
+                onClick={() => setIsNeighborhoodModalOpen(true)}
+                size="sm"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Barrio
               </Button>
@@ -767,10 +821,17 @@ export default function LocationsManagement() {
                         </tr>
                       ) : communes.length > 0 ? (
                         communes.map((commune) => (
-                          <tr key={commune.id} className="border-b hover:bg-gray-50">
+                          <tr
+                            key={commune.id}
+                            className="border-b hover:bg-gray-50"
+                          >
                             <td className="px-4 py-3 text-sm">{commune.id}</td>
-                            <td className="px-4 py-3 text-sm font-medium">{commune.name}</td>
-                            <td className="px-4 py-3 text-sm">{commune.city?.name || 'No asignada'}</td>
+                            <td className="px-4 py-3 text-sm font-medium">
+                              {commune.name}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {commune.city?.name || "No asignada"}
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <div className="flex items-center gap-2">
                                 <Button
@@ -784,13 +845,21 @@ export default function LocationsManagement() {
                                 </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                    >
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                                    <DropdownMenuItem>Exportar</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      Ver detalles
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      Exportar
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-red-600">
                                       Eliminar
@@ -803,7 +872,10 @@ export default function LocationsManagement() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
+                          <td
+                            colSpan={4}
+                            className="px-4 py-8 text-center text-sm text-gray-500"
+                          >
                             No se encontraron comunas con los filtros aplicados.
                           </td>
                         </tr>
@@ -811,34 +883,47 @@ export default function LocationsManagement() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {/* Paginación para Comunas */}
                 {communePageMeta && (
                   <div className="flex items-center justify-between px-4 py-2 border-t">
                     <div className="text-sm text-gray-500">
-                      Mostrando <span className="font-medium">{communes.length}</span> de{" "}
-                      <span className="font-medium">{communePageMeta.totalItems}</span> comunas
-                      (Página {communeFilters.page} de {communePageMeta.totalPages})
+                      Mostrando{" "}
+                      <span className="font-medium">{communes.length}</span> de{" "}
+                      <span className="font-medium">
+                        {communePageMeta.totalItems}
+                      </span>{" "}
+                      comunas (Página {communeFilters.page} de{" "}
+                      {communePageMeta.totalPages})
                     </div>
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>
-                          <PaginationPrevious 
+                          <PaginationPrevious
                             onClick={() => {
-                              if (communePageMeta?.hasPreviousPage && !loading) {
-                                handleCommunePageChange(communeFilters.page - 1);
+                              if (
+                                communePageMeta?.hasPreviousPage &&
+                                !loading
+                              ) {
+                                handleCommunePageChange(
+                                  communeFilters.page - 1,
+                                );
                               }
                             }}
                           />
                         </PaginationItem>
                         {renderPaginationItems(
-                          communeFilters.page, 
-                          communePageMeta.totalPages, 
-                          handleCommunePageChange
+                          communeFilters.page,
+                          communePageMeta.totalPages,
+                          handleCommunePageChange,
                         )}
                         <PaginationItem>
                           {communePageMeta?.hasNextPage && !loading ? (
-                            <PaginationNext onClick={() => handleCommunePageChange(communeFilters.page + 1)} />
+                            <PaginationNext
+                              onClick={() =>
+                                handleCommunePageChange(communeFilters.page + 1)
+                              }
+                            />
                           ) : (
                             <span className="pointer-events-none opacity-50">
                               <PaginationNext onClick={() => {}} />
@@ -906,16 +991,27 @@ export default function LocationsManagement() {
                         </tr>
                       ) : neighborhoods.length > 0 ? (
                         neighborhoods.map((neighborhood) => (
-                          <tr key={neighborhood.id} className="border-b hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm">{neighborhood.id}</td>
-                            <td className="px-4 py-3 text-sm">{neighborhood.commune?.name || 'No asignada'}</td>
-                            <td className="px-4 py-3 text-sm font-medium">{neighborhood.name}</td>
+                          <tr
+                            key={neighborhood.id}
+                            className="border-b hover:bg-gray-50"
+                          >
+                            <td className="px-4 py-3 text-sm">
+                              {neighborhood.id}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {neighborhood.commune?.name || "No asignada"}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium">
+                              {neighborhood.name}
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <div className="flex items-center gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleOpenNeighborhoodEdit(neighborhood)}
+                                  onClick={() =>
+                                    handleOpenNeighborhoodEdit(neighborhood)
+                                  }
                                   className="h-8 px-2 py-0"
                                 >
                                   <FileEdit className="h-4 w-4 mr-1" />
@@ -923,13 +1019,21 @@ export default function LocationsManagement() {
                                 </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                    >
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                                    <DropdownMenuItem>Exportar</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      Ver detalles
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      Exportar
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-red-600">
                                       Eliminar
@@ -942,7 +1046,10 @@ export default function LocationsManagement() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
+                          <td
+                            colSpan={4}
+                            className="px-4 py-8 text-center text-sm text-gray-500"
+                          >
                             No se encontraron barrios con los filtros aplicados.
                           </td>
                         </tr>
@@ -950,34 +1057,52 @@ export default function LocationsManagement() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {/* Paginación para Barrios */}
                 {neighborhoodPageMeta && (
                   <div className="flex items-center justify-between px-4 py-2 border-t">
                     <div className="text-sm text-gray-500">
-                      Mostrando <span className="font-medium">{neighborhoods.length}</span> de{" "}
-                      <span className="font-medium">{neighborhoodPageMeta.totalItems}</span> barrios
-                      (Página {neighborhoodFilters.page} de {neighborhoodPageMeta.totalPages})
+                      Mostrando{" "}
+                      <span className="font-medium">
+                        {neighborhoods.length}
+                      </span>{" "}
+                      de{" "}
+                      <span className="font-medium">
+                        {neighborhoodPageMeta.totalItems}
+                      </span>{" "}
+                      barrios (Página {neighborhoodFilters.page} de{" "}
+                      {neighborhoodPageMeta.totalPages})
                     </div>
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>
-                          <PaginationPrevious 
+                          <PaginationPrevious
                             onClick={() => {
-                              if (neighborhoodPageMeta?.hasPreviousPage && !loading) {
-                                handleNeighborhoodPageChange(neighborhoodFilters.page - 1);
+                              if (
+                                neighborhoodPageMeta?.hasPreviousPage &&
+                                !loading
+                              ) {
+                                handleNeighborhoodPageChange(
+                                  neighborhoodFilters.page - 1,
+                                );
                               }
                             }}
                           />
                         </PaginationItem>
                         {renderPaginationItems(
-                          neighborhoodFilters.page, 
-                          neighborhoodPageMeta.totalPages, 
-                          handleNeighborhoodPageChange
+                          neighborhoodFilters.page,
+                          neighborhoodPageMeta.totalPages,
+                          handleNeighborhoodPageChange,
                         )}
                         <PaginationItem>
                           {neighborhoodPageMeta?.hasNextPage && !loading ? (
-                            <PaginationNext onClick={() => handleNeighborhoodPageChange(neighborhoodFilters.page + 1)} />
+                            <PaginationNext
+                              onClick={() =>
+                                handleNeighborhoodPageChange(
+                                  neighborhoodFilters.page + 1,
+                                )
+                              }
+                            />
                           ) : (
                             <span className="pointer-events-none opacity-50">
                               <PaginationNext onClick={() => {}} />
@@ -997,9 +1122,11 @@ export default function LocationsManagement() {
         <Dialog open={isCommuneModalOpen} onOpenChange={setIsCommuneModalOpen}>
           <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">Crear Comuna</DialogTitle>
+              <DialogTitle className="text-xl text-teal-700">
+                Crear Comuna
+              </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded-md">
                 <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
@@ -1011,17 +1138,21 @@ export default function LocationsManagement() {
                     id="new-commune-name"
                     label="Nombre de la Comuna"
                     value={createCommuneData.name}
-                    onChange={(value) => handleCreateCommuneFieldChange('name', value)}
+                    onChange={(value) =>
+                      handleCreateCommuneFieldChange("name", value)
+                    }
                     error={communeFormErrors.name}
                     placeholder="Ingrese nombre de la comuna"
                     required
                   />
-                  
+
                   <ValidatedSelect
                     id="new-commune-city"
                     label="Ciudad"
                     value={createCommuneData.cityId}
-                    onChange={(value) => handleCreateCommuneFieldChange('cityId', value)}
+                    onChange={(value) =>
+                      handleCreateCommuneFieldChange("cityId", value)
+                    }
                     options={cities}
                     error={communeFormErrors.cityId}
                     placeholder="Seleccione ciudad..."
@@ -1030,15 +1161,15 @@ export default function LocationsManagement() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setIsCommuneModalOpen(false);
-                  setCreateCommuneData({ name: '', cityId: '' });
+                  setCreateCommuneData({ name: "", cityId: "" });
                   setCommuneFormErrors({});
-                }} 
+                }}
                 size="sm"
                 className="px-4"
                 disabled={isSubmitting}
@@ -1057,7 +1188,7 @@ export default function LocationsManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>
@@ -1069,7 +1200,9 @@ export default function LocationsManagement() {
           <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-xl text-teal-700">
-                {selectedCommune ? `Editar Comuna: ${selectedCommune.name}` : "Editar Comuna"}
+                {selectedCommune
+                  ? `Editar Comuna: ${selectedCommune.name}`
+                  : "Editar Comuna"}
               </DialogTitle>
             </DialogHeader>
 
@@ -1085,16 +1218,20 @@ export default function LocationsManagement() {
                       id="edit-commune-name"
                       label="Nombre de la Comuna"
                       value={updateCommuneData.name}
-                      onChange={(value) => handleUpdateCommuneFieldChange('name', value)}
+                      onChange={(value) =>
+                        handleUpdateCommuneFieldChange("name", value)
+                      }
                       error={communeFormErrors.name}
                       required
                     />
-                    
+
                     <ValidatedSelect
                       id="edit-commune-city"
                       label="Ciudad"
                       value={updateCommuneData.cityId}
-                      onChange={(value) => handleUpdateCommuneFieldChange('cityId', value)}
+                      onChange={(value) =>
+                        handleUpdateCommuneFieldChange("cityId", value)
+                      }
                       options={cities}
                       error={communeFormErrors.cityId}
                       placeholder="Seleccione ciudad..."
@@ -1106,7 +1243,7 @@ export default function LocationsManagement() {
             </div>
 
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   setIsCommuneEditOpen(false);
@@ -1120,7 +1257,7 @@ export default function LocationsManagement() {
                 Cancelar
               </Button>
               <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4" 
+                className="bg-teal-600 hover:bg-teal-700 px-4"
                 size="sm"
                 onClick={handleUpdateCommune}
                 disabled={isSubmitting}
@@ -1131,7 +1268,7 @@ export default function LocationsManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>
@@ -1139,12 +1276,17 @@ export default function LocationsManagement() {
         </Dialog>
 
         {/* Modal Crear Barrio */}
-        <Dialog open={isNeighborhoodModalOpen} onOpenChange={setIsNeighborhoodModalOpen}>
+        <Dialog
+          open={isNeighborhoodModalOpen}
+          onOpenChange={setIsNeighborhoodModalOpen}
+        >
           <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">Crear Barrio</DialogTitle>
+              <DialogTitle className="text-xl text-teal-700">
+                Crear Barrio
+              </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded-md">
                 <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
@@ -1156,18 +1298,22 @@ export default function LocationsManagement() {
                     id="new-neighborhood-commune"
                     label="Comuna"
                     value={createNeighborhoodData.communeId}
-                    onChange={(value) => handleCreateNeighborhoodFieldChange('communeId', value)}
+                    onChange={(value) =>
+                      handleCreateNeighborhoodFieldChange("communeId", value)
+                    }
                     options={communes}
                     error={neighborhoodFormErrors.communeId}
                     placeholder="Seleccione comuna..."
                     required
                   />
-                  
+
                   <ValidatedInput
                     id="new-neighborhood-name"
                     label="Nombre del Barrio"
                     value={createNeighborhoodData.name}
-                    onChange={(value) => handleCreateNeighborhoodFieldChange('name', value)}
+                    onChange={(value) =>
+                      handleCreateNeighborhoodFieldChange("name", value)
+                    }
                     error={neighborhoodFormErrors.name}
                     placeholder="Ingrese nombre del barrio"
                     required
@@ -1175,15 +1321,15 @@ export default function LocationsManagement() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setIsNeighborhoodModalOpen(false);
-                  setCreateNeighborhoodData({ name: '', communeId: '' });
+                  setCreateNeighborhoodData({ name: "", communeId: "" });
                   setNeighborhoodFormErrors({});
-                }} 
+                }}
                 size="sm"
                 className="px-4"
                 disabled={isSubmitting}
@@ -1202,7 +1348,7 @@ export default function LocationsManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>
@@ -1210,11 +1356,16 @@ export default function LocationsManagement() {
         </Dialog>
 
         {/* Modal Editar Barrio */}
-        <Dialog open={isNeighborhoodEditOpen} onOpenChange={setIsNeighborhoodEditOpen}>
+        <Dialog
+          open={isNeighborhoodEditOpen}
+          onOpenChange={setIsNeighborhoodEditOpen}
+        >
           <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-xl text-teal-700">
-                {selectedNeighborhood ? `Editar Barrio: ${selectedNeighborhood.name}` : "Editar Barrio"}
+                {selectedNeighborhood
+                  ? `Editar Barrio: ${selectedNeighborhood.name}`
+                  : "Editar Barrio"}
               </DialogTitle>
             </DialogHeader>
 
@@ -1230,18 +1381,22 @@ export default function LocationsManagement() {
                       id="edit-neighborhood-commune"
                       label="Comuna"
                       value={updateNeighborhoodData.communeId}
-                      onChange={(value) => handleUpdateNeighborhoodFieldChange('communeId', value)}
+                      onChange={(value) =>
+                        handleUpdateNeighborhoodFieldChange("communeId", value)
+                      }
                       options={communes}
                       error={neighborhoodFormErrors.communeId}
                       placeholder="Seleccione comuna..."
                       required
                     />
-                    
+
                     <ValidatedInput
                       id="edit-neighborhood-name"
                       label="Nombre del Barrio"
                       value={updateNeighborhoodData.name}
-                      onChange={(value) => handleUpdateNeighborhoodFieldChange('name', value)}
+                      onChange={(value) =>
+                        handleUpdateNeighborhoodFieldChange("name", value)
+                      }
                       error={neighborhoodFormErrors.name}
                       required
                     />
@@ -1251,7 +1406,7 @@ export default function LocationsManagement() {
             </div>
 
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   setIsNeighborhoodEditOpen(false);
@@ -1265,7 +1420,7 @@ export default function LocationsManagement() {
                 Cancelar
               </Button>
               <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4" 
+                className="bg-teal-600 hover:bg-teal-700 px-4"
                 size="sm"
                 onClick={handleUpdateNeighborhood}
                 disabled={isSubmitting}
@@ -1276,7 +1431,7 @@ export default function LocationsManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>

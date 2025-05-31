@@ -1,6 +1,6 @@
-import Link from "next/link";
-import Image from "next/image";
 import { SubScenario } from "@/features/home/types/filters.types";
+import Image from "next/image";
+import Link from "next/link";
 
 interface FacilityCardProps {
   subScenario: SubScenario;

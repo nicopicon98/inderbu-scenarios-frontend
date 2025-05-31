@@ -1,16 +1,13 @@
-// src/components/AuthModal.tsx
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { decodeJWT } from "../../../lib/utils";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/shared/ui/dialog";
 import {
   Form,
@@ -21,10 +18,6 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Button } from "@/shared/ui/button";
-import { Loader2, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -32,14 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { decodeJWT } from "../../../lib/utils";
-
-//
-// ——————————————————————————————————————————
-// Schemas Zod
-// ——————————————————————————————————————————
-//
+import { z } from "zod";
 
 const loginSchema = z.object({
   email: z.string().min(1, "El correo es requerido").email("Correo inválido"),
@@ -50,7 +41,7 @@ const registerSchema = z
   .object({
     dni: z.preprocess(
       (v) => Number(v),
-      z.number().int().positive({ message: "DNI inválido" })
+      z.number().int().positive({ message: "DNI inválido" }),
     ),
     firstName: z.string().min(1, "El nombre es requerido"),
     lastName: z.string().min(1, "El apellido es requerido"),
@@ -89,7 +80,12 @@ type Mode = "login" | "register" | "reset";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (id: number, email: string, role: number, token: string) => void;
+  onLoginSuccess: (
+    id: number,
+    email: string,
+    role: number,
+    token: string,
+  ) => void;
 }
 
 export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
@@ -134,15 +130,11 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     fetch(`http://localhost:3001/roles`)
       .then((r) => r.json())
       .then((b) => setRoles(b.data))
-      .catch(() =>
-        toast.error("No se pudieron cargar los roles")
-      );
+      .catch(() => toast.error("No se pudieron cargar los roles"));
     fetch(`http://localhost:3001/neighborhoods`)
       .then((r) => r.json())
       .then((b) => setNeighborhoods(b.data))
-      .catch(() =>
-        toast.error("No se pudieron cargar los barrios")
-      );
+      .catch(() => toast.error("No se pudieron cargar los barrios"));
   }, [mode]);
 
   // Handlers
@@ -195,7 +187,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
         const body = await res.json();
         throw new Error(body.message);
       }
-      toast.success("Correo enviado. Revisa tu bandeja para restablecer tu contraseña");
+      toast.success(
+        "Correo enviado. Revisa tu bandeja para restablecer tu contraseña",
+      );
       setMode("login");
     } catch (err: any) {
       toast.error(err.message || "No se pudo enviar el correo");
@@ -615,15 +609,15 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
             {mode === "login"
               ? "Iniciar sesión"
               : mode === "register"
-              ? "Crear cuenta"
-              : "Restablecer contraseña"}
+                ? "Crear cuenta"
+                : "Restablecer contraseña"}
           </DialogTitle>
           <DialogDescription>
             {mode === "login"
               ? "Ingresa tus credenciales"
               : mode === "register"
-              ? "Completa tus datos"
-              : "Te enviaremos un enlace por correo"}
+                ? "Completa tus datos"
+                : "Te enviaremos un enlace por correo"}
           </DialogDescription>
         </DialogHeader>
         {renderForm()}

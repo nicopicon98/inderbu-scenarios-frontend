@@ -1,16 +1,16 @@
 "use client";
 
+import { slides } from "@/mock-data/slides";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  ArrowUp,
-  ArrowDown,
-  ImageIcon,
-} from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
-
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -19,21 +19,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Textarea } from "@/shared/ui/textarea";
-import { Button } from "@/shared/ui/button";
-import { slides } from "@/mock-data/slides";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Badge } from "@/shared/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Textarea } from "@/shared/ui/textarea";
+import {
+  ArrowDown,
+  ArrowUp,
+  ImageIcon,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 export default function BannersPage() {
   const [activeTab, setActiveTab] = useState("home");
@@ -50,7 +49,7 @@ export default function BannersPage() {
     if (editingBanner.id) {
       // Actualizar banner existente
       setBanners(
-        banners.map((b) => (b.id === editingBanner.id ? editingBanner : b))
+        banners.map((b) => (b.id === editingBanner.id ? editingBanner : b)),
       );
     } else {
       // Crear nuevo banner

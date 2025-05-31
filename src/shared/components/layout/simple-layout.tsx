@@ -1,16 +1,16 @@
-import type React from "react";
 import { SimpleSidebar, useSidebar } from "./simple-sidebar";
+import { cn } from "@/lib/utils";
+import { Button } from "@/shared/ui/button";
 import {
-  HomeIcon,
   BellIcon,
+  GlobeIcon,
+  HomeIcon,
   MessageCircleIcon,
   PlusIcon,
   UserCircle,
-  GlobeIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/shared/ui/button";
 import Link from "next/link";
+import type React from "react";
 
 interface SimpleLayoutProps {
   children: React.ReactNode;
@@ -56,7 +56,7 @@ export function SimpleLayout({ children }: SimpleLayoutProps) {
       <main
         className={cn(
           "pt-12 lg:pt-12 transition-all duration-300",
-          collapsed ? "pl-[72px]" : "pl-[240px]"
+          collapsed ? "pl-[72px]" : "pl-[240px]",
         )}
       >
         <div className="p-4">{children}</div>
@@ -65,7 +65,7 @@ export function SimpleLayout({ children }: SimpleLayoutProps) {
       <footer
         className={cn(
           "p-4 text-xs text-gray-400 transition-all duration-300",
-          collapsed ? "pl-[72px]" : "pl-[240px]"
+          collapsed ? "pl-[72px]" : "pl-[240px]",
         )}
       >
         Escenarios Deportivos Inderbu 2025 • Versión 1.0.0

@@ -35,7 +35,7 @@ const ScenarioService = {
       if (search) {
         url += `?search=${encodeURIComponent(search)}`;
       }
-      
+
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -43,7 +43,7 @@ const ScenarioService = {
       }
 
       const scenarios = await response.json();
-      return scenarios.data
+      return scenarios.data;
     } catch (error) {
       console.error("Error getting scenarios:", error);
       throw new Error(`Error ${error}`);
@@ -83,7 +83,12 @@ const ScenarioService = {
   },
 
   // Buscar subescenarios con filtro de escenario
-  searchSubScenarios: async (scenarioId?: number, page: number = 1, limit: number = 10, search?: string): Promise<any> => {
+  searchSubScenarios: async (
+    scenarioId?: number,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ): Promise<any> => {
     try {
       let url = `${API_URL}/sub-scenarios?page=${page}&limit=${limit}`;
       if (scenarioId) {

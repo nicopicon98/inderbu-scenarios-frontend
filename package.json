@@ -6,7 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky",
+    "sort-imports-manual": "node scripts/sort-imports-by-length.js"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx}": [
+      "pnpm run sort-imports-manual",
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "**/*.{md,json,css}": "prettier --write"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -60,16 +70,23 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
+    "ts-node": "^10.9.2",
     "vaul": "^0.9.9",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.4",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/lodash": "^4.17.16",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.28.0",
+    "eslint-plugin-import": "^2.31.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
     "postcss": "^8.5.3",
+    "prettier": "^3.5.3",
     "tailwindcss": "^4.1.4",
     "typescript": "^5"
   }

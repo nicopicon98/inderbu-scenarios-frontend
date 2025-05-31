@@ -1,17 +1,17 @@
 "use client";
-import { useMemo } from "react";
 
-import { Pagination } from "@/shared/components/organisms/pagination";
-import { MainHeader } from "@/shared/components/organisms/unified-header";
 import { useHomeData } from "../../hooks/use-home-data";
+import { HomeMainProps } from "../../interfaces/home-main-props.interface";
+import { LoadingIndicator } from "../molecules/loading-indicator";
+import { EmptyState } from "./empty-state";
+import { ErrorMessage } from "./error-message";
 import FacilityGrid from "./facility-grid";
-import HomeFilters from "./home-filters";
 import Footer from "./footer";
 import { HeroSection } from "./hero-section";
-import { EmptyState } from "./empty-state";
-import { LoadingIndicator } from "../molecules/loading-indicator";
-import { HomeMainProps } from "../../interfaces/home-main-props.interface";
-import { ErrorMessage } from "./error-message";
+import HomeFilters from "./home-filters";
+import { MainHeader } from "@/shared/components/organisms/main-header";
+import { Pagination } from "@/shared/components/organisms/pagination";
+import { useMemo } from "react";
 
 export default function HomeMain({
   initialActivityAreas,
@@ -43,13 +43,14 @@ export default function HomeMain({
     initialSubScenarios,
     initialMeta,
     initialFilters, // Pasar filtros iniciales
-    initialPage,    // Pasar página inicial
+    initialPage, // Pasar página inicial
   });
 
   // Resto del componente igual que antes...
   const contentSection = useMemo(() => {
     if (loading) return <LoadingIndicator />;
-    if (hasError && error) return <ErrorMessage error={error} onRetry={retryFetch} />;
+    if (hasError && error)
+      return <ErrorMessage error={error} onRetry={retryFetch} />;
     if (isEmpty) return <EmptyState onClearFilters={clearFilters} />;
 
     return (
@@ -78,7 +79,7 @@ export default function HomeMain({
     meta.totalPages,
     retryFetch,
     clearFilters,
-    setPage
+    setPage,
   ]);
 
   return (

@@ -1,57 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Filter, X } from "lucide-react";
-
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { useReservations } from "./hooks/useReservations";
-import { StatsGrid } from "./components/molecules/StatsGrid";
 import { FiltersCard } from "./components/molecules/FiltersCard";
-import { ReservationsTable } from "./components/organisms/ReservationsTable";
-import { ReservationDto } from "@/services/reservation.service";
-import { ReservationDetailsModal } from "./components/organisms/ReservationDetailsModal";
+import { StatsGrid } from "./components/molecules/StatsGrid";
 import { CreateReservationModal } from "./components/organisms/CreateReservationModal";
+import { ReservationDetailsModal } from "./components/organisms/ReservationDetailsModal";
+import { ReservationsTable } from "./components/organisms/ReservationsTable";
+import { useReservations } from "./hooks/useReservations";
+import { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Filter, Plus, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export const ReservationsContainer = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const { 
-    reservations, 
-    isLoading, 
-    stats, 
-    refetch, 
-    page, 
-    pageSize, 
-    totalReservations, 
+
+  const {
+    reservations,
+    isLoading,
+    stats,
+    refetch,
+    page,
+    pageSize,
+    totalReservations,
     changePage,
     // Nuevos campos para filtros
     filters,
     handleFiltersChange,
     clearFilters,
-    meta
+    meta,
   } = useReservations();
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
+  const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(
+    null,
+  );
 
   // Si la URL no tiene paramétros de paginación, añadirlos al cargar
   useEffect(() => {
-    if (!searchParams.has('page') && !searchParams.has('pageSize')) {
+    if (!searchParams.has("page") && !searchParams.has("pageSize")) {
       // Solo actualizar la URL si realmente no hay paramétros
       const params = new URLSearchParams();
-      params.set('page', '1');
-      params.set('pageSize', '7');
+      params.set("page", "1");
+      params.set("pageSize", "7");
       router.replace(`/dashboard?${params.toString()}`);
     }
   }, [router, searchParams]);
 
   // Verificar si hay filtros activos
-  const hasActiveFilters = filters.scenarioId || filters.activityAreaId || 
-                          filters.neighborhoodId || filters.userId ||
-                          filters.dateFrom || filters.dateTo;
+  const hasActiveFilters =
+    filters.scenarioId ||
+    filters.activityAreaId ||
+    filters.neighborhoodId ||
+    filters.userId ||
+    filters.dateFrom ||
+    filters.dateTo;
 
   return (
     <section className="space-y-6">
@@ -61,27 +66,31 @@ export const ReservationsContainer = () => {
           <h1 className="text-2xl font-bold tracking-tight">Reservas</h1>
           {hasActiveFilters && (
             <p className="text-sm text-gray-600 mt-1">
-              Mostrando {meta.totalItems} de {meta.totalItems} reservas con filtros aplicados
+              Mostrando {meta.totalItems} de {meta.totalItems} reservas con
+              filtros aplicados
             </p>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant={showFilters ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setShowFilters(p => !p)}
+          <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((p) => !p)}
             className={showFilters ? "bg-blue-600 hover:bg-blue-700" : ""}
           >
-            <Filter className="h-4 w-4 mr-2"/> 
+            <Filter className="h-4 w-4 mr-2" />
             Filtros
             {hasActiveFilters && (
-              <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+              <Badge
+                variant="secondary"
+                className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              >
                 !
               </Badge>
             )}
           </Button>
           <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus className="h-4 w-4 mr-2"/> Nueva Reserva
+            <Plus className="h-4 w-4 mr-2" /> Nueva Reserva
           </Button>
         </div>
       </div>
@@ -92,7 +101,7 @@ export const ReservationsContainer = () => {
           <span className="text-sm text-gray-600">Filtros activos:</span>
           <Badge variant="outline" className="flex items-center gap-1">
             Filtros de selección activos
-            <button 
+            <button
               onClick={clearFilters}
               className="ml-1 hover:bg-gray-200 rounded"
             >
@@ -102,10 +111,10 @@ export const ReservationsContainer = () => {
         </div>
       )}
 
-      <StatsGrid stats={stats}/>
+      <StatsGrid stats={stats} />
 
-      <FiltersCard 
-        open={showFilters} 
+      <FiltersCard
+        open={showFilters}
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onClearFilters={clearFilters}
@@ -121,9 +130,12 @@ export const ReservationsContainer = () => {
         onPageChange={changePage}
       />
 
-      <ReservationDetailsModal reservation={viewingDetails} onClose={() => setViewingDetails(null)}/>
-      <CreateReservationModal 
-        open={creating} 
+      <ReservationDetailsModal
+        reservation={viewingDetails}
+        onClose={() => setViewingDetails(null)}
+      />
+      <CreateReservationModal
+        open={creating}
         onClose={() => setCreating(false)}
         onSuccess={() => {
           refetch();

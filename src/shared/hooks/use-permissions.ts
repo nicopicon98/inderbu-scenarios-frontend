@@ -1,6 +1,6 @@
-import { useAuth } from '../contexts/auth-context';
-import { EUserRole } from '../enums/user-role.enum';
-import { IPermission } from '../interfaces/permission.interface';
+import { useAuth } from "../contexts/auth-context";
+import { EUserRole } from "../enums/user-role.enum";
+import { IPermission } from "../interfaces/permission.interface";
 
 export function usePermissions(): IPermission {
   const { user, isAuthenticated } = useAuth();

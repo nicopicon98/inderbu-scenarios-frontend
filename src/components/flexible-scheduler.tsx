@@ -1,44 +1,49 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { CalendarIcon, Clock, Check } from "lucide-react"
-import { format, startOfMonth, endOfMonth } from "date-fns"
-import { es } from "date-fns/locale"
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
-import { Calendar } from "@/shared/ui/calendar"
-import { Button } from "@/shared/ui/button"
-import { Switch } from "@/shared/ui/switch"
-import { Label } from "@/shared/ui/label"
-import { Badge } from "@/shared/ui/badge"
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Calendar } from "@/shared/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon, Check, Clock } from "lucide-react";
+import { useState } from "react";
 
 interface TimeSlot {
-  hour: number
-  label: string
-  selected: boolean
+  hour: number;
+  label: string;
+  selected: boolean;
 }
 
 interface ScheduleConfig {
-  type: "specific-dates" | "recurring-weekdays" | "month-range"
+  type: "specific-dates" | "recurring-weekdays" | "month-range";
 
   // Para fechas específicas
-  specificDates?: Date[]
+  specificDates?: Date[];
 
   // Para días recurrentes
-  weekdays?: number[]
-  startDate?: Date
-  endDate?: Date
+  weekdays?: number[];
+  startDate?: Date;
+  endDate?: Date;
 
   // Para rango de meses
-  startMonth?: Date
-  endMonth?: Date
+  startMonth?: Date;
+  endMonth?: Date;
 
   // Franjas horarias (común para todos)
-  timeSlots: number[]
+  timeSlots: number[];
 
   // Configuración adicional
-  isRecurring: boolean
+  isRecurring: boolean;
 }
 
 const WEEKDAYS = [
@@ -49,73 +54,85 @@ const WEEKDAYS = [
   { value: 5, label: "Viernes", short: "V" },
   { value: 6, label: "Sábado", short: "S" },
   { value: 0, label: "Domingo", short: "D" },
-]
+];
 
 // Generar franjas horarias de 24 horas
 const generateTimeSlots = (): TimeSlot[] => {
-  const slots: TimeSlot[] = []
+  const slots: TimeSlot[] = [];
   for (let hour = 0; hour < 24; hour++) {
     slots.push({
       hour,
       label: `${hour.toString().padStart(2, "0")}:00:00 - ${hour.toString().padStart(2, "0")}:59:00`,
       selected: false,
-    })
+    });
   }
-  return slots
-}
+  return slots;
+};
 
 export default function FlexibleScheduler() {
   const [config, setConfig] = useState<ScheduleConfig>({
     type: "specific-dates",
     timeSlots: [],
     isRecurring: false,
-  })
+  });
 
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots())
-  const [selectedDates, setSelectedDates] = useState<Date[]>([])
-  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([])
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots());
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
     from: undefined,
     to: undefined,
-  })
-  const [monthRange, setMonthRange] = useState<{ start: Date | undefined; end: Date | undefined }>({
+  });
+  const [monthRange, setMonthRange] = useState<{
+    start: Date | undefined;
+    end: Date | undefined;
+  }>({
     start: undefined,
     end: undefined,
-  })
+  });
 
   const toggleTimeSlot = (hour: number) => {
-    setTimeSlots((prev) => prev.map((slot) => (slot.hour === hour ? { ...slot, selected: !slot.selected } : slot)))
+    setTimeSlots((prev) =>
+      prev.map((slot) =>
+        slot.hour === hour ? { ...slot, selected: !slot.selected } : slot,
+      ),
+    );
 
     setConfig((prev) => ({
       ...prev,
       timeSlots: timeSlots
-        .map((slot) => (slot.hour === hour ? { ...slot, selected: !slot.selected } : slot))
+        .map((slot) =>
+          slot.hour === hour ? { ...slot, selected: !slot.selected } : slot,
+        )
         .filter((slot) => slot.selected)
         .map((slot) => slot.hour),
-    }))
-  }
+    }));
+  };
 
   const handleWeekdayToggle = (weekday: number) => {
     const newWeekdays = selectedWeekdays.includes(weekday)
       ? selectedWeekdays.filter((w) => w !== weekday)
-      : [...selectedWeekdays, weekday]
+      : [...selectedWeekdays, weekday];
 
-    setSelectedWeekdays(newWeekdays)
-    setConfig((prev) => ({ ...prev, weekdays: newWeekdays }))
-  }
+    setSelectedWeekdays(newWeekdays);
+    setConfig((prev) => ({ ...prev, weekdays: newWeekdays }));
+  };
 
   const handleRecurringToggle = (checked: boolean) => {
-    setConfig((prev) => ({ ...prev, isRecurring: checked }))
-  }
+    setConfig((prev) => ({ ...prev, isRecurring: checked }));
+  };
 
   const getSelectedTimeSlotsCount = () => {
-    return timeSlots.filter((slot) => slot.selected).length
-  }
+    return timeSlots.filter((slot) => slot.selected).length;
+  };
 
   const clearAllTimeSlots = () => {
-    setTimeSlots((prev) => prev.map((slot) => ({ ...slot, selected: false })))
-    setConfig((prev) => ({ ...prev, timeSlots: [] }))
-  }
+    setTimeSlots((prev) => prev.map((slot) => ({ ...slot, selected: false })));
+    setConfig((prev) => ({ ...prev, timeSlots: [] }));
+  };
 
   const selectBusinessHours = () => {
     setTimeSlots((prev) =>
@@ -123,12 +140,12 @@ export default function FlexibleScheduler() {
         ...slot,
         selected: slot.hour >= 9 && slot.hour <= 17,
       })),
-    )
+    );
     setConfig((prev) => ({
       ...prev,
       timeSlots: Array.from({ length: 9 }, (_, i) => i + 9),
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -139,27 +156,42 @@ export default function FlexibleScheduler() {
             Configurador de Disponibilidad
           </CardTitle>
           <CardDescription>
-            Configura tu disponibilidad de manera flexible con fechas específicas, recurrencias o rangos de meses
+            Configura tu disponibilidad de manera flexible con fechas
+            específicas, recurrencias o rangos de meses
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Selector de tipo de agendamiento */}
-          <Tabs value={config.type} onValueChange={(value) => setConfig((prev) => ({ ...prev, type: value as any }))}>
+          <Tabs
+            value={config.type}
+            onValueChange={(value) =>
+              setConfig((prev) => ({ ...prev, type: value as any }))
+            }
+          >
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="specific-dates">Fechas Específicas</TabsTrigger>
-              <TabsTrigger value="recurring-weekdays">Días Recurrentes</TabsTrigger>
+              <TabsTrigger value="specific-dates">
+                Fechas Específicas
+              </TabsTrigger>
+              <TabsTrigger value="recurring-weekdays">
+                Días Recurrentes
+              </TabsTrigger>
               <TabsTrigger value="month-range">Rango de Meses</TabsTrigger>
             </TabsList>
 
             <TabsContent value="specific-dates" className="space-y-4">
               <div className="space-y-4">
-                <Label className="text-base font-medium">Seleccionar fechas específicas</Label>
+                <Label className="text-base font-medium">
+                  Seleccionar fechas específicas
+                </Label>
                 <Calendar
                   mode="multiple"
                   selected={selectedDates}
                   onSelect={(dates) => {
-                    setSelectedDates(dates || [])
-                    setConfig((prev) => ({ ...prev, specificDates: dates || [] }))
+                    setSelectedDates(dates || []);
+                    setConfig((prev) => ({
+                      ...prev,
+                      specificDates: dates || [],
+                    }));
                   }}
                   className="rounded-md border w-fit"
                   locale={es}
@@ -167,7 +199,9 @@ export default function FlexibleScheduler() {
 
                 {selectedDates.length > 0 && (
                   <div className="space-y-2">
-                    <Label>Fechas seleccionadas ({selectedDates.length}):</Label>
+                    <Label>
+                      Fechas seleccionadas ({selectedDates.length}):
+                    </Label>
                     <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                       {selectedDates.map((date, index) => (
                         <Badge key={index} variant="secondary">
@@ -183,25 +217,40 @@ export default function FlexibleScheduler() {
             <TabsContent value="recurring-weekdays" className="space-y-4">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Switch id="recurring-mode" checked={config.isRecurring} onCheckedChange={handleRecurringToggle} />
-                  <Label htmlFor="recurring-mode" className="text-base font-medium">
+                  <Switch
+                    id="recurring-mode"
+                    checked={config.isRecurring}
+                    onCheckedChange={handleRecurringToggle}
+                  />
+                  <Label
+                    htmlFor="recurring-mode"
+                    className="text-base font-medium"
+                  >
                     Evento recurrente (requiere fecha de finalización)
                   </Label>
                 </div>
 
                 <div>
-                  <Label className="text-base font-medium">Días de la semana</Label>
+                  <Label className="text-base font-medium">
+                    Días de la semana
+                  </Label>
                   <div className="grid grid-cols-7 gap-2 mt-3">
                     {WEEKDAYS.map((weekday) => (
                       <Button
                         key={weekday.value}
-                        variant={selectedWeekdays.includes(weekday.value) ? "default" : "outline"}
+                        variant={
+                          selectedWeekdays.includes(weekday.value)
+                            ? "default"
+                            : "outline"
+                        }
                         size="sm"
                         className="h-12 flex flex-col"
                         onClick={() => handleWeekdayToggle(weekday.value)}
                       >
                         <span className="text-xs">{weekday.short}</span>
-                        <span className="text-xs">{weekday.label.slice(0, 3)}</span>
+                        <span className="text-xs">
+                          {weekday.label.slice(0, 3)}
+                        </span>
                       </Button>
                     ))}
                   </div>
@@ -215,8 +264,8 @@ export default function FlexibleScheduler() {
                         mode="single"
                         selected={dateRange.from}
                         onSelect={(date) => {
-                          setDateRange((prev) => ({ ...prev, from: date }))
-                          setConfig((prev) => ({ ...prev, startDate: date }))
+                          setDateRange((prev) => ({ ...prev, from: date }));
+                          setConfig((prev) => ({ ...prev, startDate: date }));
                         }}
                         className="rounded-md border bg-background mt-2"
                         locale={es}
@@ -228,12 +277,14 @@ export default function FlexibleScheduler() {
                         mode="single"
                         selected={dateRange.to}
                         onSelect={(date) => {
-                          setDateRange((prev) => ({ ...prev, to: date }))
-                          setConfig((prev) => ({ ...prev, endDate: date }))
+                          setDateRange((prev) => ({ ...prev, to: date }));
+                          setConfig((prev) => ({ ...prev, endDate: date }));
                         }}
                         className="rounded-md border bg-background mt-2"
                         locale={es}
-                        disabled={(date) => (dateRange.from ? date < dateRange.from : false)}
+                        disabled={(date) =>
+                          dateRange.from ? date < dateRange.from : false
+                        }
                       />
                     </div>
                   </div>
@@ -256,7 +307,9 @@ export default function FlexibleScheduler() {
 
             <TabsContent value="month-range" className="space-y-4">
               <div className="space-y-4">
-                <Label className="text-base font-medium">Seleccionar rango de meses</Label>
+                <Label className="text-base font-medium">
+                  Seleccionar rango de meses
+                </Label>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label>Mes de inicio</Label>
@@ -264,9 +317,17 @@ export default function FlexibleScheduler() {
                       mode="single"
                       selected={monthRange.start}
                       onSelect={(date) => {
-                        const startOfSelectedMonth = date ? startOfMonth(date) : undefined
-                        setMonthRange((prev) => ({ ...prev, start: startOfSelectedMonth }))
-                        setConfig((prev) => ({ ...prev, startMonth: startOfSelectedMonth }))
+                        const startOfSelectedMonth = date
+                          ? startOfMonth(date)
+                          : undefined;
+                        setMonthRange((prev) => ({
+                          ...prev,
+                          start: startOfSelectedMonth,
+                        }));
+                        setConfig((prev) => ({
+                          ...prev,
+                          startMonth: startOfSelectedMonth,
+                        }));
                       }}
                       className="rounded-md border mt-2"
                       locale={es}
@@ -278,13 +339,23 @@ export default function FlexibleScheduler() {
                       mode="single"
                       selected={monthRange.end}
                       onSelect={(date) => {
-                        const endOfSelectedMonth = date ? endOfMonth(date) : undefined
-                        setMonthRange((prev) => ({ ...prev, end: endOfSelectedMonth }))
-                        setConfig((prev) => ({ ...prev, endMonth: endOfSelectedMonth }))
+                        const endOfSelectedMonth = date
+                          ? endOfMonth(date)
+                          : undefined;
+                        setMonthRange((prev) => ({
+                          ...prev,
+                          end: endOfSelectedMonth,
+                        }));
+                        setConfig((prev) => ({
+                          ...prev,
+                          endMonth: endOfSelectedMonth,
+                        }));
                       }}
                       className="rounded-md border mt-2"
                       locale={es}
-                      disabled={(date) => (monthRange.start ? date < monthRange.start : false)}
+                      disabled={(date) =>
+                        monthRange.start ? date < monthRange.start : false
+                      }
                     />
                   </div>
                 </div>
@@ -293,7 +364,9 @@ export default function FlexibleScheduler() {
                   <div className="p-4 border rounded-lg bg-muted/50">
                     <Label className="font-medium">Rango seleccionado:</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Desde {format(monthRange.start, "MMMM yyyy", { locale: es })} hasta{" "}
+                      Desde{" "}
+                      {format(monthRange.start, "MMMM yyyy", { locale: es })}{" "}
+                      hasta{" "}
                       {format(monthRange.end, "MMMM yyyy", { locale: es })}
                     </p>
                   </div>
@@ -307,10 +380,16 @@ export default function FlexibleScheduler() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                <Label className="text-base font-medium">Horarios disponibles</Label>
+                <Label className="text-base font-medium">
+                  Horarios disponibles
+                </Label>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={selectBusinessHours}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectBusinessHours}
+                >
                   Horario comercial (9-17h)
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearAllTimeSlots}>
@@ -336,7 +415,8 @@ export default function FlexibleScheduler() {
             {getSelectedTimeSlotsCount() > 0 && (
               <div className="p-3 bg-muted/50 rounded-lg">
                 <Label className="font-medium">
-                  {getSelectedTimeSlotsCount()} franja{getSelectedTimeSlotsCount() !== 1 ? "s" : ""} horaria
+                  {getSelectedTimeSlotsCount()} franja
+                  {getSelectedTimeSlotsCount() !== 1 ? "s" : ""} horaria
                   {getSelectedTimeSlotsCount() !== 1 ? "s" : ""} seleccionada
                   {getSelectedTimeSlotsCount() !== 1 ? "s" : ""}
                 </Label>
@@ -370,7 +450,9 @@ export default function FlexibleScheduler() {
 
             {config.timeSlots.length > 0 && (
               <div>
-                <Label className="font-medium">Franjas horarias ({config.timeSlots.length}):</Label>
+                <Label className="font-medium">
+                  Franjas horarias ({config.timeSlots.length}):
+                </Label>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {config.timeSlots.map((hour) => (
                     <Badge key={hour} variant="outline" className="text-xs">
@@ -381,28 +463,33 @@ export default function FlexibleScheduler() {
               </div>
             )}
 
-            {config.type === "recurring-weekdays" && config.isRecurring && dateRange.from && dateRange.to && (
-              <div>
-                <Label className="font-medium">Período de recurrencia:</Label>
-                <p className="text-sm text-muted-foreground">
-                  {format(dateRange.from, "dd/MM/yyyy", { locale: es })} -{" "}
-                  {format(dateRange.to, "dd/MM/yyyy", { locale: es })}
-                </p>
-              </div>
-            )}
+            {config.type === "recurring-weekdays" &&
+              config.isRecurring &&
+              dateRange.from &&
+              dateRange.to && (
+                <div>
+                  <Label className="font-medium">Período de recurrencia:</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {format(dateRange.from, "dd/MM/yyyy", { locale: es })} -{" "}
+                    {format(dateRange.to, "dd/MM/yyyy", { locale: es })}
+                  </p>
+                </div>
+              )}
 
-            {config.type === "month-range" && monthRange.start && monthRange.end && (
-              <div>
-                <Label className="font-medium">Rango de meses:</Label>
-                <p className="text-sm text-muted-foreground">
-                  {format(monthRange.start, "MMMM yyyy", { locale: es })} -{" "}
-                  {format(monthRange.end, "MMMM yyyy", { locale: es })}
-                </p>
-              </div>
-            )}
+            {config.type === "month-range" &&
+              monthRange.start &&
+              monthRange.end && (
+                <div>
+                  <Label className="font-medium">Rango de meses:</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {format(monthRange.start, "MMMM yyyy", { locale: es })} -{" "}
+                    {format(monthRange.end, "MMMM yyyy", { locale: es })}
+                  </p>
+                </div>
+              )}
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

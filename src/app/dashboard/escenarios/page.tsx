@@ -1,20 +1,32 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
-
+import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
+import {
+  CreateScenarioDto,
+  Neighborhood,
+  PageMeta,
+  PageOptions,
+  Scenario,
+  UpdateScenarioDto,
+  neighborhoodService,
+  scenarioService,
+} from "@/services/api";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/shared/ui/dialog";
 import {
   DropdownMenu,
@@ -23,20 +35,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import {
-  Plus,
-  FileEdit,
-  Search,
-  Filter,
-  Download,
-  MoreHorizontal,
-  MapPin,
-  Loader2,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
-import { Textarea } from "@/shared/ui/textarea";
-import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -47,23 +47,20 @@ import {
   PaginationPrevious,
 } from "@/shared/ui/pagination";
 import { Switch } from "@/shared/ui/switch";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Badge } from "@/shared/ui/badge";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Textarea } from "@/shared/ui/textarea";
 import {
-  scenarioService,
-  neighborhoodService,
-  Scenario,
-  Neighborhood,
-  PageOptions,
-  PageMeta,
-  CreateScenarioDto,
-  UpdateScenarioDto,
-} from "@/services/api";
+  Download,
+  FileEdit,
+  Filter,
+  Loader2,
+  MapPin,
+  MoreHorizontal,
+  Plus,
+  Search,
+} from "lucide-react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
 
 // ⭐ COMPONENTES SEPARADOS PARA EVITAR RE-CREACIÓN
 interface ValidatedInputProps {
@@ -77,24 +74,34 @@ interface ValidatedInputProps {
   className?: string;
 }
 
-const ValidatedInput = memo(({ 
-  id, label, value, onChange, error, placeholder, required, className 
-}: ValidatedInputProps) => (
-  <div className="space-y-1">
-    <Label htmlFor={id} className="text-sm font-medium">
-      {label}{required && <span className="text-red-500 ml-1">*</span>}
-    </Label>
-    <Input
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={`bg-white h-9 ${error ? 'border-red-500 focus:border-red-500' : ''} ${className || ''}`}
-    />
-    {error && <p className="text-sm text-red-600">{error}</p>}
-  </div>
-));
-ValidatedInput.displayName = 'ValidatedInput';
+const ValidatedInput = memo(
+  ({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    placeholder,
+    required,
+    className,
+  }: ValidatedInputProps) => (
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`bg-white h-9 ${error ? "border-red-500 focus:border-red-500" : ""} ${className || ""}`}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  ),
+);
+ValidatedInput.displayName = "ValidatedInput";
 
 interface ValidatedSelectProps {
   id: string;
@@ -107,32 +114,42 @@ interface ValidatedSelectProps {
   required?: boolean;
 }
 
-const ValidatedSelect = memo(({ 
-  id, label, value, onChange, options, error, placeholder, required 
-}: ValidatedSelectProps) => (
-  <div className="space-y-1">
-    <Label htmlFor={id} className="text-sm font-medium">
-      {label}{required && <span className="text-red-500 ml-1">*</span>}
-    </Label>
-    <select
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-        error ? 'border-red-500 focus-visible:ring-red-500' : ''
-      }`}
-    >
-      <option value="">{placeholder || 'Seleccione una opción...'}</option>
-      {options.map(option => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
-    {error && <p className="text-sm text-red-600">{error}</p>}
-  </div>
-));
-ValidatedSelect.displayName = 'ValidatedSelect';
+const ValidatedSelect = memo(
+  ({
+    id,
+    label,
+    value,
+    onChange,
+    options,
+    error,
+    placeholder,
+    required,
+  }: ValidatedSelectProps) => (
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`flex h-9 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          error ? "border-red-500 focus-visible:ring-red-500" : ""
+        }`}
+      >
+        <option value="">{placeholder || "Seleccione una opción..."}</option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
+        ))}
+      </select>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  ),
+);
+ValidatedSelect.displayName = "ValidatedSelect";
 
 // Interfaz para nuestro estado y filtros
 interface FilterState {
@@ -146,7 +163,7 @@ interface FilterState {
 interface FormData {
   name: string;
   address: string;
-  neighborhoodId: number | '';
+  neighborhoodId: number | "";
   description?: string;
 }
 
@@ -161,7 +178,7 @@ export default function FacilityManagement() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
-    null
+    null,
   );
   const [showFilters, setShowFilters] = useState(false);
 
@@ -183,17 +200,17 @@ export default function FacilityManagement() {
 
   // Estados para formularios
   const [createFormData, setCreateFormData] = useState<FormData>({
-    name: '',
-    address: '',
-    neighborhoodId: '',
-    description: ''
+    name: "",
+    address: "",
+    neighborhoodId: "",
+    description: "",
   });
 
   const [updateFormData, setUpdateFormData] = useState<FormData>({
-    name: '',
-    address: '',
-    neighborhoodId: '',
-    description: ''
+    name: "",
+    address: "",
+    neighborhoodId: "",
+    description: "",
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -228,27 +245,27 @@ export default function FacilityManagement() {
   // Función de validación
   const validateForm = (data: FormData): FormErrors => {
     const errors: FormErrors = {};
-    
+
     if (!data.name.trim()) {
-      errors.name = 'El nombre es requerido';
+      errors.name = "El nombre es requerido";
     } else if (data.name.length < 3) {
-      errors.name = 'El nombre debe tener al menos 3 caracteres';
+      errors.name = "El nombre debe tener al menos 3 caracteres";
     } else if (data.name.length > 100) {
-      errors.name = 'El nombre no puede exceder 100 caracteres';
+      errors.name = "El nombre no puede exceder 100 caracteres";
     }
-    
+
     if (!data.address.trim()) {
-      errors.address = 'La dirección es requerida';
+      errors.address = "La dirección es requerida";
     } else if (data.address.length < 10) {
-      errors.address = 'La dirección debe tener al menos 10 caracteres';
+      errors.address = "La dirección debe tener al menos 10 caracteres";
     } else if (data.address.length > 150) {
-      errors.address = 'La dirección no puede exceder 150 caracteres';
+      errors.address = "La dirección no puede exceder 150 caracteres";
     }
-    
+
     if (!data.neighborhoodId) {
-      errors.neighborhoodId = 'Debe seleccionar un barrio';
+      errors.neighborhoodId = "Debe seleccionar un barrio";
     }
-    
+
     return errors;
   };
 
@@ -257,47 +274,47 @@ export default function FacilityManagement() {
     try {
       setIsSubmitting(true);
       setFormErrors({});
-      
+
       // Validar formulario
       const errors = validateForm(createFormData);
       if (Object.keys(errors).length > 0) {
         setFormErrors(errors);
         return;
       }
-      
+
       // Preparar datos para el backend
       const createData: CreateScenarioDto = {
         name: createFormData.name.trim(),
         address: createFormData.address.trim(),
-        neighborhoodId: Number(createFormData.neighborhoodId)
+        neighborhoodId: Number(createFormData.neighborhoodId),
       };
-      
+
       // Crear scenario
       const newScenario = await scenarioService.create(createData);
-      
+
       // Actualizar lista
       await fetchScenarios(filters);
-      
+
       // Limpiar formulario
       setCreateFormData({
-        name: '',
-        address: '',
-        neighborhoodId: '',
-        description: ''
+        name: "",
+        address: "",
+        neighborhoodId: "",
+        description: "",
       });
-      
+
       // Cerrar modal
       setIsModalOpen(false);
-      
+
       // Mostrar notificación de éxito
       toast.success("Escenario creado exitosamente", {
-        description: `${newScenario.name} ha sido registrado en el sistema.`
+        description: `${newScenario.name} ha sido registrado en el sistema.`,
       });
-      
     } catch (error: any) {
-      console.error('Error creating scenario:', error);
+      console.error("Error creating scenario:", error);
       toast.error("Error al crear escenario", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -307,61 +324,67 @@ export default function FacilityManagement() {
   // Handler para actualizar scenario
   const handleUpdateScenario = async () => {
     if (!selectedScenario) return;
-    
+
     try {
       setIsSubmitting(true);
       setFormErrors({});
-      
+
       // Validar formulario
       const errors = validateForm(updateFormData);
       if (Object.keys(errors).length > 0) {
         setFormErrors(errors);
         return;
       }
-      
+
       // Preparar datos para el backend (solo campos que cambiaron)
       const updateData: UpdateScenarioDto = {};
-      
+
       if (updateFormData.name.trim() !== selectedScenario.name) {
         updateData.name = updateFormData.name.trim();
       }
-      
+
       if (updateFormData.address.trim() !== selectedScenario.address) {
         updateData.address = updateFormData.address.trim();
       }
-      
-      if (Number(updateFormData.neighborhoodId) !== selectedScenario.neighborhood?.id) {
+
+      if (
+        Number(updateFormData.neighborhoodId) !==
+        selectedScenario.neighborhood?.id
+      ) {
         updateData.neighborhoodId = Number(updateFormData.neighborhoodId);
       }
-      
+
       // Solo actualizar si hay cambios
       if (Object.keys(updateData).length === 0) {
         toast.info("No se detectaron cambios", {
-          description: "No hay modificaciones para guardar."
+          description: "No hay modificaciones para guardar.",
         });
         setIsDrawerOpen(false);
         return;
       }
-      
+
       // Actualizar scenario
-      const updatedScenario = await scenarioService.update(selectedScenario.id, updateData);
-      
+      const updatedScenario = await scenarioService.update(
+        selectedScenario.id,
+        updateData,
+      );
+
       // Actualizar lista
       await fetchScenarios(filters);
-      
+
       // Cerrar modal
       setIsDrawerOpen(false);
       setSelectedScenario(null);
-      
+
       // Mostrar notificación de éxito
       toast.success("Escenario actualizado exitosamente", {
-        description: `${updatedScenario.name} ha sido actualizado.`
+        description: `${updatedScenario.name} ha sido actualizado.`,
       });
-      
     } catch (error: any) {
-      console.error('Error updating scenario:', error);
+      console.error("Error updating scenario:", error);
       toast.error("Error al actualizar escenario", {
-        description: error.message || "Ocurrió un error inesperado. Intente nuevamente."
+        description:
+          error.message || "Ocurrió un error inesperado. Intente nuevamente.",
       });
     } finally {
       setIsSubmitting(false);
@@ -369,31 +392,37 @@ export default function FacilityManagement() {
   };
 
   // Funciones utilitarias para manejar cambios en formularios (optimizadas con useCallback)
-  const handleCreateFieldChange = useCallback((field: keyof FormData, value: string | number) => {
-    setCreateFormData(prev => ({ ...prev, [field]: value }));
-    // Limpiar error específico cuando el usuario empiece a escribir
-    setFormErrors(prev => {
-      if (prev[field as keyof FormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof FormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleCreateFieldChange = useCallback(
+    (field: keyof FormData, value: string | number) => {
+      setCreateFormData((prev) => ({ ...prev, [field]: value }));
+      // Limpiar error específico cuando el usuario empiece a escribir
+      setFormErrors((prev) => {
+        if (prev[field as keyof FormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof FormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
-  const handleUpdateFieldChange = useCallback((field: keyof FormData, value: string | number) => {
-    setUpdateFormData(prev => ({ ...prev, [field]: value }));
-    // Limpiar error específico cuando el usuario empiece a escribir
-    setFormErrors(prev => {
-      if (prev[field as keyof FormErrors]) {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof FormErrors];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  const handleUpdateFieldChange = useCallback(
+    (field: keyof FormData, value: string | number) => {
+      setUpdateFormData((prev) => ({ ...prev, [field]: value }));
+      // Limpiar error específico cuando el usuario empiece a escribir
+      setFormErrors((prev) => {
+        if (prev[field as keyof FormErrors]) {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof FormErrors];
+          return newErrors;
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -407,7 +436,7 @@ export default function FacilityManagement() {
         setNeighborhoods(
           Array.isArray(neighborhoodsResult)
             ? neighborhoodsResult
-            : neighborhoodsResult.data
+            : neighborhoodsResult.data,
         );
 
         // Cargar escenarios iniciales
@@ -450,69 +479,73 @@ export default function FacilityManagement() {
   // Renderizar componentes de paginación
   const renderPaginationItems = () => {
     if (!pageMeta) return null;
-    
+
     const items = [];
     const currentPage = filters.page;
     const totalPages = pageMeta.totalPages;
-    
+
     // Siempre mostrar primera página
     items.push(
       <PaginationItem key="page-1">
-        <PaginationLink 
+        <PaginationLink
           isActive={currentPage === 1}
           onClick={() => handlePageChange(1)}
         >
           1
         </PaginationLink>
-      </PaginationItem>
+      </PaginationItem>,
     );
-    
+
     // Mostrar elipsis si es necesario antes del rango
     if (currentPage > 3) {
       items.push(
         <PaginationItem key="ellipsis-1">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Mostrar páginas intermedias
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
       items.push(
         <PaginationItem key={`page-${i}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === i}
             onClick={() => handlePageChange(i)}
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Mostrar elipsis si es necesario después del rango
     if (currentPage < totalPages - 2 && totalPages > 4) {
       items.push(
         <PaginationItem key="ellipsis-2">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     // Siempre mostrar última página si hay más de una
     if (totalPages > 1) {
       items.push(
         <PaginationItem key={`page-${totalPages}`}>
-          <PaginationLink 
+          <PaginationLink
             isActive={currentPage === totalPages}
             onClick={() => handlePageChange(totalPages)}
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     return items;
   };
 
@@ -529,14 +562,12 @@ export default function FacilityManagement() {
     setUpdateFormData({
       name: scenario.name,
       address: scenario.address,
-      neighborhoodId: scenario.neighborhood?.id || '',
-      description: scenario.description || ''
+      neighborhoodId: scenario.neighborhood?.id || "",
+      description: scenario.description || "",
     });
     setFormErrors({});
     setIsDrawerOpen(true);
   };
-
-
 
   // Columnas para la tabla
   const columns = [
@@ -544,7 +575,9 @@ export default function FacilityManagement() {
     {
       id: "neighborhood",
       header: "Barrio",
-      cell: (row: any) => <span>{row.neighborhood?.name || 'No asignado'}</span>,
+      cell: (row: any) => (
+        <span>{row.neighborhood?.name || "No asignado"}</span>
+      ),
     },
     {
       id: "name",
@@ -648,8 +681,8 @@ export default function FacilityManagement() {
 
           {/* Tab All */}
           <TabsContent value="all" className="mt-0">
-            <ScenariosFiltersCard 
-              open={showFilters} 
+            <ScenariosFiltersCard
+              open={showFilters}
               filters={filters}
               onFiltersChange={handleFiltersChange}
               onClearFilters={clearFilters}
@@ -667,10 +700,10 @@ export default function FacilityManagement() {
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                    placeholder="Buscar escenario..."
-                    className="pl-8"
-                    value={filters.search}
-                    onChange={(e) => handleQuickSearch(e.target.value)}
+                      placeholder="Buscar escenario..."
+                      className="pl-8"
+                      value={filters.search}
+                      onChange={(e) => handleQuickSearch(e.target.value)}
                     />
                   </div>
                 </div>
@@ -743,14 +776,15 @@ export default function FacilityManagement() {
                         <span className="font-medium">
                           {pageMeta.totalItems}
                         </span>{" "}
-                        escenarios (Página {filters.page} de {pageMeta.totalPages})
+                        escenarios (Página {filters.page} de{" "}
+                        {pageMeta.totalPages})
                       </>
                     )}
                   </div>
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
+                        <PaginationPrevious
                           onClick={() => {
                             if (pageMeta?.hasPreviousPage && !loading) {
                               handlePageChange(filters.page - 1);
@@ -761,14 +795,12 @@ export default function FacilityManagement() {
                       {renderPaginationItems()}
                       <PaginationItem>
                         {pageMeta?.hasNextPage && !loading ? (
-                          <PaginationNext 
-                            onClick={() => handlePageChange(filters.page + 1)} 
+                          <PaginationNext
+                            onClick={() => handlePageChange(filters.page + 1)}
                           />
                         ) : (
                           <span className="pointer-events-none opacity-50">
-                            <PaginationNext 
-                              onClick={() => {}} 
-                            />
+                            <PaginationNext onClick={() => {}} />
                           </span>
                         )}
                       </PaginationItem>
@@ -868,24 +900,26 @@ export default function FacilityManagement() {
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>
-                          {(!pageMeta?.hasPreviousPage || loading) ? (
+                          {!pageMeta?.hasPreviousPage || loading ? (
                             <span className="pointer-events-none opacity-50">
                               <PaginationPrevious onClick={() => {}} />
                             </span>
                           ) : (
-                            <PaginationPrevious 
-                              onClick={() => handlePageChange(filters.page - 1)} 
+                            <PaginationPrevious
+                              onClick={() => handlePageChange(filters.page - 1)}
                             />
                           )}
                         </PaginationItem>
                         {renderPaginationItems()}
                         <PaginationItem>
-                          {(!pageMeta?.hasNextPage || loading) ? (
+                          {!pageMeta?.hasNextPage || loading ? (
                             <span className="pointer-events-none opacity-50">
                               <PaginationNext onClick={() => {}} />
                             </span>
                           ) : (
-                            <PaginationNext onClick={() => handlePageChange(filters.page + 1)} />
+                            <PaginationNext
+                              onClick={() => handlePageChange(filters.page + 1)}
+                            />
                           )}
                         </PaginationItem>
                       </PaginationContent>
@@ -902,7 +936,9 @@ export default function FacilityManagement() {
           <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-xl text-teal-700">
-                {selectedScenario ? `Editar Escenario: ${selectedScenario.name}` : "Editar Escenario"}
+                {selectedScenario
+                  ? `Editar Escenario: ${selectedScenario.name}`
+                  : "Editar Escenario"}
               </DialogTitle>
             </DialogHeader>
 
@@ -920,18 +956,22 @@ export default function FacilityManagement() {
                         id="venue-neighborhood"
                         label="Barrio"
                         value={updateFormData.neighborhoodId}
-                        onChange={(value) => handleUpdateFieldChange('neighborhoodId', value)}
+                        onChange={(value) =>
+                          handleUpdateFieldChange("neighborhoodId", value)
+                        }
                         options={neighborhoods}
                         error={formErrors.neighborhoodId}
                         placeholder="Seleccione barrio..."
                         required
                       />
-                      
+
                       <ValidatedInput
                         id="venue-address"
                         label="Dirección"
                         value={updateFormData.address}
-                        onChange={(value) => handleUpdateFieldChange('address', value)}
+                        onChange={(value) =>
+                          handleUpdateFieldChange("address", value)
+                        }
                         error={formErrors.address}
                         required
                       />
@@ -941,7 +981,16 @@ export default function FacilityManagement() {
                   {/* Información General */}
                   <div className="bg-gray-50 p-3 rounded-md">
                     <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                      <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        className="h-3 w-3 mr-1 text-teal-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -955,17 +1004,29 @@ export default function FacilityManagement() {
                         id="venue-name"
                         label="Nombre del Escenario"
                         value={updateFormData.name}
-                        onChange={(value) => handleUpdateFieldChange('name', value)}
+                        onChange={(value) =>
+                          handleUpdateFieldChange("name", value)
+                        }
                         error={formErrors.name}
                         required
                       />
-                      
+
                       <div className="space-y-1">
-                        <Label htmlFor="venue-description" className="text-sm font-medium">Descripción</Label>
+                        <Label
+                          htmlFor="venue-description"
+                          className="text-sm font-medium"
+                        >
+                          Descripción
+                        </Label>
                         <Textarea
                           id="venue-description"
-                          value={updateFormData.description || ''}
-                          onChange={(e) => handleUpdateFieldChange('description', e.target.value)}
+                          value={updateFormData.description || ""}
+                          onChange={(e) =>
+                            handleUpdateFieldChange(
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Descripción del escenario"
                           className="bg-white resize-none h-20 min-h-[80px]"
                         />
@@ -977,7 +1038,7 @@ export default function FacilityManagement() {
             </div>
 
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   setIsDrawerOpen(false);
@@ -991,7 +1052,7 @@ export default function FacilityManagement() {
                 Cancelar
               </Button>
               <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4" 
+                className="bg-teal-600 hover:bg-teal-700 px-4"
                 size="sm"
                 onClick={handleUpdateScenario}
                 disabled={isSubmitting}
@@ -1002,7 +1063,7 @@ export default function FacilityManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>
@@ -1013,9 +1074,11 @@ export default function FacilityManagement() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
             <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">Crear Escenario</DialogTitle>
+              <DialogTitle className="text-xl text-teal-700">
+                Crear Escenario
+              </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-180px)]">
               {/* Ubicación */}
               <div className="bg-gray-50 p-3 rounded-md">
@@ -1028,18 +1091,22 @@ export default function FacilityManagement() {
                     id="new-venue-neighborhood"
                     label="Barrio"
                     value={createFormData.neighborhoodId}
-                    onChange={(value) => handleCreateFieldChange('neighborhoodId', value)}
+                    onChange={(value) =>
+                      handleCreateFieldChange("neighborhoodId", value)
+                    }
                     options={neighborhoods}
                     error={formErrors.neighborhoodId}
                     placeholder="Seleccione barrio..."
                     required
                   />
-                  
+
                   <ValidatedInput
                     id="new-venue-address"
                     label="Dirección"
                     value={createFormData.address}
-                    onChange={(value) => handleCreateFieldChange('address', value)}
+                    onChange={(value) =>
+                      handleCreateFieldChange("address", value)
+                    }
                     error={formErrors.address}
                     placeholder="Dirección completa"
                     required
@@ -1050,7 +1117,16 @@ export default function FacilityManagement() {
               {/* Información General */}
               <div className="bg-gray-50 p-3 rounded-md">
                 <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                  <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    className="h-3 w-3 mr-1 text-teal-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -1064,18 +1140,25 @@ export default function FacilityManagement() {
                     id="new-venue-name"
                     label="Nombre del Escenario"
                     value={createFormData.name}
-                    onChange={(value) => handleCreateFieldChange('name', value)}
+                    onChange={(value) => handleCreateFieldChange("name", value)}
                     error={formErrors.name}
                     placeholder="Ingrese nombre del escenario"
                     required
                   />
-                  
+
                   <div className="space-y-1">
-                    <Label htmlFor="new-venue-description" className="text-sm font-medium">Descripción</Label>
+                    <Label
+                      htmlFor="new-venue-description"
+                      className="text-sm font-medium"
+                    >
+                      Descripción
+                    </Label>
                     <Textarea
                       id="new-venue-description"
-                      value={createFormData.description || ''}
-                      onChange={(e) => handleCreateFieldChange('description', e.target.value)}
+                      value={createFormData.description || ""}
+                      onChange={(e) =>
+                        handleCreateFieldChange("description", e.target.value)
+                      }
                       placeholder="Descripción del escenario"
                       className="bg-white resize-none h-20 min-h-[80px]"
                     />
@@ -1083,15 +1166,20 @@ export default function FacilityManagement() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setIsModalOpen(false);
-                  setCreateFormData({ name: '', address: '', neighborhoodId: '', description: '' });
+                  setCreateFormData({
+                    name: "",
+                    address: "",
+                    neighborhoodId: "",
+                    description: "",
+                  });
                   setFormErrors({});
-                }} 
+                }}
                 size="sm"
                 className="px-4"
                 disabled={isSubmitting}
@@ -1110,7 +1198,7 @@ export default function FacilityManagement() {
                     Guardando...
                   </>
                 ) : (
-                  'Guardar'
+                  "Guardar"
                 )}
               </Button>
             </DialogFooter>

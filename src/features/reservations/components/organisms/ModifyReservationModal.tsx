@@ -1,29 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Separator } from "@/shared/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { ReservationDto } from "@/services/reservation.service";
 import { cancelReservation } from "../../api/user-reservations.service";
-import { toast } from "sonner";
 import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
+import { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { Separator } from "@/shared/ui/separator";
 import {
   AlertTriangle,
   Calendar,
-  Clock,
-  MapPin,
-  Info,
-  X,
-  CheckCircle,
-  User,
-  Settings,
-  Zap,
   CalendarX,
+  CheckCircle,
+  Clock,
+  Info,
+  MapPin,
+  Settings,
+  User,
+  X,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
@@ -67,12 +72,18 @@ export function ModifyReservationModal({
 
   const isReservationActive = () => {
     const now = new Date();
-    const reservationDateTime = new Date(`${reservation.reservationDate}T${reservation.timeSlot.endTime}`);
-    return reservationDateTime >= now && reservation.reservationState.state !== 'CANCELADA';
+    const reservationDateTime = new Date(
+      `${reservation.reservationDate}T${reservation.timeSlot.endTime}`,
+    );
+    return (
+      reservationDateTime >= now &&
+      reservation.reservationState.state !== "CANCELADA"
+    );
   };
 
-  const canModify = isReservationActive() && 
-    ['PENDIENTE', 'CONFIRMADA'].includes(reservation.reservationState.state);
+  const canModify =
+    isReservationActive() &&
+    ["PENDIENTE", "CONFIRMADA"].includes(reservation.reservationState.state);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -100,7 +111,9 @@ export function ModifyReservationModal({
                     reservationId={reservation.id}
                     reservationInfo={{
                       userEmail: reservation.user?.email,
-                      date: new Date(reservation.reservationDate).toLocaleDateString('es-ES')
+                      date: new Date(
+                        reservation.reservationDate,
+                      ).toLocaleDateString("es-ES"),
                     }}
                     onStatusChange={handleStatusChange}
                   />
@@ -111,47 +124,57 @@ export function ModifyReservationModal({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <MapPin className="text-teal-600 h-4 w-4" /> Escenario Principal
+                        <MapPin className="text-teal-600 h-4 w-4" /> Escenario
+                        Principal
                       </h3>
                       <p className="text-gray-600 text-sm pt-1">
                         {reservation.subScenario.scenario.name}
                       </p>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
                         <User className="text-teal-600 h-4 w-4" /> Tipo
                       </h3>
-                      <Badge 
-                        variant="outline" 
-                        className={reservation.subScenario.hasCost ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-green-50 text-green-700 border-green-200'}
+                      <Badge
+                        variant="outline"
+                        className={
+                          reservation.subScenario.hasCost
+                            ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                            : "bg-green-50 text-green-700 border-green-200"
+                        }
                       >
-                        {reservation.subScenario.hasCost ? 'De pago' : 'Gratuito'}
+                        {reservation.subScenario.hasCost
+                          ? "De pago"
+                          : "Gratuito"}
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
                         <Calendar className="text-teal-600 h-4 w-4" /> Fecha
                       </h3>
                       <p className="text-gray-600 text-sm pt-1">
-                        {new Date(reservation.reservationDate).toLocaleDateString('es-ES', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
+                        {new Date(
+                          reservation.reservationDate,
+                        ).toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })}
                       </p>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
                         <Clock className="text-teal-600 h-4 w-4" /> Horario
                       </h3>
                       <p className="text-gray-600 text-sm pt-1">
-                        {reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}
+                        {reservation.timeSlot.startTime} -{" "}
+                        {reservation.timeSlot.endTime}
                       </p>
                     </div>
                   </div>
@@ -164,7 +187,8 @@ export function ModifyReservationModal({
                       {reservation.subScenario.scenario.address}
                     </p>
                     <p className="text-gray-500 text-xs mt-1">
-                      Barrio: {reservation.subScenario.scenario.neighborhood.name}
+                      Barrio:{" "}
+                      {reservation.subScenario.scenario.neighborhood.name}
                     </p>
                   </div>
                 </div>
@@ -175,7 +199,9 @@ export function ModifyReservationModal({
                       <Info className="h-4 w-4" />
                       Comentarios
                     </h4>
-                    <p className="text-sm text-blue-700 whitespace-pre-wrap">{reservation.comments}</p>
+                    <p className="text-sm text-blue-700 whitespace-pre-wrap">
+                      {reservation.comments}
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -192,18 +218,30 @@ export function ModifyReservationModal({
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre completo</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Nombre completo
+                    </h4>
                     <p className="text-sm text-gray-900">
-                      {reservation.user ? `${reservation.user.first_name} ${reservation.user.last_name}` : "Cliente sin nombre"}
+                      {reservation.user
+                        ? `${reservation.user.first_name} ${reservation.user.last_name}`
+                        : "Cliente sin nombre"}
                     </p>
                   </div>
                   <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Correo electrónico</h4>
-                    <p className="text-sm text-gray-900">{reservation.user?.email || "Sin email"}</p>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Correo electrónico
+                    </h4>
+                    <p className="text-sm text-gray-900">
+                      {reservation.user?.email || "Sin email"}
+                    </p>
                   </div>
                   <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Teléfono</h4>
-                    <p className="text-sm text-gray-900">{reservation.user?.phone || "Sin teléfono"}</p>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Teléfono
+                    </h4>
+                    <p className="text-sm text-gray-900">
+                      {reservation.user?.phone || "Sin teléfono"}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -221,16 +259,18 @@ export function ModifyReservationModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-
                   {/* Opción 1: Cancelar */}
                   {!showCancelConfirm ? (
                     <div className="border border-red-200 rounded-lg p-4 hover:bg-red-50 transition-colors">
                       <div className="flex items-start gap-3">
                         <CalendarX className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <h5 className="font-medium text-red-700 mb-1">Cancelar Reserva</h5>
+                          <h5 className="font-medium text-red-700 mb-1">
+                            Cancelar Reserva
+                          </h5>
                           <p className="text-sm text-gray-600 mb-3">
-                            Cancela tu reserva completamente. Esta acción no se puede deshacer.
+                            Cancela tu reserva completamente. Esta acción no se
+                            puede deshacer.
                           </p>
                           <Button
                             variant="outline"
@@ -247,10 +287,13 @@ export function ModifyReservationModal({
                     <div className="border-2 border-red-200 rounded-lg p-4 bg-red-50">
                       <div className="flex items-center gap-2 mb-3">
                         <AlertTriangle className="h-5 w-5 text-red-600" />
-                        <h5 className="font-medium text-red-700">Confirmar Cancelación</h5>
+                        <h5 className="font-medium text-red-700">
+                          Confirmar Cancelación
+                        </h5>
                       </div>
                       <p className="text-sm text-red-700 mb-4">
-                        ¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.
+                        ¿Estás seguro de que quieres cancelar esta reserva? Esta
+                        acción no se puede deshacer.
                       </p>
                       <div className="flex gap-2">
                         <Button
@@ -281,14 +324,18 @@ export function ModifyReservationModal({
                     <div className="flex items-start gap-3">
                       <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <h5 className="font-medium text-blue-800 mb-2">Cambio de Fecha u Horario</h5>
+                        <h5 className="font-medium text-blue-800 mb-2">
+                          Cambio de Fecha u Horario
+                        </h5>
                         <p className="text-sm text-blue-700 leading-relaxed">
-                          <strong>No es posible modificar</strong> la fecha u horario de una reserva existente. 
-                          Para cambiar estos datos, debes <strong>cancelar esta reserva</strong> y crear una nueva 
-                          con la fecha y horario que prefieras.
+                          <strong>No es posible modificar</strong> la fecha u
+                          horario de una reserva existente. Para cambiar estos
+                          datos, debes <strong>cancelar esta reserva</strong> y
+                          crear una nueva con la fecha y horario que prefieras.
                         </p>
                         <div className="mt-3 text-xs text-blue-600">
-                          ℹ️ Puedes crear una nueva reserva desde la página principal de
+                          ℹ️ Puedes crear una nueva reserva desde la página
+                          principal de
                           <Link
                             href={`/scenario/${reservation.id}`}
                             className="text-blue-600 hover:text-blue-800 font-medium underline ml-1"
@@ -305,10 +352,13 @@ export function ModifyReservationModal({
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h6 className="font-medium text-amber-800 mb-1">Importante</h6>
+                        <h6 className="font-medium text-amber-800 mb-1">
+                          Importante
+                        </h6>
                         <p className="text-xs text-amber-700 leading-relaxed">
-                          Tampoco es posible cambiar de escenario en una reserva existente. 
-                          Para reservar otro escenario, debes crear una nueva reserva desde el inicio.
+                          Tampoco es posible cambiar de escenario en una reserva
+                          existente. Para reservar otro escenario, debes crear
+                          una nueva reserva desde el inicio.
                         </p>
                       </div>
                     </div>
@@ -321,12 +371,13 @@ export function ModifyReservationModal({
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h4 className="font-medium text-gray-700 mb-2">Reserva No Modificable</h4>
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      Reserva No Modificable
+                    </h4>
                     <p className="text-sm text-gray-600">
-                      {reservation.reservationState.state === 'CANCELADA' 
+                      {reservation.reservationState.state === "CANCELADA"
                         ? "Esta reserva ya ha sido cancelada."
-                        : "Esta reserva ya ha pasado y no se puede modificar."
-                      }
+                        : "Esta reserva ya ha pasado y no se puede modificar."}
                     </p>
                   </div>
                 </CardContent>

@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, FileEdit, Download } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-
 import { UserDrawer } from "@/features/dashboard/components/user-drawer";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { DataTable } from "@/shared/ui/data-table";
 import { FilterToolbar } from "@/shared/ui/filter-toolbar";
 import { StatusBadge } from "@/shared/ui/status-badge";
-import { DataTable } from "@/shared/ui/data-table";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Download, FileEdit, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface IUser {
   id: number;
@@ -107,7 +106,7 @@ const filterOptions: IFilterOption[] = [
 /** Small helper so we don’t repeat response.ok checks everywhere. */
 async function fetchJson<T>(
   input: RequestInfo,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<T> {
   const res = await fetch(input, init);
   if (!res.ok) {
@@ -162,7 +161,7 @@ export default function UsersPage() {
       }
 
       const data = await fetchJson<IPageResponse>(
-        `${url}?${params.toString()}`
+        `${url}?${params.toString()}`,
       );
 
       setUsers(data.data);
@@ -185,11 +184,11 @@ export default function UsersPage() {
       if (!user.lastName && user.last_name) {
         user.lastName = user.last_name;
       }
-      
+
       const fullUser = await fetchJson<IUser>(
-        `${API_BASE_URL}/users/${user.id}`
+        `${API_BASE_URL}/users/${user.id}`,
       );
-      
+
       // También asegurar que el usuario completo tenga las propiedades correctas
       if (!fullUser.firstName && fullUser.first_name) {
         fullUser.firstName = fullUser.first_name;
@@ -197,7 +196,7 @@ export default function UsersPage() {
       if (!fullUser.lastName && fullUser.last_name) {
         fullUser.lastName = fullUser.last_name;
       }
-      
+
       setSelectedUser(fullUser);
       setIsDrawerOpen(true);
     } catch (err) {
@@ -216,7 +215,7 @@ export default function UsersPage() {
           method: isUpdate ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        }
+        },
       );
 
       // Refresh list
@@ -255,7 +254,9 @@ export default function UsersPage() {
       header: "Nombre",
       cell: (row: IUser) => (
         <span>
-          {(row.firstName || row.first_name || '') + ' ' + (row.lastName || row.last_name || '')}
+          {(row.firstName || row.first_name || "") +
+            " " +
+            (row.lastName || row.last_name || "")}
         </span>
       ),
     },
@@ -332,7 +333,7 @@ export default function UsersPage() {
           <TabsTrigger value="club-deportivo">Clubes Deportivos</TabsTrigger>
           <TabsTrigger value="entrenador">Entrenadores</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="all">
           <DataTable
             data={users}
@@ -345,54 +346,75 @@ export default function UsersPage() {
             isLoading={loading}
           />
         </TabsContent>
-        
+
         <TabsContent value="admin">
           <DataTable
-            data={users.filter(user => user.role?.name === "admin")}
+            data={users.filter((user) => user.role?.name === "admin")}
             columns={columns}
-            totalItems={users.filter(user => user.role?.name === "admin").length}
+            totalItems={
+              users.filter((user) => user.role?.name === "admin").length
+            }
             pageSize={pageSize}
             currentPage={1}
-            totalPages={Math.ceil(users.filter(user => user.role?.name === "admin").length / pageSize)}
+            totalPages={Math.ceil(
+              users.filter((user) => user.role?.name === "admin").length /
+                pageSize,
+            )}
             onPageChange={setCurrentPage}
             isLoading={loading}
           />
         </TabsContent>
-        
+
         <TabsContent value="independiente">
           <DataTable
-            data={users.filter(user => user.role?.name === "independiente")}
+            data={users.filter((user) => user.role?.name === "independiente")}
             columns={columns}
-            totalItems={users.filter(user => user.role?.name === "independiente").length}
+            totalItems={
+              users.filter((user) => user.role?.name === "independiente").length
+            }
             pageSize={pageSize}
             currentPage={1}
-            totalPages={Math.ceil(users.filter(user => user.role?.name === "independiente").length / pageSize)}
+            totalPages={Math.ceil(
+              users.filter((user) => user.role?.name === "independiente")
+                .length / pageSize,
+            )}
             onPageChange={setCurrentPage}
             isLoading={loading}
           />
         </TabsContent>
-        
+
         <TabsContent value="club-deportivo">
           <DataTable
-            data={users.filter(user => user.role?.name === "club-deportivo")}
+            data={users.filter((user) => user.role?.name === "club-deportivo")}
             columns={columns}
-            totalItems={users.filter(user => user.role?.name === "club-deportivo").length}
+            totalItems={
+              users.filter((user) => user.role?.name === "club-deportivo")
+                .length
+            }
             pageSize={pageSize}
             currentPage={1}
-            totalPages={Math.ceil(users.filter(user => user.role?.name === "club-deportivo").length / pageSize)}
+            totalPages={Math.ceil(
+              users.filter((user) => user.role?.name === "club-deportivo")
+                .length / pageSize,
+            )}
             onPageChange={setCurrentPage}
             isLoading={loading}
           />
         </TabsContent>
-        
+
         <TabsContent value="entrenador">
           <DataTable
-            data={users.filter(user => user.role?.name === "entrenador")}
+            data={users.filter((user) => user.role?.name === "entrenador")}
             columns={columns}
-            totalItems={users.filter(user => user.role?.name === "entrenador").length}
+            totalItems={
+              users.filter((user) => user.role?.name === "entrenador").length
+            }
             pageSize={pageSize}
             currentPage={1}
-            totalPages={Math.ceil(users.filter(user => user.role?.name === "entrenador").length / pageSize)}
+            totalPages={Math.ceil(
+              users.filter((user) => user.role?.name === "entrenador").length /
+                pageSize,
+            )}
             onPageChange={setCurrentPage}
             isLoading={loading}
           />

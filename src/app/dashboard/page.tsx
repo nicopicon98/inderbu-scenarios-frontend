@@ -1,7 +1,7 @@
 "use client";
 
-import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { ReservationsContainer } from "@/features/reservations/ReservationsContainer";
+import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 
 export default function ReservationsPage() {
   return (

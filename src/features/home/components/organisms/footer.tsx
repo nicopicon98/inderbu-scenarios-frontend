@@ -1,12 +1,8 @@
+import { Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  SiFacebook,
-  SiInstagram,
-  SiYoutube,
-} from "react-icons/si";
 import { RiTwitterXLine } from "react-icons/ri";
-import { MapPin, Phone, Mail } from "lucide-react";
+import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 
 export default function Footer() {
   const socialLinks = [
@@ -17,20 +13,20 @@ export default function Footer() {
   ];
 
   const contactInfo = [
-    { 
-      icon: MapPin, 
+    {
+      icon: MapPin,
       text: "Calle 44 #52-165, Centro Administrativo La Alpujarra",
-      label: "Dirección"
+      label: "Dirección",
     },
-    { 
-      icon: Phone, 
-      text: "604 385 5555", 
-      label: "Teléfono"
+    {
+      icon: Phone,
+      text: "604 385 5555",
+      label: "Teléfono",
     },
-    { 
-      icon: Mail, 
-      text: "info@inderbu.gov.co", 
-      label: "Email"
+    {
+      icon: Mail,
+      text: "info@inderbu.gov.co",
+      label: "Email",
     },
   ];
 
@@ -50,8 +46,8 @@ export default function Footer() {
               />
             </div>
             <p className="text-gray-600 text-sm leading-relaxed max-w-sm">
-              Instituto de Deportes y Recreación de Buenaventura, promoviendo el bienestar 
-              y la actividad física en nuestra comunidad.
+              Instituto de Deportes y Recreación de Buenaventura, promoviendo el
+              bienestar y la actividad física en nuestra comunidad.
             </p>
           </div>
 
@@ -92,18 +88,29 @@ export default function Footer() {
                 </Link>
               ))}
             </div>
-            
+
             {/* Quick links */}
             <div className="space-y-2 pt-4">
-              <h4 className="font-medium text-gray-800 text-sm">Enlaces rápidos</h4>
+              <h4 className="font-medium text-gray-800 text-sm">
+                Enlaces rápidos
+              </h4>
               <div className="flex flex-col gap-1">
-                <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <Link
+                  href="/about"
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   Acerca de INDERBU
                 </Link>
-                <Link href="/help" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <Link
+                  href="/help"
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   Ayuda y soporte
                 </Link>
-                <Link href="/terms" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <Link
+                  href="/terms"
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   Términos y condiciones
                 </Link>
               </div>
@@ -115,14 +122,21 @@ export default function Footer() {
         <div className="pt-8 border-t border-gray-100">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
             <p>
-              © {new Date().getFullYear()} INDERBU. Todos los derechos reservados.
+              © {new Date().getFullYear()} INDERBU. Todos los derechos
+              reservados.
             </p>
             <div className="flex items-center gap-4">
-              <Link href="/privacy" className="hover:text-gray-700 transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-gray-700 transition-colors"
+              >
                 Política de privacidad
               </Link>
               <div className="w-px h-4 bg-gray-300"></div>
-              <Link href="/cookies" className="hover:text-gray-700 transition-colors">
+              <Link
+                href="/cookies"
+                className="hover:text-gray-700 transition-colors"
+              >
                 Cookies
               </Link>
             </div>

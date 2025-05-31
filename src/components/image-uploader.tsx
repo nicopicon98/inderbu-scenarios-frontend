@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { Star, Trash, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ImageFile {
   file: File;
@@ -22,7 +22,7 @@ export const ImageUploader = ({
   onChange,
   maxImages = 3,
   title = "Imágenes",
-  description = "Puedes subir hasta 3 imágenes. La primera será la imagen destacada por defecto."
+  description = "Puedes subir hasta 3 imágenes. La primera será la imagen destacada por defecto.",
 }: ImageUploaderProps) => {
   const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);
 
@@ -41,8 +41,11 @@ export const ImageUploader = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
-    const newFiles = Array.from(e.target.files).slice(0, maxImages - imageFiles.length);
-    
+    const newFiles = Array.from(e.target.files).slice(
+      0,
+      maxImages - imageFiles.length,
+    );
+
     if (newFiles.length === 0) return;
 
     const newImageFiles = newFiles.map((file, index) => {
@@ -61,19 +64,19 @@ export const ImageUploader = ({
 
   const handleRemoveFile = (index: number) => {
     const updatedImageFiles = [...imageFiles];
-    
+
     // Si eliminamos la imagen destacada y quedan otras, establecer la primera como destacada
     if (updatedImageFiles[index].isFeature && updatedImageFiles.length > 1) {
       // Encontrar el nuevo índice para destacar (el primero que no sea el que eliminamos)
       const newFeatureIndex = index === 0 ? 1 : 0;
       updatedImageFiles[newFeatureIndex].isFeature = true;
     }
-    
+
     // Liberar el objeto URL
     if (updatedImageFiles[index].preview) {
       URL.revokeObjectURL(updatedImageFiles[index].preview!);
     }
-    
+
     updatedImageFiles.splice(index, 1);
     setImageFiles(updatedImageFiles);
     onChange(updatedImageFiles);
@@ -84,7 +87,7 @@ export const ImageUploader = ({
       ...file,
       isFeature: i === index,
     }));
-    
+
     setImageFiles(updatedImageFiles);
     onChange(updatedImageFiles);
     alert("Imagen establecida como destacada");
@@ -102,7 +105,9 @@ export const ImageUploader = ({
         <div className="grid grid-cols-3 gap-4 mb-4">
           {imageFiles.map((image, index) => (
             <div key={index} className="relative group">
-              <div className={`aspect-square rounded overflow-hidden border-2 ${image.isFeature ? 'border-orange-500' : 'border-gray-200'}`}>
+              <div
+                className={`aspect-square rounded overflow-hidden border-2 ${image.isFeature ? "border-orange-500" : "border-gray-200"}`}
+              >
                 <img
                   src={image.preview}
                   alt={`Imagen ${index + 1}`}
@@ -115,7 +120,7 @@ export const ImageUploader = ({
                     variant={image.isFeature ? "default" : "outline"}
                     size="sm"
                     onClick={() => setAsFeature(index)}
-                    className={`${image.isFeature ? 'bg-orange-500 hover:bg-orange-600' : 'bg-white text-gray-700'}`}
+                    className={`${image.isFeature ? "bg-orange-500 hover:bg-orange-600" : "bg-white text-gray-700"}`}
                   >
                     <Star className="h-4 w-4 mr-1" />
                     {image.isFeature ? "Destacada" : "Destacar"}
@@ -146,14 +151,17 @@ export const ImageUploader = ({
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <Upload className="w-8 h-8 mb-2 text-gray-500" />
               <p className="text-sm text-gray-500">
-                <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
+                <span className="font-semibold">Haz clic para subir</span> o
+                arrastra y suelta
               </p>
-              <p className="text-xs text-gray-500">SVG, PNG, JPG o GIF (máx. 2MB)</p>
+              <p className="text-xs text-gray-500">
+                SVG, PNG, JPG o GIF (máx. 2MB)
+              </p>
             </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              onChange={handleFileChange} 
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
               accept="image/*"
               multiple={maxImages > 1}
             />

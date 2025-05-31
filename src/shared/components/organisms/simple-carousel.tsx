@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
+import { slides } from "@/mock-data/slides";
+import { slidesScenario } from "@/mock-data/slides-scenario";
 import {
   Carousel,
   CarouselContent,
@@ -9,17 +9,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/carousel";
-import { slides } from "@/mock-data/slides";
 import Autoplay from "embla-carousel-autoplay";
-import { slidesScenario } from "@/mock-data/slides-scenario";
+import Image from "next/image";
+import * as React from "react";
 
 export function SimpleCarousel() {
   return (
     <div className="w-full relative">
-      <Carousel
-        className="w-full"
-        plugins={[Autoplay({ delay: 10000 })]}
-      >
+      <Carousel className="w-full" plugins={[Autoplay({ delay: 10000 })]}>
         <CarouselContent>
           {slidesScenario.map((slide) => (
             <CarouselItem key={slide.id} className="p-0">
@@ -39,7 +36,7 @@ export function SimpleCarousel() {
 
         {/* ← Aquí las flechas absolutas sobre el slide → */}
         <CarouselPrevious className="absolute top-1/2 left-4 -translate-y-1/2 z-20 cursor-pointer bg-gray-200" />
-        <CarouselNext     className="absolute top-1/2 right-4 -translate-y-1/2 z-20 cursor-pointer bg-gray-200"/>
+        <CarouselNext className="absolute top-1/2 right-4 -translate-y-1/2 z-20 cursor-pointer bg-gray-200" />
       </Carousel>
     </div>
   );

@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+import { useReservationStates } from "../../hooks/useReservationStates";
+import { cn } from "@/lib/utils";
+import ReservationService, {
+  ReservationStateDto,
+} from "@/services/reservation.service";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +16,15 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
-import { Loader2, Check, AlertTriangle } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { AlertTriangle, Check, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import ReservationService, {
-  ReservationStateDto,
-} from "@/services/reservation.service";
-import { cn } from "@/lib/utils";
-import { useReservationStates } from "../../hooks/useReservationStates";
 
 interface ClickableStatusBadgeProps {
   /** id actual de la reserva – viene del backend */
@@ -79,7 +79,9 @@ export function ClickableStatusBadge({
   const [selectedState, setSelectedState] = useState<number | null>(null);
 
   /** 2. Estado actual (puede ser undefined mientras carga) */
-  const currentState: ReservationStateDto | undefined = states.find((s) => s.id === statusId);
+  const currentState: ReservationStateDto | undefined = states.find(
+    (s) => s.id === statusId,
+  );
   /** 3. Determinar clave del catálogo */
   const keyCurrent = currentState?.state ?? "PENDIENTE";
 
@@ -88,7 +90,7 @@ export function ClickableStatusBadge({
     if (selectedState === null) return null;
     const state = states.find((s) => s.id === selectedState);
     if (!state) return null;
-    
+
     const key = (state as any).name ?? (state as any).state;
     return {
       id: state.id,
@@ -105,7 +107,7 @@ export function ClickableStatusBadge({
         tw: "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300",
         dotTw: "bg-gray-500",
       },
-    [keyCurrent]
+    [keyCurrent],
   );
 
   /** 5. Mostrar diálogo de confirmación */
@@ -114,7 +116,7 @@ export function ClickableStatusBadge({
       setOpen(false);
       return;
     }
-    
+
     setSelectedState(newStateId);
     setConfirmDialogOpen(true);
     setOpen(false); // Cerrar el dropdown
@@ -123,12 +125,12 @@ export function ClickableStatusBadge({
   /** 6. Acción al confirmar cambio de estado */
   const handleConfirmStatusChange = async () => {
     if (selectedState === null) return;
-    
+
     try {
       setIsUpdating(true);
       await ReservationService.updateReservationState(
         reservationId,
-        selectedState
+        selectedState,
       );
 
       const state = states.find((s) => s.id === selectedState);
@@ -165,7 +167,7 @@ export function ClickableStatusBadge({
           <Badge
             className={cn(
               "text-xs px-2 py-0.5 cursor-pointer border",
-              currentCatalog.tw
+              currentCatalog.tw,
             )}
           >
             {isUpdating ? (
@@ -201,12 +203,10 @@ export function ClickableStatusBadge({
                   onClick={() => showConfirmDialog(state.id)}
                   className={cn(
                     "text-xs flex items-center",
-                    state.id === statusId && "font-medium"
+                    state.id === statusId && "font-medium",
                   )}
                 >
-                  {state.id === statusId && (
-                    <Check className="h-3 w-3 mr-1" />
-                  )}
+                  {state.id === statusId && <Check className="h-3 w-3 mr-1" />}
                   <span
                     className={cn("h-2 w-2 rounded-full mr-2", cat.dotTw)}
                   />
@@ -227,31 +227,47 @@ export function ClickableStatusBadge({
               Confirmar cambio de estado
             </AlertDialogTitle>
           </AlertDialogHeader>
-          
+
           {selectedStateInfo && (
             <div className="space-y-4">
               <div className="bg-slate-50 p-3 rounded-md border">
                 <div className="mb-2">
                   ¿Estás seguro de que deseas cambiar el estado de la reserva
                   {reservationInfo ? (
-                    <span className="font-medium"> de <span className="text-primary">{reservationInfo.userEmail || "usuario"}</span> del <span className="text-primary">{reservationInfo.date || "fecha programada"}</span></span>
+                    <span className="font-medium">
+                      {" "}
+                      de{" "}
+                      <span className="text-primary">
+                        {reservationInfo.userEmail || "usuario"}
+                      </span>{" "}
+                      del{" "}
+                      <span className="text-primary">
+                        {reservationInfo.date || "fecha programada"}
+                      </span>
+                    </span>
                   ) : (
                     <span className="font-medium"> #{reservationId}</span>
                   )}
                   {" a "}
-                  <span className={cn(
-                    "font-semibold px-1.5 py-0.5 rounded-md text-sm",
-                    selectedStateInfo.key === "CONFIRMADA" && "bg-green-100 text-green-800",
-                    selectedStateInfo.key === "CANCELADA" && "bg-red-100 text-red-800",
-                    selectedStateInfo.key === "PENDIENTE" && "bg-yellow-100 text-yellow-800",
-                    selectedStateInfo.key === "RECHAZADA" && "bg-gray-100 text-gray-800"
-                  )}>
+                  <span
+                    className={cn(
+                      "font-semibold px-1.5 py-0.5 rounded-md text-sm",
+                      selectedStateInfo.key === "CONFIRMADA" &&
+                        "bg-green-100 text-green-800",
+                      selectedStateInfo.key === "CANCELADA" &&
+                        "bg-red-100 text-red-800",
+                      selectedStateInfo.key === "PENDIENTE" &&
+                        "bg-yellow-100 text-yellow-800",
+                      selectedStateInfo.key === "RECHAZADA" &&
+                        "bg-gray-100 text-gray-800",
+                    )}
+                  >
                     {selectedStateInfo.label.toLowerCase()}
                   </span>
                   ?
                 </div>
               </div>
-              
+
               <div className="flex gap-2 text-sm">
                 <div className="p-3 bg-slate-50 rounded-md border flex-1">
                   <div className="flex items-center gap-1.5 text-yellow-600 mb-2">
@@ -259,28 +275,33 @@ export function ClickableStatusBadge({
                     <span className="font-medium">Importante</span>
                   </div>
                   <div className="text-slate-700">
-                    Este cambio puede afectar la disponibilidad del escenario y las notificaciones enviadas.
+                    Este cambio puede afectar la disponibilidad del escenario y
+                    las notificaciones enviadas.
                   </div>
                 </div>
               </div>
             </div>
           )}
-          
+
           <AlertDialogFooter className="gap-2 mt-2">
-            <AlertDialogCancel 
+            <AlertDialogCancel
               onClick={handleCancelStatusChange}
               className="w-full h-9 font-normal text-sm"
             >
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirmStatusChange}
               className={cn(
                 "text-white w-full h-9 text-sm font-medium",
-                selectedStateInfo?.key === "CONFIRMADA" && "bg-green-600 hover:bg-green-700",
-                selectedStateInfo?.key === "CANCELADA" && "bg-red-600 hover:bg-red-700",
-                selectedStateInfo?.key === "PENDIENTE" && "bg-yellow-600 hover:bg-yellow-700",
-                selectedStateInfo?.key === "RECHAZADA" && "bg-gray-600 hover:bg-gray-700"
+                selectedStateInfo?.key === "CONFIRMADA" &&
+                  "bg-green-600 hover:bg-green-700",
+                selectedStateInfo?.key === "CANCELADA" &&
+                  "bg-red-600 hover:bg-red-700",
+                selectedStateInfo?.key === "PENDIENTE" &&
+                  "bg-yellow-600 hover:bg-yellow-700",
+                selectedStateInfo?.key === "RECHAZADA" &&
+                  "bg-gray-600 hover:bg-gray-700",
               )}
             >
               Confirmar cambio

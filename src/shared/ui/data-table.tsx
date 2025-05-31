@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { Button } from "@/shared/ui/button";
 import {
   Table,
   TableBody,
@@ -11,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
-import { Button } from "@/shared/ui/button";
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,6 +16,8 @@ import {
   ChevronsRight,
   Loader2,
 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface DataTableProps<T> {
   data: T[];
@@ -53,7 +52,7 @@ export function DataTable<T>({
       setSelectedItems(new Set());
     } else {
       setSelectedItems(
-        new Set(Array.from({ length: data.length }, (_, i) => i))
+        new Set(Array.from({ length: data.length }, (_, i) => i)),
       );
     }
   };
@@ -101,7 +100,10 @@ export function DataTable<T>({
             {isLoading ? (
               // Estado de carga
               <TableRow>
-                <TableCell colSpan={columns.length + 1} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length + 1}
+                  className="h-24 text-center"
+                >
                   <div className="flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
                     <span>Cargando datos...</span>
@@ -111,7 +113,10 @@ export function DataTable<T>({
             ) : data.length === 0 ? (
               // Sin datos
               <TableRow>
-                <TableCell colSpan={columns.length + 1} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length + 1}
+                  className="h-24 text-center"
+                >
                   No hay datos disponibles.
                 </TableCell>
               </TableRow>
@@ -173,8 +178,8 @@ export function DataTable<T>({
                 currentPage <= 3
                   ? i + 1
                   : currentPage >= totalPages - 2
-                  ? totalPages - 4 + i
-                  : currentPage - 2 + i;
+                    ? totalPages - 4 + i
+                    : currentPage - 2 + i;
 
               if (pageNumber <= 0 || pageNumber > totalPages) return null;
 

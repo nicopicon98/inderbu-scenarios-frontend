@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
-import { Switch } from "@/shared/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -14,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
+import { useEffect, useState } from "react";
 
 /* ---------- Tipos ---------- */
 export interface IUser {
@@ -59,15 +64,11 @@ interface UserDrawerProps {
 }
 
 // API URL base
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /* ---------- Componente ---------- */
-export function UserDrawer({
-  open,
-  user,
-  onClose,
-  onSave,
-}: UserDrawerProps) {
+export function UserDrawer({ open, user, onClose, onSave }: UserDrawerProps) {
   const [form, setForm] = useState<Partial<IUser>>({});
   const [roles, setRoles] = useState<IRoleOption[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<INeighborhoodOption[]>([]);
@@ -84,7 +85,7 @@ export function UserDrawer({
           { id: 2, name: "Cliente" },
           { id: 3, name: "Gestor" },
         ]);
-        
+
         setNeighborhoods([
           { id: 1, name: "San Alonso" },
           { id: 2, name: "Provenza" },
@@ -94,7 +95,7 @@ export function UserDrawer({
         console.error("Error fetching options:", error);
       }
     };
-    
+
     fetchOptions();
   }, []);
 
@@ -103,38 +104,40 @@ export function UserDrawer({
     if (user) {
       setForm({
         dni: user.dni,
-        firstName: user.firstName || user.first_name || '',
-        lastName: user.lastName || user.last_name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
+        firstName: user.firstName || user.first_name || "",
+        lastName: user.lastName || user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
         isActive: user.isActive !== undefined ? user.isActive : true,
         role: {
           id: user.role?.id || (user.roleId ? user.roleId : 1),
-          name: user.role?.name || ''
+          name: user.role?.name || "",
         },
         neighborhood: {
-          id: user.neighborhood?.id || (user.neighborhoodId ? user.neighborhoodId : 1),
-          name: user.neighborhood?.name || ''
-        }
+          id:
+            user.neighborhood?.id ||
+            (user.neighborhoodId ? user.neighborhoodId : 1),
+          name: user.neighborhood?.name || "",
+        },
       });
     } else {
       setForm({
         dni: 0,
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        address: '',
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
         isActive: true,
         role: {
           id: 1,
-          name: ''
+          name: "",
         },
         neighborhood: {
           id: 1,
-          name: ''
-        }
+          name: "",
+        },
       });
     }
   }, [user]);
@@ -162,10 +165,10 @@ export function UserDrawer({
       <DialogContent className="w-[650px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl text-teal-700">
-          {user 
-              ? `Editar Usuario: ${user.firstName || user.first_name || ''} ${user.lastName || user.last_name || ''}` 
-                : "Nuevo Usuario"}
-            </DialogTitle>
+            {user
+              ? `Editar Usuario: ${user.firstName || user.first_name || ""} ${user.lastName || user.last_name || ""}`
+              : "Nuevo Usuario"}
+          </DialogTitle>
         </DialogHeader>
 
         {/* ---------- Cuerpo scrollable ---------- */}
@@ -173,7 +176,16 @@ export function UserDrawer({
           {/* Información Básica */}
           <div className="bg-gray-50 p-3 rounded-md">
             <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-              <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="h-3 w-3 mr-1 text-teal-600"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
@@ -181,20 +193,24 @@ export function UserDrawer({
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <Field id="user-dni" label="DNI*">
-                <Input 
+                <Input
                   className="bg-white h-9"
-                  value={form.dni || ""} 
-                  onChange={(e) => setForm({ ...form, dni: Number(e.target.value) })} 
+                  value={form.dni || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, dni: Number(e.target.value) })
+                  }
                 />
               </Field>
 
               <Field id="user-role" label="Rol*">
-                <Select 
-                  value={form.role?.id?.toString() || ""} 
-                  onValueChange={(value) => setForm({ 
-                    ...form, 
-                    role: { ...form.role, id: Number(value) } 
-                  })}
+                <Select
+                  value={form.role?.id?.toString() || ""}
+                  onValueChange={(value) =>
+                    setForm({
+                      ...form,
+                      role: { ...form.role, id: Number(value) },
+                    })
+                  }
                 >
                   <SelectTrigger className="bg-white h-9">
                     <SelectValue placeholder="Seleccionar rol" />
@@ -208,11 +224,11 @@ export function UserDrawer({
                   </SelectContent>
                 </Select>
               </Field>
-              
+
               <Field id="user-firstName" label="Nombre*">
                 <Input
                   className="bg-white h-9"
-                  value={form.firstName || ''}
+                  value={form.firstName || ""}
                   onChange={handle("firstName")}
                 />
               </Field>
@@ -220,17 +236,26 @@ export function UserDrawer({
               <Field id="user-lastName" label="Apellido*">
                 <Input
                   className="bg-white h-9"
-                  value={form.lastName || ''}
+                  value={form.lastName || ""}
                   onChange={handle("lastName")}
                 />
               </Field>
             </div>
           </div>
-          
+
           {/* Información de Contacto */}
           <div className="bg-gray-50 p-3 rounded-md">
             <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-              <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="h-3 w-3 mr-1 text-teal-600"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
               Información de Contacto
@@ -255,19 +280,24 @@ export function UserDrawer({
               </Field>
 
               <Field id="user-neighborhood" label="Barrio*">
-                <Select 
-                  value={form.neighborhood?.id?.toString() || ""} 
-                  onValueChange={(value) => setForm({ 
-                    ...form, 
-                    neighborhood: { ...form.neighborhood, id: Number(value) } 
-                  })}
+                <Select
+                  value={form.neighborhood?.id?.toString() || ""}
+                  onValueChange={(value) =>
+                    setForm({
+                      ...form,
+                      neighborhood: { ...form.neighborhood, id: Number(value) },
+                    })
+                  }
                 >
                   <SelectTrigger className="bg-white h-9">
                     <SelectValue placeholder="Seleccionar barrio" />
                   </SelectTrigger>
                   <SelectContent>
                     {neighborhoods.map((neighborhood) => (
-                      <SelectItem key={neighborhood.id} value={neighborhood.id.toString()}>
+                      <SelectItem
+                        key={neighborhood.id}
+                        value={neighborhood.id.toString()}
+                      >
                         {neighborhood.name}
                       </SelectItem>
                     ))}
@@ -288,7 +318,16 @@ export function UserDrawer({
           {/* Configuración de Cuenta */}
           <div className="bg-gray-50 p-3 rounded-md">
             <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-              <svg className="h-3 w-3 mr-1 text-teal-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="h-3 w-3 mr-1 text-teal-600"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
@@ -299,20 +338,26 @@ export function UserDrawer({
                 <Input
                   className="bg-white h-9"
                   type="password"
-                  placeholder={user ? "Dejar en blanco para mantener la actual" : "Ingrese contraseña"}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder={
+                    user
+                      ? "Dejar en blanco para mantener la actual"
+                      : "Ingrese contraseña"
+                  }
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
                 />
               </Field>
-              
+
               <div className="px-2 py-2 flex items-center justify-between bg-white rounded-md">
-                <Label htmlFor="user-status" className="text-sm font-medium">Estado Activo</Label>
+                <Label htmlFor="user-status" className="text-sm font-medium">
+                  Estado Activo
+                </Label>
                 <div className="flex flex-col items-end">
                   <Switch
                     id="user-status"
                     checked={form.isActive}
-                    onCheckedChange={(v) =>
-                      setForm({ ...form, isActive: v })
-                    }
+                    onCheckedChange={(v) => setForm({ ...form, isActive: v })}
                   />
                   <span className="text-xs text-gray-500 mt-1">
                     {form.isActive ? "Usuario activo" : "Usuario inactivo"}
@@ -325,7 +370,7 @@ export function UserDrawer({
 
         {/* ---------- Footer ---------- */}
         <DialogFooter className="flex justify-end gap-3 pt-3">
-          <Button 
+          <Button
             variant="outline"
             onClick={onClose}
             className="px-4"
@@ -341,9 +386,25 @@ export function UserDrawer({
           >
             {loading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Guardando...
               </>

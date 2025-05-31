@@ -1,14 +1,13 @@
 "use client";
 
-import type React from "react";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect, createContext, useContext } from "react";
+import { menuItems, reportItems } from "./data/menu-items";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
-import { menuItems, reportItems } from "./data/menu-items";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // Crear un contexto para compartir el estado del sidebar
 type SidebarContextType = {
@@ -59,7 +58,7 @@ export function SimpleSidebar() {
     <div
       className={cn(
         "fixed inset-y-0 left-0 z-10 bg-white border-r border-gray-200 pt-16 transition-all duration-300",
-        collapsed ? "w-[72px]" : "w-[240px]"
+        collapsed ? "w-[72px]" : "w-[240px]",
       )}
     >
       <div className="absolute right-[-12px] top-20">
@@ -94,13 +93,13 @@ export function SimpleSidebar() {
                   "flex items-center rounded-md px-3 py-2 text-sm transition-colors",
                   isActive
                     ? "bg-accent text-primary font-medium"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-primary"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-primary",
                 )}
               >
                 <item.icon
                   className={cn(
                     "h-5 w-5 mr-2",
-                    isActive ? "text-primary" : "text-gray-400"
+                    isActive ? "text-primary" : "text-gray-400",
                   )}
                 />
                 {!collapsed && <span>{item.title}</span>}

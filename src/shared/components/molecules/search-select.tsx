@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Search, ChevronDown, X, Check } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Check, ChevronDown, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export interface SearchSelectOption {
   id: number | string;
@@ -40,9 +36,12 @@ export function SearchSelect({
   const [options, setOptions] = useState<SearchSelectOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<SearchSelectOption | null>(null);
-  const [selectedCache, setSelectedCache] = useState<Map<string | number, SearchSelectOption>>(new Map());
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const [selectedOption, setSelectedOption] =
+    useState<SearchSelectOption | null>(null);
+  const [selectedCache, setSelectedCache] = useState<
+    Map<string | number, SearchSelectOption>
+  >(new Map());
+  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   // Load initial options
   useEffect(() => {
@@ -70,13 +69,15 @@ export function SearchSelect({
   useEffect(() => {
     if (value && value !== "all") {
       // ✅ Primero buscar en opciones actuales
-      let option = options.find(opt => opt.id.toString() === value.toString());
-      
+      let option = options.find(
+        (opt) => opt.id.toString() === value.toString(),
+      );
+
       // ✅ Si no está en opciones actuales, buscar en cache
       if (!option) {
-        option = selectedCache.get(value) || null;
+        option = selectedCache.get(value) ?? undefined;
       }
-      
+
       if (option) {
         setSelectedOption(option);
       }
@@ -90,12 +91,14 @@ export function SearchSelect({
     try {
       const results = await onSearch(query);
       setOptions(results);
-      
+
       // ✅ Si hay opciones nuevas y un valor seleccionado, actualizar cache
       if (results.length > 0 && value && value !== "all") {
-        const matchingOption = results.find(opt => opt.id.toString() === value.toString());
+        const matchingOption = results.find(
+          (opt) => opt.id.toString() === value.toString(),
+        );
         if (matchingOption) {
-          setSelectedCache(prev => {
+          setSelectedCache((prev) => {
             const newCache = new Map(prev);
             newCache.set(matchingOption.id, matchingOption);
             return newCache;
@@ -103,7 +106,7 @@ export function SearchSelect({
         }
       }
     } catch (error) {
-      console.error('Error loading options:', error);
+      console.error("Error loading options:", error);
       setOptions([]);
     } finally {
       setLoading(false);
@@ -113,7 +116,7 @@ export function SearchSelect({
   const handleSelect = (option: SearchSelectOption) => {
     setSelectedOption(option);
     // ✅ Guardar en cache para uso futuro
-    setSelectedCache(prev => {
+    setSelectedCache((prev) => {
       const newCache = new Map(prev);
       newCache.set(option.id, option);
       return newCache;
@@ -141,7 +144,9 @@ export function SearchSelect({
         >
           <div className="flex items-center">
             {Icon && <Icon className="w-4 h-4 mr-2 text-gray-400" />}
-            <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
+            <span
+              className={selectedOption ? "text-gray-900" : "text-gray-500"}
+            >
               {selectedOption ? selectedOption.name : placeholder}
             </span>
           </div>
@@ -158,7 +163,10 @@ export function SearchSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent
+        className="w-[--radix-popover-trigger-width] p-0"
+        align="start"
+      >
         <div className="p-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -170,7 +178,7 @@ export function SearchSelect({
             />
           </div>
         </div>
-        
+
         <div className="max-h-64 overflow-auto">
           {loading ? (
             <div className="flex items-center justify-center py-6">

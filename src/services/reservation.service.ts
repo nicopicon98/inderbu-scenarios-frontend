@@ -99,11 +99,11 @@ const ReservationService = {
   // Obtener slots disponibles
   getAvailableTimeSlots: async (
     subScenarioId: number,
-    date: string
+    date: string,
   ): Promise<TimeslotResponseDto[]> => {
     try {
       const response = await fetch(
-        `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`
+        `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
       );
 
       if (!response.ok) {
@@ -119,7 +119,7 @@ const ReservationService = {
 
   // Crear una reserva
   createReservation: async (
-    reservationData: CreateReservationDto
+    reservationData: CreateReservationDto,
   ): Promise<CreateReservationResponseDto> => {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -140,7 +140,7 @@ const ReservationService = {
         const errorData = await response.json().catch(() => null);
         throw new Error(
           errorData?.message ||
-          `Error ${response.status}: ${response.statusText}`
+            `Error ${response.status}: ${response.statusText}`,
         );
       }
 
@@ -181,44 +181,50 @@ const ReservationService = {
     limit?: number;
     searchQuery?: string;
     // ⭐ NUEVOS FILTROS DE FECHA
-    dateFrom?: string;  // YYYY-MM-DD
-    dateTo?: string;    // YYYY-MM-DD
+    dateFrom?: string; // YYYY-MM-DD
+    dateTo?: string; // YYYY-MM-DD
   }): Promise<ReservationDto[]> => {
     const url = new URL(`${API_URL}/reservations`);
-    
+
     // Añadir parámetros de filtros si existen
     if (filters) {
       if (filters.scenarioId && filters.scenarioId > 0) {
-        url.searchParams.set('scenarioId', filters.scenarioId.toString());
+        url.searchParams.set("scenarioId", filters.scenarioId.toString());
       }
       if (filters.activityAreaId && filters.activityAreaId > 0) {
-        url.searchParams.set('activityAreaId', filters.activityAreaId.toString());
+        url.searchParams.set(
+          "activityAreaId",
+          filters.activityAreaId.toString(),
+        );
       }
       if (filters.neighborhoodId && filters.neighborhoodId > 0) {
-        url.searchParams.set('neighborhoodId', filters.neighborhoodId.toString());
+        url.searchParams.set(
+          "neighborhoodId",
+          filters.neighborhoodId.toString(),
+        );
       }
       if (filters.userId && filters.userId > 0) {
-        url.searchParams.set('userId', filters.userId.toString());
+        url.searchParams.set("userId", filters.userId.toString());
       }
       if (filters.page && filters.page > 0) {
-        url.searchParams.set('page', filters.page.toString());
+        url.searchParams.set("page", filters.page.toString());
       }
       if (filters.limit && filters.limit > 0) {
-        url.searchParams.set('limit', filters.limit.toString());
+        url.searchParams.set("limit", filters.limit.toString());
       }
       if (filters.searchQuery && filters.searchQuery.trim()) {
-        url.searchParams.set('search', filters.searchQuery.trim());
+        url.searchParams.set("search", filters.searchQuery.trim());
       }
       // ⭐ NUEVOS FILTROS DE FECHA
       if (filters.dateFrom && filters.dateFrom.trim()) {
-        url.searchParams.set('dateFrom', filters.dateFrom.trim());
+        url.searchParams.set("dateFrom", filters.dateFrom.trim());
       }
       if (filters.dateTo && filters.dateTo.trim()) {
-        url.searchParams.set('dateTo', filters.dateTo.trim());
+        url.searchParams.set("dateTo", filters.dateTo.trim());
       }
     }
 
-    console.log('Fetching reservations with URL:', url.toString());
+    console.log("Fetching reservations with URL:", url.toString());
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -260,8 +266,8 @@ const ReservationService = {
     limit?: number;
     searchQuery?: string;
     // ⭐ NUEVOS FILTROS DE FECHA
-    dateFrom?: string;  // YYYY-MM-DD
-    dateTo?: string;    // YYYY-MM-DD
+    dateFrom?: string; // YYYY-MM-DD
+    dateTo?: string; // YYYY-MM-DD
   }): Promise<{
     data: ReservationDto[];
     meta: {
@@ -272,40 +278,46 @@ const ReservationService = {
     };
   }> => {
     const url = new URL(`${API_URL}/reservations`);
-    
+
     // Añadir parámetros de filtros si existen
     if (filters) {
       if (filters.scenarioId && filters.scenarioId > 0) {
-        url.searchParams.set('scenarioId', filters.scenarioId.toString());
+        url.searchParams.set("scenarioId", filters.scenarioId.toString());
       }
       if (filters.activityAreaId && filters.activityAreaId > 0) {
-        url.searchParams.set('activityAreaId', filters.activityAreaId.toString());
+        url.searchParams.set(
+          "activityAreaId",
+          filters.activityAreaId.toString(),
+        );
       }
       if (filters.neighborhoodId && filters.neighborhoodId > 0) {
-        url.searchParams.set('neighborhoodId', filters.neighborhoodId.toString());
+        url.searchParams.set(
+          "neighborhoodId",
+          filters.neighborhoodId.toString(),
+        );
       }
       if (filters.userId && filters.userId > 0) {
-        url.searchParams.set('userId', filters.userId.toString());
+        url.searchParams.set("userId", filters.userId.toString());
       }
       if (filters.page && filters.page > 0) {
-        url.searchParams.set('page', filters.page.toString());
+        url.searchParams.set("page", filters.page.toString());
       }
       if (filters.limit && filters.limit > 0) {
-        url.searchParams.set('limit', filters.limit.toString());
+        url.searchParams.set("limit", filters.limit.toString());
       }
       if (filters.searchQuery && filters.searchQuery.trim()) {
-        url.searchParams.set('search', filters.searchQuery.trim());
+        url.searchParams.set("search", filters.searchQuery.trim());
       }
-      // ⭐ NUEVOS FILTROS DE FECHA  
+      // ⭐ NUEVOS FILTROS DE FECHA
       if (filters.dateFrom && filters.dateFrom.trim()) {
-        url.searchParams.set('dateFrom', filters.dateFrom.trim());
+        url.searchParams.set("dateFrom", filters.dateFrom.trim());
       }
       if (filters.dateTo && filters.dateTo.trim()) {
-        url.searchParams.set('dateTo', filters.dateTo.trim());
+        url.searchParams.set("dateTo", filters.dateTo.trim());
       }
     }
 
-    console.log('Fetching reservations with pagination, URL:', url.toString());
+    console.log("Fetching reservations with pagination, URL:", url.toString());
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -318,7 +330,7 @@ const ReservationService = {
     }
     const responseData = await response.json();
 
-    console.log('Paginated reservations response:', responseData);
+    console.log("Paginated reservations response:", responseData);
 
     // Mapeamos los datos para ser compatibles con el código existente
     const reservations = responseData.data.map((item: ReservationDto) => {
@@ -339,7 +351,7 @@ const ReservationService = {
         limit: filters?.limit || 10,
         totalItems: reservations.length,
         totalPages: 1,
-      }
+      },
     };
   },
   // Obtener todos los estados de reserva disponibles
@@ -370,7 +382,7 @@ const ReservationService = {
   // Método legacy para compatibilidad con código existente
   updateReservationState: async (
     reservationId: number,
-    stateId: number
+    stateId: number,
   ): Promise<ReservationDto> => {
     // Let's print both reservationId and stateId
     console.log({ reservationId, stateId });
@@ -384,7 +396,7 @@ const ReservationService = {
             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },
           body: JSON.stringify({ stateId }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -399,7 +411,7 @@ const ReservationService = {
   },
 
   // Obtener escenarios para filtros
-  getAllScenarios: async (): Promise<{id: number, name: string}[]> => {
+  getAllScenarios: async (): Promise<{ id: number; name: string }[]> => {
     try {
       const response = await fetch(`${API_URL}/scenarios`, {
         headers: {
@@ -419,7 +431,7 @@ const ReservationService = {
   },
 
   // Obtener áreas de actividad para filtros
-  getAllActivityAreas: async (): Promise<{id: number, name: string}[]> => {
+  getAllActivityAreas: async (): Promise<{ id: number; name: string }[]> => {
     try {
       const response = await fetch(`${API_URL}/activity-areas`, {
         headers: {
@@ -439,7 +451,7 @@ const ReservationService = {
   },
 
   // Obtener barrios para filtros
-  getAllNeighborhoods: async (): Promise<{id: number, name: string}[]> => {
+  getAllNeighborhoods: async (): Promise<{ id: number; name: string }[]> => {
     try {
       const response = await fetch(`${API_URL}/neighborhoods`, {
         headers: {
@@ -459,7 +471,9 @@ const ReservationService = {
   },
 
   // Obtener usuarios para filtros (solo admins)
-  getAllUsers: async (): Promise<{id: number, firstName: string, lastName: string, email: string}[]> => {
+  getAllUsers: async (): Promise<
+    { id: number; firstName: string; lastName: string; email: string }[]
+  > => {
     try {
       const response = await fetch(`${API_URL}/users`, {
         headers: {
@@ -471,13 +485,13 @@ const ReservationService = {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      
+
       // Mapear a formato consistente
       return (data.data || data).map((user: any) => ({
         id: user.id,
-        firstName: user.firstName || user.first_name || '',
-        lastName: user.lastName || user.last_name || '',
-        email: user.email || ''
+        firstName: user.firstName || user.first_name || "",
+        lastName: user.lastName || user.last_name || "",
+        email: user.email || "",
       }));
     } catch (error) {
       console.error("Error fetching users:", error);

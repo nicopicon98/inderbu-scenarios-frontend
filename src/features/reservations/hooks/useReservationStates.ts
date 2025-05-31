@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import ReservationService, { ReservationStateDto } from '@/services/reservation.service';
+import ReservationService, {
+  ReservationStateDto,
+} from "@/services/reservation.service";
+import { useEffect, useState } from "react";
 
 export const useReservationStates = () => {
   const [states, setStates] = useState<ReservationStateDto[]>([]);
@@ -13,8 +15,12 @@ export const useReservationStates = () => {
       setStates(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch reservation states'));
-      console.error('Error fetching reservation states:', err);
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Failed to fetch reservation states"),
+      );
+      console.error("Error fetching reservation states:", err);
     } finally {
       setLoading(false);
     }
@@ -28,6 +34,6 @@ export const useReservationStates = () => {
     states,
     loading,
     error,
-    refetch: fetchStates
+    refetch: fetchStates,
   };
 };

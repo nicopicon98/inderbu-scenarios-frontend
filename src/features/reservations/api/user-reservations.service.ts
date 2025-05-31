@@ -34,7 +34,7 @@ export async function getUserReservations({
   url.searchParams.set("userId", userId.toString());
   url.searchParams.set("page", page.toString());
   url.searchParams.set("limit", limit.toString());
-  
+
   if (searchQuery.trim()) {
     url.searchParams.set("search", searchQuery.trim());
   }
@@ -71,12 +71,14 @@ export async function getUserReservations({
 
   return {
     data: mappedData,
-    meta: resJson.meta
+    meta: resJson.meta,
   };
 }
 
 // Servicio para cancelar reserva
-export async function cancelReservation(reservationId: number): Promise<ReservationDto> {
+export async function cancelReservation(
+  reservationId: number,
+): Promise<ReservationDto> {
   const token = localStorage.getItem("auth_token");
   if (!token) {
     throw new Error("No se encontró un token de autenticación");
@@ -92,7 +94,7 @@ export async function cancelReservation(reservationId: number): Promise<Reservat
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ stateId: 3 }), // ID del estado CANCELADA
-    }
+    },
   );
 
   if (!response.ok) {
@@ -103,7 +105,9 @@ export async function cancelReservation(reservationId: number): Promise<Reservat
 }
 
 // Servicio para obtener estados de reserva
-export async function getReservationStates(): Promise<{id: number, state: string}[]> {
+export async function getReservationStates(): Promise<
+  { id: number; state: string }[]
+> {
   const token = localStorage.getItem("auth_token");
   if (!token) {
     throw new Error("No se encontró un token de autenticación");

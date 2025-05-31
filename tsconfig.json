@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "target": "ES6",
     "skipLibCheck": true,
@@ -19,15 +23,37 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/shared/*": ["./src/shared/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/core/*": ["./src/core/*"],
-      "@/config/*": ["./src/config/*"],
-      "@/server/*": ["./src/server/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/features/*": [
+        "./src/features/*"
+      ],
+      "@/shared/*": [
+        "./src/shared/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/core/*": [
+        "./src/core/*"
+      ],
+      "@/config/*": [
+        "./src/config/*"
+      ],
+      "@/server/*": [
+        "./src/server/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "scripts/sort-imports-by-length.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

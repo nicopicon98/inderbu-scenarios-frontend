@@ -1,22 +1,21 @@
-import React from 'react';
-
-import { usePermissions } from '../../hooks/use-permissions';
-import { useRoleChecks } from '../../hooks/use-role-checks';
-import { EUserRole } from '@/shared/enums/user-role.enum';
+import { usePermissions } from "../../hooks/use-permissions";
+import { useRoleChecks } from "../../hooks/use-role-checks";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+import React from "react";
 
 interface PermissionGuardProps {
   children: React.ReactNode;
-  
+
   // Opciones mutuamente excluyentes
   requiredRole?: EUserRole;
   allowedRoles?: EUserRole[];
   requiredPermission?: keyof ReturnType<typeof usePermissions>;
-  
+
   // Render alternativo
   fallback?: React.ReactNode;
-  
+
   // Modo de operación
-  mode?: 'hide' | 'show-fallback';
+  mode?: "hide" | "show-fallback";
 }
 
 export function PermissionGuard({
@@ -25,12 +24,12 @@ export function PermissionGuard({
   allowedRoles,
   requiredPermission,
   fallback = null,
-  mode = 'hide',
+  mode = "hide",
 }: PermissionGuardProps) {
   const roleChecks = useRoleChecks();
   const permissions = usePermissions();
 
-  let hasPermission = false
+  let hasPermission = false;
 
   if (requiredRole) {
     hasPermission = roleChecks.isRole(requiredRole);
@@ -44,5 +43,5 @@ export function PermissionGuard({
     return <>{children}</>;
   }
 
-  return mode === 'show-fallback' ? <>{fallback}</> : null;
+  return mode === "show-fallback" ? <>{fallback}</> : null;
 }

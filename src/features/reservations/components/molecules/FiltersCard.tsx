@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { MapPin, Tag, X, Filter, Building, User, Calendar } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import {
+  searchActivityAreas,
+  searchNeighborhoods,
+  searchScenarios,
+  searchUsers,
+} from "../../api/dashboard-search.service";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/shared/ui/card";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import {
-  searchScenarios,
-  searchActivityAreas,
-  searchNeighborhoods,
-  searchUsers,
-} from "../../api/dashboard-search.service";
+import { Input } from "@/shared/ui/input";
+import { Building, Calendar, Filter, MapPin, Tag, User, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 type Filters = {
   scenarioId?: number;
@@ -26,8 +26,8 @@ type Filters = {
   neighborhoodId?: number;
   userId?: number;
   // ⭐ NUEVOS FILTROS DE FECHA
-  dateFrom?: string;  // YYYY-MM-DD
-  dateTo?: string;    // YYYY-MM-DD
+  dateFrom?: string; // YYYY-MM-DD
+  dateTo?: string; // YYYY-MM-DD
 };
 
 interface FiltersCardProps {
@@ -37,11 +37,11 @@ interface FiltersCardProps {
   onClearFilters: () => void;
 }
 
-export const FiltersCard = ({ 
-  open, 
-  filters, 
-  onFiltersChange, 
-  onClearFilters 
+export const FiltersCard = ({
+  open,
+  filters,
+  onFiltersChange,
+  onClearFilters,
 }: FiltersCardProps) => {
   // ⚠️ TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -58,7 +58,7 @@ export const FiltersCard = ({
       "scenario",
       val?.toString() ?? "",
       "Escenario seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -69,7 +69,7 @@ export const FiltersCard = ({
       "activity",
       val?.toString() ?? "",
       "Actividad seleccionada",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -80,7 +80,7 @@ export const FiltersCard = ({
       "neighborhood",
       val?.toString() ?? "",
       "Barrio seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -91,7 +91,7 @@ export const FiltersCard = ({
       "user",
       val?.toString() ?? "",
       "Usuario seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -99,23 +99,13 @@ export const FiltersCard = ({
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value || undefined;
     onFiltersChange({ ...filters, dateFrom: value });
-    updateChip(
-      "dateFrom",
-      value ?? "",
-      `Desde: ${value}`,
-      value !== undefined
-    );
+    updateChip("dateFrom", value ?? "", `Desde: ${value}`, value !== undefined);
   };
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value || undefined;
     onFiltersChange({ ...filters, dateTo: value });
-    updateChip(
-      "dateTo",
-      value ?? "",
-      `Hasta: ${value}`,
-      value !== undefined
-    );
+    updateChip("dateTo", value ?? "", `Hasta: ${value}`, value !== undefined);
   };
 
   /* Debounce de búsqueda - searchTimeout ya está declarado arriba */
@@ -125,7 +115,7 @@ export const FiltersCard = ({
     type: string,
     value: string,
     display: string,
-    add: boolean
+    add: boolean,
   ) => {
     setActiveFilters((chips) => {
       const next = [...chips.filter((c) => !c.startsWith(`${type}:`))];
@@ -143,8 +133,7 @@ export const FiltersCard = ({
     // ⭐ NUEVOS CASOS PARA FECHAS
     else if (type === "dateFrom") {
       onFiltersChange({ ...filters, dateFrom: undefined });
-    }
-    else if (type === "dateTo") {
+    } else if (type === "dateTo") {
       onFiltersChange({ ...filters, dateTo: undefined });
     }
     setActiveFilters((c) => c.filter((x) => x !== chip));
@@ -164,11 +153,18 @@ export const FiltersCard = ({
             Filtros de búsqueda
           </CardTitle>
           <CardDescription className="flex items-center justify-between">
-            <span>Refina los resultados de reservas usando los siguientes filtros</span>
-            {(filters.scenarioId || filters.activityAreaId || filters.neighborhoodId || filters.userId || filters.dateFrom || filters.dateTo) && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+            <span>
+              Refina los resultados de reservas usando los siguientes filtros
+            </span>
+            {(filters.scenarioId ||
+              filters.activityAreaId ||
+              filters.neighborhoodId ||
+              filters.userId ||
+              filters.dateFrom ||
+              filters.dateTo) && (
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={clearAllFilters}
                 className="text-xs"
               >
@@ -288,7 +284,9 @@ export const FiltersCard = ({
             {/* Chips */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-gray-100">
-                <span className="text-sm text-gray-500 mr-2">Filtros activos:</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  Filtros activos:
+                </span>
                 {activeFilters.map((chip) => {
                   const [, , display] = chip.split(":");
                   return (

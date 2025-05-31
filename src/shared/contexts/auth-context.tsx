@@ -1,68 +1,120 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
 import { IAuthContextType } from "../interfaces/auth-context-type.interface";
 import { IUser } from "../interfaces/user.interface";
-import { EUserRole } from "../enums/user-role.enum";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
-  // Cargar usuario/token del localStorage al primer render
+  // Utilitad para decodificar JWT
+  const decodeToken = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload;
+    } catch {
+      return null;
+    }
+  };
+
+  // Verificar si token está expirado
+  const isTokenExpired = (): boolean => {
+    if (!token) return true;
+
+    try {
+      const payload = decodeToken(token);
+      if (!payload?.exp) return true;
+
+      const currentTime = Date.now() / 1000;
+      return payload.exp <= currentTime;
+    } catch {
+      return true;
+    }
+  };
+
   useEffect(() => {
-    if (typeof window === "undefined") return; // Asegurarse de que estamos en el cliente
+    if (typeof window === "undefined") return;
 
     const storedToken = localStorage.getItem("auth_token");
+    const storedRefreshToken = localStorage.getItem("refresh_token");
+
     if (storedToken) {
-      try {
-        const payload = JSON.parse(atob(storedToken.split(".")[1]));
-        console.log("JWT Payload:", payload); // Debug log
+      const payload = decodeToken(storedToken);
 
+      if (payload) {
         const userId = payload.userId || payload.id || payload.sub;
-        if (!userId) {
-          console.error("No user ID found in token payload", payload);
-          localStorage.removeItem("auth_token");
-          setAuthReady(true);
-          return;
-        }
 
-        setUser({
-          id: userId,
-          email: payload.email,
-          role: payload.role
-        });
-        setToken(storedToken);
-      } catch (err) {
-        console.error("Failed to parse stored token:", err);
+        if (userId && payload.email && payload.role !== undefined) {
+          setUser({
+            id: userId,
+            email: payload.email,
+            role: payload.role,
+          });
+          setToken(storedToken);
+
+          if (storedRefreshToken) {
+            setRefreshToken(storedRefreshToken);
+          }
+        } else {
+          // Token inválido, limpiar
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("refresh_token");
+        }
+      } else {
+        // Token malformado, limpiar
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("refresh_token");
       }
     }
 
-    // Señal de que el chequeo terminó
     setAuthReady(true);
   }, []);
 
-  const login = (id: number, email: string, role: EUserRole, token: string) => {
-    console.log("Login called with:", { id, email, role }); // Debug log
-    setUser({ id, email, role });
-    setToken(token);
-    localStorage.setItem("auth_token", token);
+  // Establecer sesión de usuario
+  const setUserSession = (
+    userData: IUser,
+    accessToken: string,
+    newRefreshToken?: string,
+  ) => {
+    setUser(userData);
+    setToken(accessToken);
+    localStorage.setItem("auth_token", accessToken);
+
+    if (newRefreshToken) {
+      setRefreshToken(newRefreshToken);
+      localStorage.setItem("refresh_token", newRefreshToken);
+    }
   };
 
-  const logout = () => {
+  // Limpiar sesión de usuario
+  const clearUserSession = () => {
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("refresh_token");
+  };
+
+  // Actualizar solo tokens
+  const updateToken = (newToken: string, newRefreshToken?: string) => {
+    setToken(newToken);
+    localStorage.setItem("auth_token", newToken);
+
+    if (newRefreshToken) {
+      setRefreshToken(newRefreshToken);
+      localStorage.setItem("refresh_token", newRefreshToken);
+    }
   };
 
   return (
@@ -70,10 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         token,
-        isAuthenticated: !!user,
+        refreshToken,
+        isAuthenticated: !!user && !isTokenExpired(),
         authReady,
-        login,
-        logout,
+        setUserSession,
+        clearUserSession,
+        updateToken,
+        isTokenExpired,
       }}
     >
       {children}
@@ -81,10 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth(): IAuthContextType {
+export function useAuthContext(): IAuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuthContext must be used within an AuthProvider");
   }
   return context;
 }

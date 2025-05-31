@@ -1,31 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon, Clock, MapPin, X, Loader2 } from "lucide-react";
-
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import { Reservation } from "../../types/reservation.types";
 import { useToast } from "@/shared/hooks/use-toast";
-
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardFooter } from "@/shared/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon, Clock, Loader2, MapPin, X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 interface ReservationItemProps {
   reservation: Reservation;
   onCancelled: (id: number) => void;
 }
 
-export function ReservationItem({ reservation, onCancelled }: ReservationItemProps) {
+export function ReservationItem({
+  reservation,
+  onCancelled,
+}: ReservationItemProps) {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { toast } = useToast();
@@ -34,7 +35,7 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
     setIsCancelling(true);
     try {
       // const success = await cancelReservation(reservation.id);
-      const success = true
+      const success = true;
       if (success) {
         toast({
           title: "Reserva cancelada",
@@ -61,7 +62,11 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
   };
 
   // Format the date for display
-  const formattedDate = format(new Date(reservation.reservationDate), "EEEE d 'de' MMMM, yyyy", { locale: es });
+  const formattedDate = format(
+    new Date(reservation.reservationDate),
+    "EEEE d 'de' MMMM, yyyy",
+    { locale: es },
+  );
 
   return (
     <>
@@ -75,12 +80,12 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
-        
+
         <CardContent className="p-4 flex-grow">
           <h3 className="font-bold text-lg text-blue-700 mb-2">
             {reservation.subScenario.name}
           </h3>
-          
+
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-start">
               <CalendarIcon className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
@@ -89,15 +94,18 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
                 <p>{formattedDate}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <Clock className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
               <div>
                 <p className="font-medium text-gray-700">Horario</p>
-                <p>{reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}</p>
+                <p>
+                  {reservation.timeSlot.startTime} -{" "}
+                  {reservation.timeSlot.endTime}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <MapPin className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
               <div>
@@ -108,10 +116,10 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
             </div>
           </div>
         </CardContent>
-        
+
         <CardFooter className="border-t p-4 bg-gray-50">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={() => setIsConfirmOpen(true)}
           >
@@ -127,15 +135,19 @@ export function ReservationItem({ reservation, onCancelled }: ReservationItemPro
           <DialogHeader>
             <DialogTitle>Cancelar Reserva</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro que deseas cancelar esta reserva? Esta acción no se puede deshacer.
+              ¿Estás seguro que deseas cancelar esta reserva? Esta acción no se
+              puede deshacer.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <p className="font-medium">{reservation.subScenario.name}</p>
-            <p className="text-sm text-gray-500">{formattedDate}, {reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}</p>
+            <p className="text-sm text-gray-500">
+              {formattedDate}, {reservation.timeSlot.startTime} -{" "}
+              {reservation.timeSlot.endTime}
+            </p>
           </div>
-          
+
           <DialogFooter className="sm:justify-between">
             <Button
               type="button"

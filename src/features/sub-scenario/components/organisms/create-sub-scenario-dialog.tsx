@@ -1,17 +1,17 @@
 "use client";
-import { useState } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/shared/ui/dialog";
 import { useSubScenarioData } from "../../hooks/use-sub-scenario-data";
 import { SubScenarioForm } from "./sub-scenario-form";
 import { Button } from "@/shared/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { useState } from "react";
 
 interface Props {
   open: boolean;

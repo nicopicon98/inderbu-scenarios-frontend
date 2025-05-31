@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Search, MapPin, X, Filter } from "lucide-react";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import { searchNeighborhoodsForScenarios } from "../../services/scenarios-search.service";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/shared/ui/card";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { searchNeighborhoodsForScenarios } from "../../services/scenarios-search.service";
+import { Input } from "@/shared/ui/input";
+import { Filter, MapPin, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 type ScenariosFilters = {
   search: string;
@@ -27,16 +27,18 @@ interface ScenariosFiltersCardProps {
   onClearFilters: () => void;
 }
 
-export const ScenariosFiltersCard = ({ 
-  open, 
-  filters, 
-  onFiltersChange, 
-  onClearFilters 
+export const ScenariosFiltersCard = ({
+  open,
+  filters,
+  onFiltersChange,
+  onClearFilters,
 }: ScenariosFiltersCardProps) => {
   // ⚠️ TODOS LOS HOOKS DEBEN IR AL INICIO - ANTES DE CUALQUIER RETURN CONDICIONAL
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [localSearchValue, setLocalSearchValue] = useState(filters.search || "");
+  const [localSearchValue, setLocalSearchValue] = useState(
+    filters.search || "",
+  );
 
   // ✅ Sincronizar estado local con filtros externos (para limpiar correctamente)
   useEffect(() => {
@@ -54,7 +56,7 @@ export const ScenariosFiltersCard = ({
       "neighborhood",
       val?.toString() ?? "",
       "Barrio seleccionado",
-      val !== undefined
+      val !== undefined,
     );
   };
 
@@ -62,7 +64,7 @@ export const ScenariosFiltersCard = ({
   const handleSearchChange = (q: string) => {
     // ✅ Actualizar inmediatamente el estado local (sin lag)
     setLocalSearchValue(q);
-    
+
     // ✅ Debounce solo para la petición al servidor
     if (searchTimeout.current !== null) {
       clearTimeout(searchTimeout.current);
@@ -78,7 +80,7 @@ export const ScenariosFiltersCard = ({
     type: string,
     value: string,
     display: string,
-    add: boolean
+    add: boolean,
   ) => {
     setActiveFilters((chips) => {
       const next = [...chips.filter((c) => !c.startsWith(`${type}:`))];
@@ -112,11 +114,13 @@ export const ScenariosFiltersCard = ({
             Filtros de búsqueda
           </CardTitle>
           <CardDescription className="flex items-center justify-between">
-            <span>Refina los resultados de escenarios usando los siguientes filtros</span>
+            <span>
+              Refina los resultados de escenarios usando los siguientes filtros
+            </span>
             {(filters.search || filters.neighborhoodId) && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={clearAllFilters}
                 className="text-xs"
               >
@@ -167,7 +171,9 @@ export const ScenariosFiltersCard = ({
             {/* Chips */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-gray-100">
-                <span className="text-sm text-gray-500 mr-2">Filtros activos:</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  Filtros activos:
+                </span>
                 {activeFilters.map((chip) => {
                   const [, , display] = chip.split(":");
                   return (

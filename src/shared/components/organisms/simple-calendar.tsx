@@ -1,22 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
+import { Button } from "@/shared/ui/button";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
-} from '@/shared/ui/select';
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export interface SimpleCalendarProps {
   selectedDate: string;
   onDateChange: (newDate: string) => void;
 }
 
-export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarProps) {
+export function SimpleCalendar({
+  selectedDate,
+  onDateChange,
+}: SimpleCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -24,7 +27,7 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
 
   // Sincronizar estado interno con la prop selectedDate
   useEffect(() => {
-    const [y, m, d] = selectedDate.split('-').map(Number);
+    const [y, m, d] = selectedDate.split("-").map(Number);
     if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
       setCurrentYear(y);
       setCurrentMonth(m - 1);
@@ -33,11 +36,24 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
   }, [selectedDate]);
 
   const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
-  const years = Array.from({ length: 5 }, (_, i) => today.getFullYear() - 2 + i);
-  const weekdaysShort = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+  const years = Array.from(
+    { length: 5 },
+    (_, i) => today.getFullYear() - 2 + i,
+  );
+  const weekdaysShort = ["D", "L", "M", "M", "J", "V", "S"];
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstWeekday = new Date(currentYear, currentMonth, 1).getDay();
@@ -78,8 +94,8 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
   // Al hacer click en un día, notificar al padre
   const handleDayClick = (day: number) => {
     setSelectedDay(day);
-    const mm = String(currentMonth + 1).padStart(2, '0');
-    const dd = String(day).padStart(2, '0');
+    const mm = String(currentMonth + 1).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
     onDateChange(`${currentYear}-${mm}-${dd}`);
   };
 
@@ -87,7 +103,12 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
     <div className="bg-white rounded-md border border-gray-200">
       {/* Navegación mes/año */}
       <div className="flex items-center space-x-2 p-4">
-        <Button variant="outline" size="icon" onClick={prevMonth} className="cursor-pointer hover:bg-gray-100">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={prevMonth}
+          className="cursor-pointer hover:bg-gray-100"
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -100,7 +121,11 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
           </SelectTrigger>
           <SelectContent className="bg-white rounded-md border border-gray-200">
             {months.map((m, i) => (
-              <SelectItem key={i} value={m} className="cursor-pointer hover:bg-gray-100">
+              <SelectItem
+                key={i}
+                value={m}
+                className="cursor-pointer hover:bg-gray-100"
+              >
                 {m}
               </SelectItem>
             ))}
@@ -116,14 +141,23 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
           </SelectTrigger>
           <SelectContent className="bg-white rounded-md border border-gray-200">
             {years.map((y) => (
-              <SelectItem key={y} value={String(y)} className="cursor-pointer hover:bg-gray-100">
+              <SelectItem
+                key={y}
+                value={String(y)}
+                className="cursor-pointer hover:bg-gray-100"
+              >
                 {y}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Button variant="outline" size="icon" onClick={nextMonth} className="cursor-pointer hover:bg-gray-100">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={nextMonth}
+          className="cursor-pointer hover:bg-gray-100"
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -147,15 +181,15 @@ export function SimpleCalendar({ selectedDate, onDateChange }: SimpleCalendarPro
                 disabled={!availableDays.includes(day)}
                 className={`rounded-md py-2 text-sm w-full ${
                   day === selectedDay
-                    ? 'bg-teal-100 text-teal-700 font-medium'
+                    ? "bg-teal-100 text-teal-700 font-medium"
                     : availableDays.includes(day)
-                    ? 'hover:bg-gray-100 text-gray-700 cursor-pointer'
-                    : 'text-gray-300 cursor-not-allowed'
+                      ? "hover:bg-gray-100 text-gray-700 cursor-pointer"
+                      : "text-gray-300 cursor-not-allowed"
                 }`}
               >
                 {day}
               </Button>
-            )
+            ),
           )}
         </div>
       </div>

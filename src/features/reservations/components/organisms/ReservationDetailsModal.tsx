@@ -1,22 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import type { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Calendar, Clock, User, MapPin, CalendarCheck, CalendarClock, CreditCard, FileText } from "lucide-react";
-import { Badge } from "@/shared/ui/badge";
-
-import type { ReservationDto } from "@/services/reservation.service";
 import { formatDate } from "@/utils/reservation.utils";
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarClock,
+  Clock,
+  CreditCard,
+  FileText,
+  MapPin,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ReservationDetailsModalProps {
   reservation: ReservationDto | null;
@@ -55,21 +63,33 @@ export const ReservationDetailsModal = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-hidden flex flex-col" aria-describedby="reservation-details-description">
+      <DialogContent
+        className="sm:max-w-[550px] max-h-[90vh] overflow-hidden flex flex-col"
+        aria-describedby="reservation-details-description"
+      >
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             Detalles de Reserva
           </DialogTitle>
-          <DialogDescription id="reservation-details-description" className="sr-only">
+          <DialogDescription
+            id="reservation-details-description"
+            className="sr-only"
+          >
             Información detallada de la reserva
           </DialogDescription>
           <div className="flex items-center mt-1">
             {reservation && (
-              <Badge variant="outline" className={`${getStatusBadgeClass(reservation.reservationState?.state)}`}>
-                {reservation.reservationState?.state === "PENDIENTE" && "Pendiente"}
-                {reservation.reservationState?.state === "CONFIRMADA" && "Confirmada"}
-                {reservation.reservationState?.state === "CANCELADA" && "Cancelada"}
+              <Badge
+                variant="outline"
+                className={`${getStatusBadgeClass(reservation.reservationState?.state)}`}
+              >
+                {reservation.reservationState?.state === "PENDIENTE" &&
+                  "Pendiente"}
+                {reservation.reservationState?.state === "CONFIRMADA" &&
+                  "Confirmada"}
+                {reservation.reservationState?.state === "CANCELADA" &&
+                  "Cancelada"}
               </Badge>
             )}
           </div>
@@ -85,7 +105,9 @@ export const ReservationDetailsModal = ({
               </div>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs text-gray-500">Nombre completo</Label>
+                  <Label className="text-xs text-gray-500">
+                    Nombre completo
+                  </Label>
                   <p className="font-medium">
                     {reservation.user
                       ? `${reservation.user.first_name} ${reservation.user.last_name}`
@@ -93,7 +115,9 @@ export const ReservationDetailsModal = ({
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-500">Correo electrónico</Label>
+                  <Label className="text-xs text-gray-500">
+                    Correo electrónico
+                  </Label>
                   <p>{reservation.user?.email || "Sin email"}</p>
                 </div>
                 <div>
@@ -112,11 +136,16 @@ export const ReservationDetailsModal = ({
               <div className="space-y-2">
                 <div>
                   <Label className="text-xs text-gray-500">Sub-escenario</Label>
-                  <p className="font-medium">{reservation.subScenario?.name || "Escenario sin nombre"}</p>
+                  <p className="font-medium">
+                    {reservation.subScenario?.name || "Escenario sin nombre"}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs text-gray-500">Escenario</Label>
-                  <p>{reservation.subScenario?.scenarioName || "Sin escenario principal"}</p>
+                  <p>
+                    {reservation.subScenario?.scenarioName ||
+                      "Sin escenario principal"}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs text-gray-500">Costo</Label>
@@ -143,7 +172,9 @@ export const ReservationDetailsModal = ({
               </div>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs text-gray-500">Fecha de reserva</Label>
+                  <Label className="text-xs text-gray-500">
+                    Fecha de reserva
+                  </Label>
                   <p className="flex items-center gap-1 mt-1">
                     <CalendarCheck className="h-4 w-4 text-gray-500" />
                     {formatDate(reservation.reservationDate)}
@@ -159,17 +190,22 @@ export const ReservationDetailsModal = ({
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-500">Fecha de creación</Label>
+                  <Label className="text-xs text-gray-500">
+                    Fecha de creación
+                  </Label>
                   <p className="flex items-center gap-1 mt-1">
                     <CalendarClock className="h-4 w-4 text-gray-500" />
                     {reservation.createdAt
-                      ? new Date(reservation.createdAt).toLocaleString('es-ES', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
+                      ? new Date(reservation.createdAt).toLocaleString(
+                          "es-ES",
+                          {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )
                       : "Fecha no disponible"}
                   </p>
                 </div>
@@ -183,14 +219,18 @@ export const ReservationDetailsModal = ({
                   <FileText className="h-4 w-4 text-primary" />
                   <h3 className="font-semibold">Comentarios</h3>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{reservation.comments}</p>
+                <p className="text-sm whitespace-pre-wrap">
+                  {reservation.comments}
+                </p>
               </div>
             )}
           </div>
         )}
 
         <DialogFooter className="pt-2">
-          <Button onClick={onClose} className="w-full sm:w-auto">Cerrar</Button>
+          <Button onClick={onClose} className="w-full sm:w-auto">
+            Cerrar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

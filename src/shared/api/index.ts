@@ -1,15 +1,24 @@
-import { ApiClient } from './api-client';
+import { ApiClient } from "./api-client";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 export const apiClient = new ApiClient({
   baseUrl: API_BASE_URL,
   defaultHeaders: {
-    'Accept': 'application/json',
+    Accept: "application/json",
     // Agregar headers globales aquí si es necesario
   },
 });
 
+export const authApiClient = new ApiClient({
+  baseUrl: API_BASE_URL,
+  defaultHeaders: {
+    Accept: "application/json",
+    // Aquí puedes agregar headers específicos para autenticación si es necesario
+  },
+});
+
 // Re-export para conveniencia
-export { CacheStrategies } from './cache-strategies';
-export { ApiError } from './api-client';
+export { CacheStrategies } from "./cache-strategies";
+export { ApiError } from "./api-client";

@@ -1,27 +1,38 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import ReservationService from "@/services/reservation.service";
+import ScenarioService, {
+  ScenarioDto,
+  SubScenarioDto,
+} from "@/services/scenario.service";
+import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
+import UserService, { UserDto } from "@/services/user.service";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Switch } from "@/shared/ui/switch";
+import { Modal } from "@/shared/ui/modal";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select";
-import { Modal } from "@/shared/ui/modal";
-import { Clock, Loader2, MapPin, Users, FileEdit, Search, UserRound, Building } from "lucide-react";
-import { toast } from "sonner";
+import { Switch } from "@/shared/ui/switch";
+import { Textarea } from "@/shared/ui/textarea";
 import debounce from "lodash/debounce";
-
-import ReservationService from "@/services/reservation.service";
-import UserService, { UserDto } from "@/services/user.service";
-import ScenarioService, { ScenarioDto, SubScenarioDto } from "@/services/scenario.service";
-import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
+import {
+  Building,
+  Clock,
+  FileEdit,
+  Loader2,
+  MapPin,
+  Search,
+  UserRound,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface CreateReservationModalProps {
   open: boolean;
@@ -50,8 +61,11 @@ export const CreateReservationModal = ({
 
   // Guardar el usuario seleccionado en estado
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioDto | null>(null);
-  const [selectedSubScenario, setSelectedSubScenario] = useState<SubScenarioDto | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioDto | null>(
+    null,
+  );
+  const [selectedSubScenario, setSelectedSubScenario] =
+    useState<SubScenarioDto | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<any | null>(null);
   const [newReservation, setNewReservation] = useState({
     clientId: "",
@@ -86,7 +100,7 @@ export const CreateReservationModal = ({
         setLoadingUsers(false);
       }
     }, 300),
-    []
+    [],
   );
 
   // Debounce para búsqueda de escenarios
@@ -108,7 +122,7 @@ export const CreateReservationModal = ({
         setLoadingScenarios(false);
       }
     }, 300),
-    []
+    [],
   );
 
   // Debounce para búsqueda de subescenarios
@@ -122,7 +136,7 @@ export const CreateReservationModal = ({
           scenarioId,
           1,
           10,
-          term
+          term,
         );
         setSubScenarios(response.data);
       } catch (error) {
@@ -132,7 +146,7 @@ export const CreateReservationModal = ({
         setLoadingSubScenarios(false);
       }
     }, 300),
-    []
+    [],
   );
 
   // Función para depurar y mostrar el usuario seleccionado en consola
@@ -181,7 +195,11 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           setLoadingSubScenarios(true);
-          const response = await ScenarioService.searchSubScenarios(scenarioId, 1, 10);
+          const response = await ScenarioService.searchSubScenarios(
+            scenarioId,
+            1,
+            10,
+          );
           setSubScenarios(response.data);
         } catch (error) {
           console.error("Error al cargar sub-escenarios:", error);
@@ -191,7 +209,11 @@ export const CreateReservationModal = ({
         }
       })();
     }
-  }, [newReservation.scenarioId, subScenarioSearchTerm, debouncedSubScenarioSearch]);
+  }, [
+    newReservation.scenarioId,
+    subScenarioSearchTerm,
+    debouncedSubScenarioSearch,
+  ]);
 
   // Efecto para cargar el usuario cuando ya tenemos un ID seleccionado
   useEffect(() => {
@@ -199,7 +221,9 @@ export const CreateReservationModal = ({
       (async () => {
         try {
           // Obtener el usuario por ID
-          const user = await UserService.getUserById(Number(newReservation.clientId));
+          const user = await UserService.getUserById(
+            Number(newReservation.clientId),
+          );
           if (user) setSelectedUser(user);
         } catch (error) {
           console.error("Error al cargar datos del usuario:", error);
@@ -211,7 +235,9 @@ export const CreateReservationModal = ({
   // Efecto para cargar el escenario cuando ya tenemos un ID seleccionado
   useEffect(() => {
     if (newReservation.scenarioId && !selectedScenario) {
-      const scenario = scenarios.find(s => s.id.toString() === newReservation.scenarioId);
+      const scenario = scenarios.find(
+        (s) => s.id.toString() === newReservation.scenarioId,
+      );
       if (scenario) setSelectedScenario(scenario);
     }
   }, [newReservation.scenarioId, selectedScenario, scenarios]);
@@ -219,7 +245,9 @@ export const CreateReservationModal = ({
   // Efecto para cargar el subescenario cuando ya tenemos un ID seleccionado
   useEffect(() => {
     if (newReservation.subScenarioId && !selectedSubScenario) {
-      const subScenario = subScenarios.find(ss => ss.id.toString() === newReservation.subScenarioId);
+      const subScenario = subScenarios.find(
+        (ss) => ss.id.toString() === newReservation.subScenarioId,
+      );
       if (subScenario) setSelectedSubScenario(subScenario);
     }
   }, [newReservation.subScenarioId, selectedSubScenario, subScenarios]);
@@ -227,7 +255,9 @@ export const CreateReservationModal = ({
   // Efecto para cargar el timeslot cuando ya tenemos un ID seleccionado
   useEffect(() => {
     if (newReservation.timeSlotId && !selectedTimeSlot) {
-      const slot = availableTimeSlots.find(slot => slot.id.toString() === newReservation.timeSlotId);
+      const slot = availableTimeSlots.find(
+        (slot) => slot.id.toString() === newReservation.timeSlotId,
+      );
       if (slot) setSelectedTimeSlot(slot);
     }
   }, [newReservation.timeSlotId, selectedTimeSlot, availableTimeSlots]);
@@ -289,7 +319,8 @@ export const CreateReservationModal = ({
 
   /* ---------- crear reserva ---------- */
   const handleCreate = async () => {
-    const { clientId, subScenarioId, timeSlotId, reservationDate, comments } = newReservation;
+    const { clientId, subScenarioId, timeSlotId, reservationDate, comments } =
+      newReservation;
     if (!clientId || !subScenarioId || !timeSlotId || !reservationDate) {
       toast.error("Todos los campos marcados con * son obligatorios.");
       return;
@@ -303,7 +334,7 @@ export const CreateReservationModal = ({
         comments: comments || undefined,
       });
       toast.success("Reserva creada correctamente.");
-      
+
       // Llamar al callback de éxito si existe
       if (onSuccess) {
         onSuccess();
@@ -326,7 +357,12 @@ export const CreateReservationModal = ({
       size="xl"
       footer={
         <>
-          <Button variant="outline" onClick={onClose} size="sm" className="px-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            size="sm"
+            className="px-3"
+          >
             Cancelar
           </Button>
           <Button
@@ -363,7 +399,9 @@ export const CreateReservationModal = ({
               value={newReservation.clientId}
               onValueChange={(v) => {
                 setNewReservation({ ...newReservation, clientId: v });
-                const user: UserDto | undefined = users.find(u => u.id.toString() === v);
+                const user: UserDto | undefined = users.find(
+                  (u) => u.id.toString() === v,
+                );
                 if (user) setSelectedUser(user);
               }}
               onOpenChange={(open) => {
@@ -392,7 +430,7 @@ export const CreateReservationModal = ({
                       placeholder="Buscar por nombre o email..."
                       value={userSearchTerm}
                       onChange={(e) => {
-                        setUserSearchTerm(e.target.value)
+                        setUserSearchTerm(e.target.value);
                       }}
                       // Evitar que el Select se cierre al escribir
                       onClick={(e) => e.stopPropagation()}
@@ -406,10 +444,16 @@ export const CreateReservationModal = ({
                 <div className="max-h-40 overflow-y-auto py-1">
                   {users.length > 0 ? (
                     users.slice(0, 5).map((u) => (
-                      <SelectItem key={u.id} value={u.id.toString()} className="text-xs my-0.5">
+                      <SelectItem
+                        key={u.id}
+                        value={u.id.toString()}
+                        className="text-xs my-0.5"
+                      >
                         <div className="flex items-center">
                           <UserRound className="w-3 h-3 mr-1.5 text-teal-600" />
-                          <span className="font-medium">{u.first_name} {u.last_name}</span>
+                          <span className="font-medium">
+                            {u.first_name} {u.last_name}
+                          </span>
                           <span className="text-gray-500 ml-1">{u.email}</span>
                         </div>
                       </SelectItem>
@@ -443,8 +487,12 @@ export const CreateReservationModal = ({
               <Select
                 value={newReservation.scenarioId}
                 onValueChange={(v) => {
-                  setNewReservation({ ...newReservation, scenarioId: v, subScenarioId: "" });
-                  const scenario = scenarios.find(s => s.id.toString() === v);
+                  setNewReservation({
+                    ...newReservation,
+                    scenarioId: v,
+                    subScenarioId: "",
+                  });
+                  const scenario = scenarios.find((s) => s.id.toString() === v);
                   if (scenario) setSelectedScenario(scenario);
                   setSelectedSubScenario(null); // Resetear subescenario
                 }}
@@ -481,7 +529,11 @@ export const CreateReservationModal = ({
                   <div className="max-h-40 overflow-y-auto py-1">
                     {scenarios.length > 0 ? (
                       scenarios.map((s) => (
-                        <SelectItem key={s.id} value={s.id.toString()} className="text-xs my-0.5">
+                        <SelectItem
+                          key={s.id}
+                          value={s.id.toString()}
+                          className="text-xs my-0.5"
+                        >
                           <div className="flex items-center">
                             <Building className="w-3 h-3 mr-1.5 text-teal-600" />
                             <span className="font-medium">{s.name}</span>
@@ -508,7 +560,9 @@ export const CreateReservationModal = ({
                 value={newReservation.subScenarioId}
                 onValueChange={(v) => {
                   setNewReservation({ ...newReservation, subScenarioId: v });
-                  const subScenario = subScenarios.find(ss => ss.id.toString() === v);
+                  const subScenario = subScenarios.find(
+                    (ss) => ss.id.toString() === v,
+                  );
                   if (subScenario) setSelectedSubScenario(subScenario);
                 }}
               >
@@ -532,7 +586,9 @@ export const CreateReservationModal = ({
                         className="bg-white h-7 text-xs pl-7 pr-7"
                         placeholder="Buscar subescenario..."
                         value={subScenarioSearchTerm}
-                        onChange={(e) => setSubScenarioSearchTerm(e.target.value)}
+                        onChange={(e) =>
+                          setSubScenarioSearchTerm(e.target.value)
+                        }
                         onClick={(e) => e.stopPropagation()}
                         disabled={!newReservation.scenarioId}
                       />
@@ -546,7 +602,11 @@ export const CreateReservationModal = ({
                     {subScenarios.length > 0 ? (
                       // Limite de 10 subescenarios mostrados a la vez
                       subScenarios.slice(0, 10).map((ss) => (
-                        <SelectItem key={ss.id} value={ss.id.toString()} className="text-xs my-0.5">
+                        <SelectItem
+                          key={ss.id}
+                          value={ss.id.toString()}
+                          className="text-xs my-0.5"
+                        >
                           <div className="flex items-center">
                             <MapPin className="w-3 h-3 mr-1.5 text-teal-600" />
                             <span className="font-medium">{ss.name}</span>
@@ -565,9 +625,13 @@ export const CreateReservationModal = ({
                   </div>
                 </SelectContent>
               </Select>
-              {newReservation.scenarioId && subScenarios.length === 0 && !loadingSubScenarios && (
-                <p className="text-xs text-red-500 mt-1">No hay subescenarios disponibles</p>
-              )}
+              {newReservation.scenarioId &&
+                subScenarios.length === 0 &&
+                !loadingSubScenarios && (
+                  <p className="text-xs text-red-500 mt-1">
+                    No hay subescenarios disponibles
+                  </p>
+                )}
             </div>
 
             {/* Fecha */}
@@ -579,7 +643,10 @@ export const CreateReservationModal = ({
                 value={newReservation.reservationDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) =>
-                  setNewReservation({ ...newReservation, reservationDate: e.target.value })
+                  setNewReservation({
+                    ...newReservation,
+                    reservationDate: e.target.value,
+                  })
                 }
               />
             </div>
@@ -592,7 +659,9 @@ export const CreateReservationModal = ({
                 value={newReservation.timeSlotId}
                 onValueChange={(v) => {
                   setNewReservation({ ...newReservation, timeSlotId: v });
-                  const slot = availableTimeSlots.find(slot => slot.id.toString() === v);
+                  const slot = availableTimeSlots.find(
+                    (slot) => slot.id.toString() === v,
+                  );
                   if (slot) setSelectedTimeSlot(slot);
                 }}
               >
@@ -612,7 +681,11 @@ export const CreateReservationModal = ({
                     {availableTimeSlots
                       .filter((s) => s.available)
                       .map((slot) => (
-                        <SelectItem key={slot.id} value={slot.id.toString()} className="text-xs my-0.5">
+                        <SelectItem
+                          key={slot.id}
+                          value={slot.id.toString()}
+                          className="text-xs my-0.5"
+                        >
                           <div className="flex items-center">
                             <Clock className="h-3 w-3 mr-1.5 text-teal-600" />
                             {slot.startTime} - {slot.endTime}
@@ -628,7 +701,9 @@ export const CreateReservationModal = ({
                 newReservation.reservationDate &&
                 !isLoading &&
                 availableTimeSlots.filter((s) => s.available).length === 0 && (
-                  <p className="text-xs text-red-500 mt-1">No hay horarios disponibles</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    No hay horarios disponibles
+                  </p>
                 )}
             </div>
           </div>
@@ -648,17 +723,24 @@ export const CreateReservationModal = ({
                 className="bg-white resize-none h-16 text-xs"
                 value={newReservation.comments}
                 onChange={(e) =>
-                  setNewReservation({ ...newReservation, comments: e.target.value })
+                  setNewReservation({
+                    ...newReservation,
+                    comments: e.target.value,
+                  })
                 }
                 placeholder="Ingrese cualquier detalle adicional sobre la reserva..."
               />
             </div>
 
             <div className="flex items-center justify-between bg-white py-1 px-2 rounded-md">
-              <Label className="text-xs font-medium cursor-pointer">Estado activo</Label>
+              <Label className="text-xs font-medium cursor-pointer">
+                Estado activo
+              </Label>
               <Switch
                 checked={newReservation.status}
-                onCheckedChange={(c) => setNewReservation({ ...newReservation, status: c })}
+                onCheckedChange={(c) =>
+                  setNewReservation({ ...newReservation, status: c })
+                }
               />
             </div>
           </div>

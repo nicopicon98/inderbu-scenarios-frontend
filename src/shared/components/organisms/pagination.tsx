@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/shared/ui/button";
 
 interface PaginationProps {
@@ -59,7 +60,7 @@ export function Pagination({
         Página <span className="font-medium">{currentPage}</span> de{" "}
         <span className="font-medium">{totalPages}</span>
       </div>
-      
+
       {/* Navigation */}
       <div className="flex items-center justify-center gap-2">
         <Button
@@ -82,8 +83,8 @@ export function Pagination({
                 variant={currentPage === page ? "default" : "ghost"}
                 size="sm"
                 className={`w-10 h-10 p-0 rounded-lg transition-all duration-200 ${
-                  currentPage === page 
-                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm" 
+                  currentPage === page
+                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
                 onClick={() => onPageChange(page)}
@@ -94,7 +95,7 @@ export function Pagination({
               <span key={index} className="px-2 text-gray-400 text-sm">
                 ⋯
               </span>
-            )
+            ),
           )}
         </div>
 

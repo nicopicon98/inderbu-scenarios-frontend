@@ -1,22 +1,28 @@
-import { useCallback, useEffect, useReducer, useRef, Dispatch, SetStateAction } from "react";
-
-import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
-import { useRouter, useSearchParams } from 'next/navigation';
-import { getSubScenarios } from "../services/home.service";
-import { TUseHomeDataAction } from "../types/use-home-data-action.types";
-import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
 import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";
+import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
 import { useHomeDataReducer } from "../reducers/use-home-data.reducer";
+import { getSubScenarios } from "../services/home.service";
+import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
+import { TUseHomeDataAction } from "../types/use-home-data-action.types";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
 
-export function useHomeData({ 
-  initialSubScenarios, 
+export function useHomeData({
+  initialSubScenarios,
   initialMeta,
   initialFilters = {},
   initialPage = 1,
 }: IUseHomeDataParams) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // UseRef para detectar el primer render
   const initialRender = useRef(true);
 
@@ -25,9 +31,9 @@ export function useHomeData({
     subScenarios: initialSubScenarios,
     meta: initialMeta,
     page: initialPage,
-    filters: { 
-      searchQuery: "", 
-      ...initialFilters
+    filters: {
+      searchQuery: "",
+      ...initialFilters,
     },
     activeFilters: [],
     loading: false,
@@ -39,47 +45,57 @@ export function useHomeData({
   // Sincronizar con URL cuando cambian los filtros
   useEffect(() => {
     const params = new URLSearchParams();
-    
-    if (state.page > 1) params.set('page', state.page.toString());
-    if (state.filters.searchQuery) params.set('search', state.filters.searchQuery);
-    if (state.filters.activityAreaId) params.set('activityAreaId', state.filters.activityAreaId.toString());
-    if (state.filters.neighborhoodId) params.set('neighborhoodId', state.filters.neighborhoodId.toString());
-    if (state.filters.hasCost !== undefined) params.set('hasCost', state.filters.hasCost.toString());
 
-    const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    if (state.page > 1) params.set("page", state.page.toString());
+    if (state.filters.searchQuery)
+      params.set("search", state.filters.searchQuery);
+    if (state.filters.activityAreaId)
+      params.set("activityAreaId", state.filters.activityAreaId.toString());
+    if (state.filters.neighborhoodId)
+      params.set("neighborhoodId", state.filters.neighborhoodId.toString());
+    if (state.filters.hasCost !== undefined)
+      params.set("hasCost", state.filters.hasCost.toString());
+
+    const newUrl = params.toString() ? `/?${params.toString()}` : "/";
     const currentUrl = `/?${searchParams.toString()}`;
-    
+
     // Solo actualizar URL si es diferente (evitar loops)
-    if (newUrl !== currentUrl && newUrl !== '/?') {
+    if (newUrl !== currentUrl && newUrl !== "/?") {
       router.replace(newUrl, { scroll: false });
     }
   }, [state.page, state.filters, router, searchParams]);
 
   // Función para fetch de datos
-  const fetchSubScenarios = useCallback(async (page: number, filters: IFilters, limit: number) => {
-    dispatch({ type: 'SET_LOADING', payload: true });
+  const fetchSubScenarios = useCallback(
+    async (page: number, filters: IFilters, limit: number) => {
+      dispatch({ type: "SET_LOADING", payload: true });
 
-    try {
-      // ✅ CAMBIO: Mapear IFilters a la interfaz del service
-      const { data, meta } = await getSubScenarios({
-        page,
-        limit,
-        searchQuery: filters.searchQuery || "",
-        activityAreaId: filters.activityAreaId || 0,
-        neighborhoodId: filters.neighborhoodId || 0,
-        hasCost: filters.hasCost,
-      });
+      try {
+        // ✅ CAMBIO: Mapear IFilters a la interfaz del service
+        const { data, meta } = await getSubScenarios({
+          page,
+          limit,
+          searchQuery: filters.searchQuery || "",
+          activityAreaId: filters.activityAreaId || 0,
+          neighborhoodId: filters.neighborhoodId || 0,
+          hasCost: filters.hasCost,
+        });
 
-      dispatch({
-        type: 'SET_DATA',
-        payload: { subScenarios: data, meta }
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al cargar los escenarios';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      console.error('Error fetching sub scenarios:', error);
-    }
-  }, []);
+        dispatch({
+          type: "SET_DATA",
+          payload: { subScenarios: data, meta },
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Error al cargar los escenarios";
+        dispatch({ type: "SET_ERROR", payload: errorMessage });
+        console.error("Error fetching sub scenarios:", error);
+      }
+    },
+    [],
+  );
 
   // ✅ Effect para fetch SOLO en renders subsecuentes (NO en primer render)
   useEffect(() => {
@@ -88,38 +104,53 @@ export function useHomeData({
       initialRender.current = false;
       return;
     }
-    
+
     // Solo hacer fetch si ya pasó el primer render
     fetchSubScenarios(state.page, state.filters, initialMeta.limit);
   }, [state.page, state.filters, fetchSubScenarios, initialMeta.limit]);
 
   // Handlers
   const setPage = useCallback((newPage: number) => {
-    dispatch({ type: 'SET_PAGE', payload: newPage });
+    dispatch({ type: "SET_PAGE", payload: newPage });
   }, []);
 
-  const setFilters: Dispatch<SetStateAction<IFilters>> = useCallback((filtersOrUpdater) => {
-    if (typeof filtersOrUpdater === 'function') {
-      dispatch({ type: 'SET_FILTERS_WITH_UPDATER', payload: filtersOrUpdater });
-    } else {
-      dispatch({ type: 'SET_FILTERS', payload: filtersOrUpdater });
-    }
-  }, []);
+  const setFilters: Dispatch<SetStateAction<IFilters>> = useCallback(
+    (filtersOrUpdater) => {
+      if (typeof filtersOrUpdater === "function") {
+        dispatch({
+          type: "SET_FILTERS_WITH_UPDATER",
+          payload: filtersOrUpdater,
+        });
+      } else {
+        dispatch({ type: "SET_FILTERS", payload: filtersOrUpdater });
+      }
+    },
+    [],
+  );
 
-  const setActiveFilters: Dispatch<SetStateAction<string[]>> = useCallback((activeFiltersOrUpdater) => {
-    if (typeof activeFiltersOrUpdater === 'function') {
-      dispatch({ type: 'SET_ACTIVE_FILTERS_WITH_UPDATER', payload: activeFiltersOrUpdater });
-    } else {
-      dispatch({ type: 'SET_ACTIVE_FILTERS', payload: activeFiltersOrUpdater });
-    }
-  }, []);
+  const setActiveFilters: Dispatch<SetStateAction<string[]>> = useCallback(
+    (activeFiltersOrUpdater) => {
+      if (typeof activeFiltersOrUpdater === "function") {
+        dispatch({
+          type: "SET_ACTIVE_FILTERS_WITH_UPDATER",
+          payload: activeFiltersOrUpdater,
+        });
+      } else {
+        dispatch({
+          type: "SET_ACTIVE_FILTERS",
+          payload: activeFiltersOrUpdater,
+        });
+      }
+    },
+    [],
+  );
 
   const clearFilters = useCallback(() => {
-    dispatch({ type: 'CLEAR_FILTERS' });
+    dispatch({ type: "CLEAR_FILTERS" });
   }, []);
 
   const retryFetch = useCallback(() => {
-    dispatch({ type: 'RETRY_FETCH' });
+    dispatch({ type: "RETRY_FETCH" });
     fetchSubScenarios(state.page, state.filters, initialMeta.limit);
   }, [state.page, state.filters, fetchSubScenarios, initialMeta.limit]);
 

@@ -1,19 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-
+import { Button } from "@/shared/ui/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerFooter,
-  DrawerClose,
 } from "@/shared/ui/drawer";
-import { Textarea } from "@/shared/ui/textarea";
-import { Button } from "@/shared/ui/button";
-import { Switch } from "@/shared/ui/switch";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -23,11 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
+import { Textarea } from "@/shared/ui/textarea";
+import { Eye, EyeOff } from "lucide-react";
+import { useEffect, useState } from "react";
 
 /* ---------- Tipos ---------- */
 export interface IClient {
   id?: string;
-  dni: number; 
+  dni: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -66,8 +65,10 @@ export function ClientDrawer({
   const [form, setForm] = useState<Partial<IClient>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [roles, setRoles] = useState<{id: number; name: string}[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<{id: number; name: string}[]>([]);
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   /* Cargar roles y barrios */
   useEffect(() => {
@@ -79,14 +80,16 @@ export function ClientDrawer({
         setRoles(rolesData.data);
 
         // Fetch neighborhoods
-        const neighborhoodsResponse = await fetch(`http://localhost:3001/neighborhoods`);
+        const neighborhoodsResponse = await fetch(
+          `http://localhost:3001/neighborhoods`,
+        );
         const neighborhoodsData = await neighborhoodsResponse.json();
         setNeighborhoods(neighborhoodsData.data);
       } catch (error) {
         console.error("Error fetching options:", error);
       }
     };
-    
+
     fetchOptions();
   }, []);
 
@@ -102,10 +105,10 @@ export function ClientDrawer({
         email: client.email || "",
         phone: client.phone || "",
         address: client.address || "",
-        roleId: client.roleId || (client.role?.id || 0),
-        neighborhoodId: client.neighborhoodId || (client.neighborhood?.id || 0),
+        roleId: client.roleId || client.role?.id || 0,
+        neighborhoodId: client.neighborhoodId || client.neighborhood?.id || 0,
         isActive: client.isActive ?? true,
-        observations: client.observations || ""
+        observations: client.observations || "",
       });
     } else {
       // Para un nuevo cliente, inicializar con valores predeterminados
@@ -119,7 +122,7 @@ export function ClientDrawer({
         roleId: 0,
         neighborhoodId: 0,
         isActive: true,
-        observations: ""
+        observations: "",
       });
     }
   }, [client]);
@@ -128,7 +131,16 @@ export function ClientDrawer({
   const handleSave = async () => {
     try {
       // Validar datos requeridos
-      if (!form.dni || !form.firstName || !form.lastName || !form.email || !form.phone || !form.address || !form.roleId || !form.neighborhoodId) {
+      if (
+        !form.dni ||
+        !form.firstName ||
+        !form.lastName ||
+        !form.email ||
+        !form.phone ||
+        !form.address ||
+        !form.roleId ||
+        !form.neighborhoodId
+      ) {
         alert("Por favor complete todos los campos obligatorios.");
         return;
       }
@@ -173,20 +185,24 @@ export function ClientDrawer({
           {/* Línea 1: DNI + Rol */}
           <div className="grid grid-cols-2 gap-4">
             <Field id="client-dni" label="DNI*">
-              <Input 
+              <Input
                 type="number"
-                value={form.dni || ""} 
-                onChange={(e) => setForm({ ...form, dni: Number(e.target.value) })} 
+                value={form.dni || ""}
+                onChange={(e) =>
+                  setForm({ ...form, dni: Number(e.target.value) })
+                }
               />
             </Field>
 
             <Field id="client-role" label="Rol*">
-              <Select 
-                value={form.roleId?.toString() || ""} 
-                onValueChange={(value) => setForm({ 
-                  ...form, 
-                  roleId: Number(value) 
-                })}
+              <Select
+                value={form.roleId?.toString() || ""}
+                onValueChange={(value) =>
+                  setForm({
+                    ...form,
+                    roleId: Number(value),
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar rol" />
@@ -207,7 +223,9 @@ export function ClientDrawer({
             <Field id="client-firstName" label="Nombre*">
               <Input
                 value={form.firstName || ""}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, firstName: e.target.value })
+                }
               />
             </Field>
 
@@ -239,19 +257,24 @@ export function ClientDrawer({
 
           {/* Barrio */}
           <Field id="client-neighborhood" label="Barrio*">
-            <Select 
-              value={form.neighborhoodId?.toString() || ""} 
-              onValueChange={(value) => setForm({ 
-                ...form, 
-                neighborhoodId: Number(value) 
-              })}
+            <Select
+              value={form.neighborhoodId?.toString() || ""}
+              onValueChange={(value) =>
+                setForm({
+                  ...form,
+                  neighborhoodId: Number(value),
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar barrio" />
               </SelectTrigger>
               <SelectContent>
                 {neighborhoods.map((neighborhood) => (
-                  <SelectItem key={neighborhood.id} value={neighborhood.id.toString()}>
+                  <SelectItem
+                    key={neighborhood.id}
+                    value={neighborhood.id.toString()}
+                  >
                     {neighborhood.name}
                   </SelectItem>
                 ))}
@@ -266,13 +289,15 @@ export function ClientDrawer({
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
           </Field>
-          
+
           {/* Observaciones */}
           <Field id="client-observations" label="Observaciones">
             <Textarea
               rows={3}
               value={form.observations || ""}
-              onChange={(e) => setForm({ ...form, observations: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, observations: e.target.value })
+              }
             />
           </Field>
 
@@ -281,7 +306,11 @@ export function ClientDrawer({
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
-                placeholder={client ? "Dejar en blanco para mantener la actual" : "Ingrese contraseña"}
+                placeholder={
+                  client
+                    ? "Dejar en blanco para mantener la actual"
+                    : "Ingrese contraseña"
+                }
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
               <Button
@@ -291,7 +320,11 @@ export function ClientDrawer({
                 className="absolute right-0 top-0"
                 onClick={() => setShowPassword((v) => !v)}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </Field>
@@ -303,7 +336,9 @@ export function ClientDrawer({
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirme su contraseña"
-                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, confirmPassword: e.target.value })
+                  }
                 />
                 <Button
                   type="button"
@@ -312,7 +347,11 @@ export function ClientDrawer({
                   className="absolute right-0 top-0"
                   onClick={() => setShowConfirmPassword((v) => !v)}
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </Field>
@@ -324,9 +363,7 @@ export function ClientDrawer({
             <Switch
               id="client-status"
               checked={form.isActive}
-              onCheckedChange={(v) =>
-                setForm({ ...form, isActive: v })
-              }
+              onCheckedChange={(v) => setForm({ ...form, isActive: v })}
             />
           </div>
         </div>

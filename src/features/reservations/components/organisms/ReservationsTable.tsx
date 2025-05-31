@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FileEdit, MoreHorizontal } from "lucide-react";
-
-
+import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
+import type { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { DataTable } from "@/shared/ui/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,12 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { DataTable } from "@/shared/ui/data-table";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
-import type { ReservationDto } from "@/services/reservation.service";
 import { formatDate, reservationStateById } from "@/utils/reservation.utils";
+import { FileEdit, MoreHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ReservationsTableProps {
   reservations: ReservationDto[];
@@ -37,8 +35,10 @@ export const ReservationsTable = ({
   totalItems,
   onPageChange,
 }: ReservationsTableProps) => {
-  const [localReservations, setLocalReservations] = useState<ReservationDto[]>([]);
-  
+  const [localReservations, setLocalReservations] = useState<ReservationDto[]>(
+    [],
+  );
+
   // Actualizar el estado local cuando las props cambian
   useEffect(() => {
     setLocalReservations(reservations);
@@ -99,7 +99,9 @@ export const ReservationsTable = ({
     {
       id: "date",
       header: "Fecha de reserva",
-      cell: (row: ReservationDto) => <span>{formatDate(row.reservationDate)}</span>,
+      cell: (row: ReservationDto) => (
+        <span>{formatDate(row.reservationDate)}</span>
+      ),
     },
     {
       id: "time",
@@ -117,35 +119,41 @@ export const ReservationsTable = ({
       header: "Estado",
       cell: (row: ReservationDto) => {
         const currentStatusId = row.reservationState?.id || 1;
-        
+
         return (
           <ClickableStatusBadge
             statusId={currentStatusId}
             reservationId={row.id}
             reservationInfo={{
               userEmail: row.user?.email,
-              date: formatDate(row.reservationDate)
+              date: formatDate(row.reservationDate),
             }}
             onStatusChange={(newStatusId) => {
               // Actualizar localmente el estado sin necesidad de recargar toda la tabla
               const updatedReservations = [...localReservations];
-              const reservationIndex = updatedReservations.findIndex(r => r.id === row.id);
-              
+              const reservationIndex = updatedReservations.findIndex(
+                (r) => r.id === row.id,
+              );
+
               if (reservationIndex !== -1) {
                 if (updatedReservations[reservationIndex].reservationState) {
                   // Obtener el estado correspondiente al ID directamente del mapa
-                  const newState = reservationStateById[newStatusId] || "PENDIENTE";
-                  
+                  const newState =
+                    reservationStateById[newStatusId] || "PENDIENTE";
+
                   // Actualizar el estado local
-                  updatedReservations[reservationIndex].reservationState.id = newStatusId;
-                  updatedReservations[reservationIndex].reservationState.state = newState;
+                  updatedReservations[reservationIndex].reservationState.id =
+                    newStatusId;
+                  updatedReservations[reservationIndex].reservationState.state =
+                    newState;
                 } else {
                   // Si por alguna razón no existe reservationState, crearlo
-                  const newState = reservationStateById[newStatusId] || "PENDIENTE";
-                  
+                  const newState =
+                    reservationStateById[newStatusId] || "PENDIENTE";
+
                   updatedReservations[reservationIndex].reservationState = {
                     id: newStatusId,
-                    state: newState
+                    state: newState,
                   };
                 }
                 setLocalReservations(updatedReservations);
