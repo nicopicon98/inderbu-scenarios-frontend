@@ -95,6 +95,23 @@ export class ApiClient {
     }
 
     /**
+    * Helper para obtener un único elemento con validación
+    */
+    async getItem<TItem>(
+        endpoint: string,
+        options: {
+            params?: Record<string, any>;
+            cacheStrategy?: keyof typeof CacheStrategies;
+        } = {}
+    ): Promise<TItem> {
+        const response = await this.request<{ data: TItem }>(endpoint, options);
+        if (!response || typeof response.data !== 'object') {
+            throw new ApiError('Expected object in data field', 422, endpoint);
+        }
+        return response.data;
+    }
+
+    /**
      * Helper para datos paginados
      */
     async getPaginated<TItem>(

@@ -5,20 +5,19 @@ import {
   FiGrid,
   FiTag,
 } from "react-icons/fi";
-import {
-  fetchScenarioById,
-  ScenarioWithRelations,
-} from "@/features/scenarios/api/scenario.service";
 import { ScenarioDetail } from '@/features/scenarios/components/organisms/scenario-detail';
 import { MainHeader } from "@/shared/components/organisms/unified-header";
 import { Badge } from "@/shared/ui/badge";
+import { IGetScenarioByIdRequest } from "@/features/scenarios/interfaces/get-scenario-by-id-req.interface";
+import { ScenarioService } from "@/features/scenarios/services/scenario.service";
+import { IGetScenarioByIdResponse } from "@/features/scenarios/interfaces/get-scenario-by-id-res.interface";
 
 interface PageProps {
   params: { id: string };
 }
 
 export default async function ScenarioPage({ params: { id } }: PageProps) {
-  const subscenario: ScenarioWithRelations = await fetchScenarioById(id);
+  const subscenario: IGetScenarioByIdResponse = await ScenarioService.getById({ id } as IGetScenarioByIdRequest);
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">

@@ -13,7 +13,7 @@ import {
   CardDescription,
 } from "@/shared/ui/card";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { searchNeighborhoodsForScenarios } from "../../api/scenarios-search.service";
+import { searchNeighborhoodsForScenarios } from "../../services/scenarios-search.service";
 
 type ScenariosFilters = {
   search: string;

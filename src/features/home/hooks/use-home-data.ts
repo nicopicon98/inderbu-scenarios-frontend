@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, Dispatch, SetStateAction } 
 
 import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSubScenarios } from "../api/home.service";
+import { getSubScenarios } from "../services/home.service";
 import { TUseHomeDataAction } from "../types/use-home-data-action.types";
 import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
 import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";

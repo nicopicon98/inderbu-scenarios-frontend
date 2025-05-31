@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { IActivityArea, IFilters, INeighborhood } from "../../types/filters.types";
-import { searchActivityAreas, searchNeighborhoods } from "../../api/home.service";
+import { searchActivityAreas, searchNeighborhoods } from "../../services/home.service";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";

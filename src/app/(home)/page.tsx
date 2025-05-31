@@ -2,7 +2,7 @@ import {
   getActivityAreas,
   getNeighborhoods,
   getSubScenarios,
-} from "@/features/home/api/home.service";
+} from "@/features/home/services/home.service";
 import HomeMain from "@/features/home/components/organisms/home-main";
 
 interface HomePageProps {

@@ -1,15 +1,15 @@
-import { SubScenario } from "@/features/home/types/filters.types";
 import { ReservationDto } from "@/services/reservation.service";
 
-export interface TimeSlot {
+export interface ITimeSlot {
   id: number;
   startTime: string;
   endTime: string;
   dayOfWeek?: number;
+  available: boolean;
 }
 
 // Re-export ReservationDto for consistency
-export { ReservationDto as Reservation };
+// export { ReservationDto as Reservation };
 
 export interface ReservationPayload {
   subScenarioId: number;

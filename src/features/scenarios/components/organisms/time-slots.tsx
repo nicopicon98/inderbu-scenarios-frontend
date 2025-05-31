@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchTimeSlots } from "@/features/scenarios/api/scenario.service";
-import { TimeSlot } from "@/features/reservations/types/reservation.types";
 import { Button } from "@/shared/ui/button";
 import { Loader2, Clock } from "lucide-react";
+import { TimeSlotService } from "../../services/time-slot.service";
+import { ITimeSlot } from "@/features/reservations/types/reservation.types";
 
 interface TimeSlotsProps {
   subScenarioId: string | number;
@@ -21,7 +21,7 @@ export function TimeSlots({
   selectedTimeSlotId,
   refreshTrigger = 0,
 }: TimeSlotsProps) {
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [timeSlots, setTimeSlots] = useState<ITimeSlot[]>([]);
   const [bookedSlots, setBookedSlots] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,9 +29,10 @@ export function TimeSlots({
     const loadTimeSlots = async () => {
       setIsLoading(true);
       try {
-        const { timeSlots, bookedSlots } = await fetchTimeSlots(subScenarioId, date);
-        setTimeSlots(timeSlots);
-        setBookedSlots(bookedSlots);
+        const timeSlotsResponse = await TimeSlotService.getAllTimeSlots({subScenarioId, date});
+        console.log("Time slots response:", timeSlotsResponse);
+        setTimeSlots(timeSlotsResponse);
+        setBookedSlots(timeSlotsResponse.filter(slot => slot.available).map(slot => slot.id));
       } catch (error) {
         console.error("Error loading time slots:", error);
       } finally {
@@ -74,8 +75,8 @@ export function TimeSlots({
     );
   }
 
-  const availableSlots = timeSlots.filter(slot => !bookedSlots.includes(slot.id));
-  const occupiedSlots = timeSlots.filter(slot => bookedSlots.includes(slot.id));
+  const availableSlots = timeSlots.filter(slot => slot.available)
+  const occupiedSlots = timeSlots.filter(slot => !slot.available)
 
   return (
     <div className="space-y-4">
@@ -105,7 +106,7 @@ export function TimeSlots({
           }}
         >
           {timeSlots.map((slot, index) => {
-            const isBooked = bookedSlots.includes(slot.id);
+            const isBooked = !slot.available
             const isSelected = selectedTimeSlotId === slot.id;
 
             return (
@@ -173,36 +174,3 @@ export function TimeSlots({
     </div>
   );
 }
-
-/* Add these styles to your global CSS */
-const additionalStyles = `
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Custom scrollbar for webkit browsers */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #F3F4F6;
-  border-radius: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
-}
-`;

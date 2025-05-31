@@ -8,8 +8,6 @@ export async function createReservation(payload: {
   timeSlotId: number;
   reservationDate: string;
 }) {
-  console.log("Creating reservation with payload:", payload);
-  
   try {
     // Llamada real al API para crear la reserva
     return await ReservationService.createReservation(payload);
