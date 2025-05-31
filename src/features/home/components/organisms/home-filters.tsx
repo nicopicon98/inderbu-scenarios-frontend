@@ -1,9 +1,8 @@
 "use client";
-import { Dispatch, SetStateAction, useRef } from "react";
+
 import { Search, MapPin, Tag, X, Filter, DollarSign } from "lucide-react";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Dispatch, SetStateAction, useRef } from "react";
+
 import {
   Select,
   SelectContent,
@@ -11,20 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { IActivityArea, IFilters, INeighborhood } from "../../types/filters.types";
+import { searchActivityAreas, searchNeighborhoods } from "../../api/home.service";
 import { SearchSelect } from "@/shared/components/molecules/search-select";
-import {
-  searchActivityAreas,
-  searchNeighborhoods,
-} from "../../api/search.service";
-import { ActivityArea, Neighborhood, Filters } from "../../types/filters.types";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Badge } from "@/shared/ui/badge";
 
-/* ─────────── Tipos ─────────── */
-
-interface ModernFiltersProps {
-  activityAreas: ActivityArea[];
-  neighborhoods: Neighborhood[];
-  filters: Filters;
-  setFilters: Dispatch<SetStateAction<Filters>>;
+interface HomeFiltersProps {
+  activityAreas: IActivityArea[];
+  neighborhoods: INeighborhood[];
+  filters: IFilters;
+  setFilters: Dispatch<SetStateAction<IFilters>>;
   activeFilters: string[];
   setActiveFilters: Dispatch<SetStateAction<string[]>>;
   clearFilters: () => void;
@@ -38,7 +35,7 @@ export default function HomeFilters({
   activeFilters,
   setActiveFilters,
   clearFilters,
-}: ModernFiltersProps) {
+}: HomeFiltersProps) {
   /* ─────────── Handlers ─────────── */
   const handleAreaChange = (value: string | number | null) => {
     const val = value === "all" || value === null ? undefined : Number(value);

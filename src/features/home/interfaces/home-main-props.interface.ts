@@ -5,4 +5,11 @@ export interface HomeMainProps {
   initialNeighborhoods: INeighborhood[];
   initialSubScenarios: ISubScenario[];
   initialMeta: IMetaDto;
+  initialFilters?: {
+    searchQuery?: string;
+    activityAreaId?: number;
+    neighborhoodId?: number;
+    hasCost?: boolean;
+  };
+  initialPage?: number;
 }

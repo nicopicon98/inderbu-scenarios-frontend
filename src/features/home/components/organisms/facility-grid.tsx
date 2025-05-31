@@ -1,10 +1,11 @@
 "use client";
 import { FC, useState, useEffect } from "react";
+
 import { ModernFacilityCard } from "@/shared/components/organisms/modern-facility-card";
-import { SubScenario } from "@/features/home/types/filters.types";
+import { ISubScenario } from "@/features/home/types/filters.types";
 
 interface FacilityGridProps {
-  subScenarios: SubScenario[];
+  subScenarios: ISubScenario[];
   isLoading?: boolean;
   emptyMessage?: string;
   onClearFilters?: () => void;

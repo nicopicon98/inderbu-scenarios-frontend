@@ -1,81 +1,31 @@
 import { useCallback, useEffect, useReducer, Dispatch, SetStateAction } from "react";
-import { getSubScenarios } from "../api/home.service";
+
 import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getSubScenarios } from "../api/home.service";
+import { TUseHomeDataAction } from "../types/use-home-data-action.types";
+import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
+import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";
+import { useHomeDataReducer } from "../reducers/use-home-data.reducer";
 
-// Re-exportamos el tipo para conveniencia
-export type { IFilters };
+export function useHomeData({ 
+  initialSubScenarios, 
+  initialMeta,
+  initialFilters = {},
+  initialPage = 1,
+}: IUseHomeDataParams) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-interface UseHomeDataState {
-  subScenarios: ISubScenario[];
-  meta: IMetaDto;
-  page: number;
-  filters: IFilters;
-  activeFilters: string[];
-  loading: boolean;
-  error: string | null;
-}
-
-type UseHomeDataAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_DATA'; payload: { subScenarios: ISubScenario[]; meta: IMetaDto } }
-  | { type: 'SET_ERROR'; payload: string }
-  | { type: 'SET_PAGE'; payload: number }
-  | { type: 'SET_FILTERS'; payload: IFilters }
-  | { type: 'SET_FILTERS_WITH_UPDATER'; payload: (prevState: IFilters) => IFilters }
-  | { type: 'SET_ACTIVE_FILTERS'; payload: string[] }
-  | { type: 'SET_ACTIVE_FILTERS_WITH_UPDATER'; payload: (prevState: string[]) => string[] }
-  | { type: 'CLEAR_FILTERS' }
-  | { type: 'RETRY_FETCH' };
-
-function useHomeDataReducer(state: UseHomeDataState, action: UseHomeDataAction): UseHomeDataState {
-  switch (action.type) {
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload, error: null };
-    case 'SET_DATA':
-      return {
-        ...state,
-        subScenarios: action.payload.subScenarios,
-        meta: action.payload.meta,
-        loading: false,
-        error: null,
-      };
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, loading: false };
-    case 'SET_PAGE':
-      return { ...state, page: action.payload };
-    case 'SET_FILTERS':
-      return { ...state, filters: action.payload, page: 1 };
-    case 'SET_FILTERS_WITH_UPDATER':
-      return { ...state, filters: action.payload(state.filters), page: 1 };
-    case 'SET_ACTIVE_FILTERS':
-      return { ...state, activeFilters: action.payload };
-    case 'SET_ACTIVE_FILTERS_WITH_UPDATER':
-      return { ...state, activeFilters: action.payload(state.activeFilters) };
-    case 'CLEAR_FILTERS':
-      return {
-        ...state,
-        filters: { searchQuery: "" },
-        activeFilters: [],
-        page: 1,
-      };
-    case 'RETRY_FETCH':
-      return { ...state, error: null, loading: true };
-    default:
-      return state;
-  }
-}
-
-interface UseHomeDataParams {
-  initialSubScenarios: ISubScenario[];
-  initialMeta: IMetaDto;
-}
-
-export function useHomeData({ initialSubScenarios, initialMeta }: UseHomeDataParams) {
-  const initialState: UseHomeDataState = {
+  // Usar los valores iniciales de props
+  const initialState: IUseHomeDataState = {
     subScenarios: initialSubScenarios,
     meta: initialMeta,
-    page: initialMeta.page,
-    filters: { searchQuery: "" },
+    page: initialPage,
+    filters: { 
+      searchQuery: "", 
+      ...initialFilters
+    },
     activeFilters: [],
     loading: false,
     error: null,
@@ -83,15 +33,38 @@ export function useHomeData({ initialSubScenarios, initialMeta }: UseHomeDataPar
 
   const [state, dispatch] = useReducer(useHomeDataReducer, initialState);
 
+  // Sincronizar con URL cuando cambian los filtros
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (state.page > 1) params.set('page', state.page.toString());
+    if (state.filters.searchQuery) params.set('search', state.filters.searchQuery);
+    if (state.filters.activityAreaId) params.set('activityAreaId', state.filters.activityAreaId.toString());
+    if (state.filters.neighborhoodId) params.set('neighborhoodId', state.filters.neighborhoodId.toString());
+    if (state.filters.hasCost !== undefined) params.set('hasCost', state.filters.hasCost.toString());
+
+    const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    const currentUrl = `/?${searchParams.toString()}`;
+    
+    // Solo actualizar URL si es diferente (evitar loops)
+    if (newUrl !== currentUrl && newUrl !== '/?') {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [state.page, state.filters, router, searchParams]);
+
   // Función para fetch de datos
   const fetchSubScenarios = useCallback(async (page: number, filters: IFilters, limit: number) => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
+      // ✅ CAMBIO: Mapear IFilters a la interfaz del service
       const { data, meta } = await getSubScenarios({
         page,
         limit,
-        ...filters
+        searchQuery: filters.searchQuery || "",
+        activityAreaId: filters.activityAreaId || 0,
+        neighborhoodId: filters.neighborhoodId || 0,
+        hasCost: filters.hasCost,
       });
 
       dispatch({
