@@ -16,15 +16,9 @@ import {
   searchActivityAreas,
   searchNeighborhoods,
 } from "../../api/search.service";
-import { ActivityArea, Neighborhood } from "../../types/filters.types";
+import { ActivityArea, Neighborhood, Filters } from "../../types/filters.types";
 
 /* ─────────── Tipos ─────────── */
-type Filters = {
-  activityAreaId?: number;
-  neighborhoodId?: number;
-  searchQuery: string;
-  hasCost?: boolean;
-};
 
 interface ModernFiltersProps {
   activityAreas: ActivityArea[];
@@ -36,7 +30,7 @@ interface ModernFiltersProps {
   clearFilters: () => void;
 }
 
-export default function ModernFilters({
+export default function HomeFilters({
   activityAreas,
   neighborhoods,
   filters,

@@ -1,27 +1,34 @@
-export interface ActivityArea {
+export interface IActivityArea {
   id: string;
   name: string;
 }
 
-export interface Neighborhood {
+export interface INeighborhood {
   id: string;
   name: string;
 }
 
-export interface FiltersState {
+export interface IFiltersState {
   activityArea: string | null;
   neighborhood: string | null;
   searchQuery: string;
 }
 
-export interface MetaDto {
+export interface IFilters {
+  activityAreaId?: number;
+  neighborhoodId?: number;
+  searchQuery: string;
+  hasCost?: boolean;
+}
+
+export interface IMetaDto {
   page: number;
   limit: number;
   totalPages: number;
   totalItems: number;
 }
 
-export interface SubScenario {
+export interface ISubScenario {
   id: number;
   name: string;
   hasCost: boolean;
