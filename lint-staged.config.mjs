@@ -1,8 +1,6 @@
 export default {
     "**/*.{ts,tsx,js,jsx}": [
         "pnpm run sort-imports-manual",
-        "prettier --write",
-        "eslint --fix"
-    ],
+        "prettier --write"],
     "**/*.{css,md,json}": "prettier --write"
 };

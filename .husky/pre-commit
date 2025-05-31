@@ -1,0 +1,2 @@
+# .husky/pre-commit   (asegúrate de los saltos de línea LF)
+pnpm lint-staged

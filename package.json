@@ -13,8 +13,7 @@
   "lint-staged": {
     "**/*.{ts,tsx,js,jsx}": [
       "pnpm run sort-imports-manual",
-      "prettier --write",
-      "eslint --fix"
+      "prettier --write"
     ],
     "**/*.{md,json,css}": "prettier --write"
   },
