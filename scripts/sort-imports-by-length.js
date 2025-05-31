@@ -11,37 +11,32 @@ const absolutePath = path.resolve(filePath);
 const content = fs.readFileSync(absolutePath, "utf8");
 const lines = content.split("\n");
 
-const directiveLines = [];   // "use client"; "use server"; etc.
-const importBlock = [];   // líneas completas de import
+const directiveLines = [];  // "use client"; etc.
+const importBlock = [];  // líneas completas de import
 const restOfCode = [];
 
 let isInImport = false;
 let currentImportLines = [];
-let index = 0;
+let idx = 0;
 
-/* -------------------------------------------------- */
-/*  1. Separa directivas iniciales                    */
-/* -------------------------------------------------- */
-while (index < lines.length) {
-  const trimmed = lines[index].trim();
+/* 1. Captura directivas iniciales ------------------------------- */
+while (idx < lines.length) {
+  const trimmed = lines[idx].trim();
   if (/^(['"])use\s+\w+\1;?$/.test(trimmed)) {
-    directiveLines.push(lines[index]);
-    index++;
+    directiveLines.push(lines[idx]);
+    idx++;
   } else {
     break;
   }
 }
 
-/* -------------------------------------------------- */
-/*  2. Recorre el resto buscando bloques de import    */
-/* -------------------------------------------------- */
-for (; index < lines.length; index++) {
-  const line = lines[index];
+/* 2. Detecta imports (soporta multilínea) ----------------------- */
+for (; idx < lines.length; idx++) {
+  const line = lines[idx];
 
   if (line.trim().startsWith("import")) {
     isInImport = true;
     currentImportLines.push(line);
-
     if (line.trim().endsWith(";")) {
       importBlock.push(currentImportLines.join("\n"));
       currentImportLines = [];
@@ -49,7 +44,6 @@ for (; index < lines.length; index++) {
     }
   } else if (isInImport) {
     currentImportLines.push(line);
-
     if (line.trim().endsWith(";")) {
       importBlock.push(currentImportLines.join("\n"));
       currentImportLines = [];
@@ -60,28 +54,18 @@ for (; index < lines.length; index++) {
   }
 }
 
-/* -------------------------------------------------- */
-/*  3. Ordena de más larga a más corta                */
-/* -------------------------------------------------- */
+/* 3. Ordena de más larga a más corta ---------------------------- */
 importBlock.sort((a, b) => b.length - a.length);
 
-/* -------------------------------------------------- */
-/*  4. Reconstruye el archivo                         */
-/*     • Directivas                                   */
-/*     • (línea en blanco)                            */
-/*     • Imports ordenados                            */
-/*     • (línea en blanco)                            */
-/*     • Resto del código                             */
-/* -------------------------------------------------- */
+/* 4. Reconstruye archivo ---------------------------------------- */
 const finalContent = [
   ...directiveLines,
-  directiveLines.length ? "" : null,
+  directiveLines.length ? "" : null,     // <— una sola línea en blanco
   ...importBlock,
-  importBlock.length ? "" : null,
-  ...restOfCode,
+  ...restOfCode
 ]
-  .filter(Boolean)          // elimina posibles null
+  .filter(Boolean)                       // quita null/undefined
   .join("\n");
 
 fs.writeFileSync(absolutePath, finalContent, "utf8");
-console.log(`✅ Imports ordenados (y directivas preservadas) en: ${filePath}`);
+console.log(`✅ Imports ordenados y directiva preservada en: ${filePath}`);
