@@ -31,7 +31,6 @@ import { use, useState } from "react";
 
 
 
-
 interface PageProps {
   params: Promise<{ userId: string }>;
 }
