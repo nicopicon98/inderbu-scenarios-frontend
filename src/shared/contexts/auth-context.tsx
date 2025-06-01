@@ -47,15 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const storedToken = localStorage.getItem("auth_token");
-    const storedRefreshToken = localStorage.getItem("refresh_token");
+    const storedToken: string | null = localStorage.getItem("auth_token");
+    const storedRefreshToken: string | null = localStorage.getItem("refresh_token");
 
     if (storedToken) {
       const payload = decodeToken(storedToken);
 
       if (payload) {
         const userId = payload.userId || payload.id || payload.sub;
-
+        console.log("Payload:", payload);
+        console.log("User ID:", userId);
         if (userId && payload.email && payload.role !== undefined) {
           setUser({
             id: userId,

@@ -1,5 +1,18 @@
 "use client";
 
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import Footer from "@/features/home/components/organisms/footer";
+import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
+import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
+import { useUserReservations } from "@/features/reservations/hooks/use-user-reservations.hook";
+import { ReservationDto } from "@/services/reservation.service";
+import { MainHeader } from "@/shared/components/organisms/main-header";
+import { Pagination } from "@/shared/components/organisms/pagination";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import {
   AlertCircle,
   Calendar,
@@ -12,20 +25,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
-import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
-import { useUserReservations } from "@/features/reservations/hooks/useUserReservations";
-import { ProtectedRouteProvider } from "@/shared/providers/protected-route-provider";
-import { MainHeader } from "@/shared/components/organisms/main-header";
-import { Pagination } from "@/shared/components/organisms/pagination";
-import Footer from "@/features/home/components/organisms/footer";
-import { ReservationDto } from "@/services/reservation.service";
-import { EUserRole } from "@/shared/enums/user-role.enum";
-import { useAuth } from "@/features/auth/hooks/use-auth";
-import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
 import { use, useState } from "react";
 
 
@@ -35,6 +35,9 @@ interface PageProps {
 
 // Componente de contenido principal (sin protección)
 function UserReservationsContent({ userId }: { userId: string }) {
+
+  console.log("UserReservationsContent rendered with userId:", userId);
+
   const router = useRouter();
   const { user } = useAuth();
   const [selectedReservation, setSelectedReservation] = useState<ReservationDto | null>(null);
@@ -416,32 +419,25 @@ export default function UserReservationsPage({ params }: PageProps) {
   const { userId } = use(params);
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <MainHeader />
-      
-      <ProtectedRouteProvider
-        validateSession={true}
-        fallbackPath="/"
-        // Custom logic: Solo el propietario o admins pueden ver las reservas
-        allowedRoles={[EUserRole.USER, EUserRole.ADMIN, EUserRole.SUPER_ADMIN, EUserRole.MODERATOR]}
-      >
-        <UserReservationsPageGuard userId={userId}>
-          <UserReservationsContent userId={userId} />
-        </UserReservationsPageGuard>
-      </ProtectedRouteProvider>
+  <main className="min-h-screen flex flex-col">
+  <MainHeader />
+  
+  <UserReservationsPageGuard userId={userId}>
+  <UserReservationsContent userId={userId} />
+  </UserReservationsPageGuard>
 
-      <Footer />
-    </main>
+  <Footer />
+  </main>
   );
 }
 
 // Guard personalizado para verificar acceso a reservas específicas del usuario
-function UserReservationsPageGuard({ 
-  userId, 
-  children 
-}: { 
-  userId: string; 
-  children: React.ReactNode; 
+function UserReservationsPageGuard({
+  userId,
+  children
+}: {
+  userId: string;
+  children: React.ReactNode;
 }) {
   const { user } = useAuth();
   const router = useRouter();

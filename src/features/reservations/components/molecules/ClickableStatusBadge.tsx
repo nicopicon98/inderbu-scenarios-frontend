@@ -1,30 +1,29 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import ReservationService, {
+  ReservationStateDto,
+} from "@/services/reservation.service";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from "@/shared/ui/alert-dialog";
+import { Badge } from "@/shared/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import ReservationService, {
-  ReservationStateDto,
-} from "@/services/reservation.service";
-import { useReservationStates } from "../../hooks/useReservationStates";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
-import { Badge } from "@/shared/ui/badge";
 import { useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useReservationStates } from "../../hooks/use-reservation-state.hook";
 
 
 interface ClickableStatusBadgeProps {
@@ -254,13 +253,13 @@ export function ClickableStatusBadge({
                     className={cn(
                       "font-semibold px-1.5 py-0.5 rounded-md text-sm",
                       selectedStateInfo.key === "CONFIRMADA" &&
-                        "bg-green-100 text-green-800",
+                      "bg-green-100 text-green-800",
                       selectedStateInfo.key === "CANCELADA" &&
-                        "bg-red-100 text-red-800",
+                      "bg-red-100 text-red-800",
                       selectedStateInfo.key === "PENDIENTE" &&
-                        "bg-yellow-100 text-yellow-800",
+                      "bg-yellow-100 text-yellow-800",
                       selectedStateInfo.key === "RECHAZADA" &&
-                        "bg-gray-100 text-gray-800",
+                      "bg-gray-100 text-gray-800",
                     )}
                   >
                     {selectedStateInfo.label.toLowerCase()}
@@ -296,13 +295,13 @@ export function ClickableStatusBadge({
               className={cn(
                 "text-white w-full h-9 text-sm font-medium",
                 selectedStateInfo?.key === "CONFIRMADA" &&
-                  "bg-green-600 hover:bg-green-700",
+                "bg-green-600 hover:bg-green-700",
                 selectedStateInfo?.key === "CANCELADA" &&
-                  "bg-red-600 hover:bg-red-700",
+                "bg-red-600 hover:bg-red-700",
                 selectedStateInfo?.key === "PENDIENTE" &&
-                  "bg-yellow-600 hover:bg-yellow-700",
+                "bg-yellow-600 hover:bg-yellow-700",
                 selectedStateInfo?.key === "RECHAZADA" &&
-                  "bg-gray-600 hover:bg-gray-700",
+                "bg-gray-600 hover:bg-gray-700",
               )}
             >
               Confirmar cambio

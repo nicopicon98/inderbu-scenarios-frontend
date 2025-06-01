@@ -30,6 +30,7 @@ export async function getUserReservations({
     searchQuery,
   });
 
+  console.log("Desde user reservations Hasta aca el local storage tiehe auth_token: ", localStorage.getItem("auth_token"));
   const url = new URL("http://localhost:3001/reservations");
   url.searchParams.set("userId", userId.toString());
   url.searchParams.set("page", page.toString());

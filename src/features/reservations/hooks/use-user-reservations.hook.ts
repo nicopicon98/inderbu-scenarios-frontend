@@ -1,11 +1,11 @@
 "use client";
 
+import { ReservationDto } from "@/services/reservation.service";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   UserReservationList,
   getUserReservations,
 } from "../api/user-reservations.service";
-import { ReservationDto } from "@/services/reservation.service";
-import { useEffect, useMemo, useState } from "react";
 
 
 interface UseUserReservationsProps {
@@ -38,58 +38,69 @@ export const useUserReservations = ({
   // Filtros
   const [filters, setFilters] = useState<Filters>({ searchQuery: "" });
 
-  // Función para obtener reservas
-  const fetchReservations = async (
-    pageNumber = page,
-    currentFilters = filters,
+  // Función memoizada para obtener reservas
+  const fetchReservations = useCallback(async (
+    pageNumber: number = page,
+    currentFilters: Filters = filters,
   ) => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("❌ No userId provided, skipping fetch");
+      return;
+    }
 
+    console.log(`🔄 Fetching reservations - Page: ${pageNumber}, UserId: ${userId}`);
     setIsLoading(true);
     setError(null);
 
     try {
-      const result: UserReservationList = await getUserReservations({
+      const userReservations: UserReservationList = await getUserReservations({
         userId,
         page: pageNumber,
         limit: initialLimit,
         searchQuery: currentFilters.searchQuery,
       });
 
-      setReservations(result.data);
-      setMeta(result.meta);
+      console.log(`✅ User reservations fetched: ${userReservations.data.length} items`);
+
+      setReservations(userReservations.data);
+      setMeta(userReservations.meta);
     } catch (error) {
-      console.error("Error fetching user reservations:", error);
+      console.error("❌ Error fetching user reservations:", error);
       setError(error instanceof Error ? error.message : "Error desconocido");
       setReservations([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, initialLimit]); // Solo depende de valores estables
 
   // Efectos
   useEffect(() => {
+    console.log(`📊 useUserReservations effect triggered - Page: ${page}, Filters:`, filters);
     fetchReservations(page, filters);
-  }, [page, filters, userId]);
+  }, [page, filters, fetchReservations]);
 
-  // Funciones de control
-  const handlePageChange = (newPage: number) => {
+  // Funciones de control memoizadas
+  const handlePageChange = useCallback((newPage: number) => {
+    console.log(`📄 Page change: ${page} → ${newPage}`);
     setPage(newPage);
-  };
+  }, [page]);
 
-  const handleFiltersChange = (newFilters: Filters) => {
+  const handleFiltersChange = useCallback((newFilters: Filters) => {
+    console.log(`🔍 Filters change:`, newFilters);
     setFilters(newFilters);
     setPage(1); // Resetear a la primera página cuando cambian los filtros
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
+    console.log(`🧹 Clearing filters`);
     setFilters({ searchQuery: "" });
     setPage(1);
-  };
+  }, []);
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
+    console.log(`🔄 Manual refetch triggered`);
     fetchReservations(page, filters);
-  };
+  }, [fetchReservations, page, filters]);
 
   // Estados derivados con useMemo
   const { activeReservations, pastReservations, stats } = useMemo(() => {

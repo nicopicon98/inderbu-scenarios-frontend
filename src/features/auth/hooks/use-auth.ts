@@ -128,7 +128,7 @@ export function useAuth() {
       // await AuthService.getCurrentUser(authContext.token);
 
       // Por ahora verificar con local storage si existe el token
-      const storedToken = localStorage.getItem("token");
+      const storedToken = localStorage.getItem("auth_token");
       if (!storedToken) {
         authContext.clearUserSession();
         return false;

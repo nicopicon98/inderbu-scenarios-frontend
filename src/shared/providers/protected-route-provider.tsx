@@ -1,10 +1,10 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { EUserRole } from "@/shared/enums/user-role.enum";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;
@@ -19,22 +19,23 @@ export function ProtectedRouteProvider({
   children,
   requiredRole,
   allowedRoles,
-  adminOnly = false, // Mantener para compatibilidad
+  adminOnly = false,
   fallbackPath = "/",
-  validateSession = true,
+  validateSession = false,  //TODO: cambiar a true cuando se implemente la validación de sesión desde el servidor
 }: ProtectedRouteProviderProps) {
-  const { 
-    user, 
-    isAuthenticated, 
-    authReady, 
+  const {
+    user,
+    isAuthenticated,
+    authReady,
     validateCurrentSession,
-    isTokenExpired 
+    isTokenExpired
   } = useAuth();
   const router = useRouter();
   const [isValidating, setIsValidating] = useState(false);
+  const [hasCheckedAccess, setHasCheckedAccess] = useState(false);
 
-  // Función para verificar permisos de rol
-  const hasRequiredRole = (): boolean => {
+  // Función memoizada para verificar permisos de rol
+  const hasRequiredRole = useCallback((): boolean => {
     if (!user) return false;
 
     // Backward compatibility con adminOnly
@@ -54,78 +55,91 @@ export function ProtectedRouteProvider({
 
     // Si no se especifica rol, solo verificar autenticación
     return true;
-  };
+  }, [user, adminOnly, requiredRole, allowedRoles]);
+
+  // Memoizar las condiciones principales
+  const accessConditions = useMemo(() => ({
+    authReady,
+    isAuthenticated,
+    hasRole: user ? hasRequiredRole() : false,
+    userId: user?.id,
+    userRole: user?.role
+  }), [authReady, isAuthenticated, user, hasRequiredRole]);
 
   useEffect(() => {
+    // Solo ejecutar si no hemos verificado acceso y auth está listo
+    if (!accessConditions.authReady || hasCheckedAccess) return;
+
     const checkAccess = async () => {
-      // Esperar a que el AuthProvider termine su chequeo inicial
-      if (!authReady) return;
+      console.log("🔍 Checking access - one time only");
 
       // Si no está autenticado, redirigir inmediatamente
-      if (!isAuthenticated) {
+      if (!accessConditions.isAuthenticated) {
         router.replace(fallbackPath);
+        setHasCheckedAccess(true);
         return;
       }
 
       // Verificar permisos de rol
-      if (!hasRequiredRole()) {
+      if (!accessConditions.hasRole) {
         // Redirigir basado en el rol del usuario
-        const redirectPath = user?.role === EUserRole.USER ? "/" : "/dashboard";
+        const redirectPath = accessConditions.userRole === EUserRole.USER ? "/" : "/dashboard";
         router.replace(redirectPath);
+        setHasCheckedAccess(true);
         return;
       }
+
+      console.log("✅ User has required role", accessConditions.hasRole);
 
       // Validar sesión con el servidor si está habilitado
       if (validateSession && !isValidating) {
         setIsValidating(true);
-        
+
         try {
           // Verificar si el token está expirado
           if (isTokenExpired()) {
             router.replace(fallbackPath);
+            setHasCheckedAccess(true);
             return;
           }
 
           // Validar sesión con el servidor
           const isValid = await validateCurrentSession();
-          
+
           if (!isValid) {
             router.replace(fallbackPath);
+            setHasCheckedAccess(true);
             return;
           }
         } catch (error) {
           console.error("Error validating session:", error);
           router.replace(fallbackPath);
+          setHasCheckedAccess(true);
           return;
         } finally {
           setIsValidating(false);
         }
       }
+
+      setHasCheckedAccess(true);
+      console.log("🎯 Access check completed");
     };
 
     checkAccess();
-  }, [
-    authReady, 
-    isAuthenticated, 
-    user, 
-    requiredRole, 
-    allowedRoles, 
-    adminOnly, 
-    fallbackPath,
-    validateSession,
-    isValidating,
-    router,
-    validateCurrentSession,
-    isTokenExpired
-  ]);
+  }, [accessConditions, hasCheckedAccess, validateSession, isValidating, router, fallbackPath, validateCurrentSession, isTokenExpired]);
+
+  // Reset cuando cambie el usuario
+  useEffect(() => {
+    setHasCheckedAccess(false);
+  }, [accessConditions.userId]);
 
   // Loading states
-  if (!authReady || isValidating) {
+  if (!accessConditions.authReady || isValidating || !hasCheckedAccess) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
         <p className="mt-4 text-lg text-gray-600">
-          {!authReady ? "Verificando acceso..." : "Validando sesión..."}
+          {!accessConditions.authReady ? "Verificando acceso..." : "Validando sesión..."}
         </p>
       </div>
     );

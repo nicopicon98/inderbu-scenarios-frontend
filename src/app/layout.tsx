@@ -1,12 +1,9 @@
-import Footer from "@/features/home/components/organisms/footer";
 import { AuthProvider } from "@/shared/contexts/auth-context";
 import { Toaster } from "@/shared/ui/sonner";
-import type { Metadata } from "next/types";
 import { Inter } from "next/font/google";
+import type { Metadata } from "next/types";
 import type React from "react";
 import "./globals.css";
-
-
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,7 +32,6 @@ export default function RootLayout({
           <Toaster />
         </AuthProvider>
         {/* </ThemeProvider> */}
-        <Footer />
       </body>
     </html>
   );

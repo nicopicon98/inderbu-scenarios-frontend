@@ -1,7 +1,7 @@
-import { usePermissions } from "../../hooks/use-permissions";
-import { useRoleChecks } from "../../hooks/use-role-checks";
 import { EUserRole } from "@/shared/enums/user-role.enum";
 import React from "react";
+import { usePermissions } from "../../hooks/use-permissions";
+import { useRoleChecks } from "../../hooks/use-role-checks";
 
 interface PermissionGuardProps {
   children: React.ReactNode;
@@ -38,7 +38,6 @@ export function PermissionGuard({
   } else if (requiredPermission) {
     hasPermission = permissions[requiredPermission];
   }
-
   if (hasPermission) {
     return <>{children}</>;
   }
