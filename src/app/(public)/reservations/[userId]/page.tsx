@@ -1,32 +1,35 @@
 "use client";
 
-import { useAuth } from "@/features/auth/hooks/use-auth";
-import Footer from "@/features/home/components/organisms/footer";
-import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
-import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
-import { useUserReservations } from "@/features/reservations/hooks/use-user-reservations.hook";
-import { ReservationDto } from "@/services/reservation.service";
-import { MainHeader } from "@/shared/components/organisms/main-header";
-import { Pagination } from "@/shared/components/organisms/pagination";
-import { EUserRole } from "@/shared/enums/user-role.enum";
-
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import {
   AlertCircle,
   Calendar,
   CheckCircle2,
   Clock,
   Filter,
-  Loader2,
   Search,
   Settings,
   User,
-  X,
+  X
 } from "lucide-react";
+import { ModifyReservationModal } from "@/features/reservations/components/organisms/ModifyReservationModal";
+import { ModernReservationItem } from "@/features/reservations/components/organisms/modern-reservation-item";
+import { ErrorReservationsLoading } from "@/features/reservations/components/organisms/error-loading";
+import { ReservationsLoader } from "@/features/reservations/components/organisms/reservations-loader";
+import { useUserReservations } from "@/features/reservations/hooks/use-user-reservations.hook";
+import { UserNotFound } from "@/features/reservations/components/organisms/user-not-found";
+import { MainHeader } from "@/shared/components/organisms/main-header";
+import { Pagination } from "@/shared/components/organisms/pagination";
+import Footer from "@/features/home/components/organisms/footer";
+import { ReservationDto } from "@/services/reservation.service";
+import { EUserRole } from "@/shared/enums/user-role.enum";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import { use, useState } from "react";
+
+
 
 
 interface PageProps {
@@ -35,8 +38,6 @@ interface PageProps {
 
 // Componente de contenido principal (sin protección)
 function UserReservationsContent({ userId }: { userId: string }) {
-
-  console.log("UserReservationsContent rendered with userId:", userId);
 
   const router = useRouter();
   const { user } = useAuth();
@@ -47,29 +48,10 @@ function UserReservationsContent({ userId }: { userId: string }) {
   const userIdNumber = parseInt(userId);
 
   // Debug: Si userId es "undefined", mostrar información de debug
-  if (userId === "undefined" || isNaN(userIdNumber)) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
-        <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Error de Usuario
-          </h2>
-          <p className="text-gray-600 mb-4">
-            No se pudo obtener el ID del usuario del token.
-          </p>
-          <div className="text-left bg-gray-100 p-4 rounded-lg mb-4">
-            <p className="text-sm font-mono">
-              <strong>User object:</strong>
-              <br />
-              {JSON.stringify(user, null, 2)}
-            </p>
-          </div>
-          <Button onClick={() => router.push("/")}>Volver al inicio</Button>
-        </div>
-      </div>
-    );
-  }
+  if (userId === "undefined" || isNaN(userIdNumber)) <UserNotFound
+    user={user}
+    router={router}
+  />
 
   const {
     reservations,
@@ -111,34 +93,12 @@ function UserReservationsContent({ userId }: { userId: string }) {
   };
 
   // Loading y error states
-  if (isLoading) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Cargando tus reservas
-          </h2>
-          <p className="text-gray-600">Un momento por favor...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) <ReservationsLoader />
 
-  if (error) {
-    return (
-      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-50">
-        <div className="text-center max-w-md">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Error al cargar reservas
-          </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={refetch}>Intentar de nuevo</Button>
-        </div>
-      </div>
-    );
-  }
+  if (error) <ErrorReservationsLoading
+    error={error}
+    refetch={refetch}
+  />
 
   return (
     <>
@@ -419,15 +379,15 @@ export default function UserReservationsPage({ params }: PageProps) {
   const { userId } = use(params);
 
   return (
-  <main className="min-h-screen flex flex-col">
-  <MainHeader />
-  
-  <UserReservationsPageGuard userId={userId}>
-  <UserReservationsContent userId={userId} />
-  </UserReservationsPageGuard>
+    <main className="min-h-screen flex flex-col">
+      <MainHeader />
 
-  <Footer />
-  </main>
+      <UserReservationsPageGuard userId={userId}>
+        <UserReservationsContent userId={userId} />
+      </UserReservationsPageGuard>
+
+      <Footer />
+    </main>
   );
 }
 
