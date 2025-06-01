@@ -1,4 +1,4 @@
-import { BarChart, Calendar, Map, MapPin, Settings, Users } from "lucide-react";
+import { Calendar, Map, MapPin, Users } from "lucide-react";
 
 export const reportItems = [
   // {
@@ -16,22 +16,22 @@ export const menuItems = [
   },
   {
     title: "Escenarios",
-    href: "/dashboard/escenarios",
+    href: "/dashboard/scenarios",
     icon: MapPin,
   },
   {
     title: "Sub-escenarios",
-    href: "/dashboard/sub-escenarios",
+    href: "/dashboard/sub-scenarios",
     icon: MapPin,
   },
   {
     title: "Clientes",
-    href: "/dashboard/clientes",
+    href: "/dashboard/clients",
     icon: Users,
   },
   {
     title: "Ubicaciones",
-    href: "/dashboard/ubicaciones",
+    href: "/dashboard/locations",
     icon: Map,
   },
   // {

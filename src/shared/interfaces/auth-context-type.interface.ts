@@ -1,4 +1,3 @@
-import { EUserRole } from "../enums/user-role.enum";
 import { IUser } from "./user.interface";
 
 export interface IAuthContextType {

@@ -1,7 +1,7 @@
 import { EUserRole } from "@/shared/enums/user-role.enum";
 import React from "react";
-import { usePermissions } from "../../hooks/use-permissions";
-import { useRoleChecks } from "../../hooks/use-role-checks";
+import { usePermissions } from "../../hooks/use-permissions.hook";
+import { useRoleChecks } from "../../hooks/use-role-checks.hook";
 
 interface PermissionGuardProps {
   children: React.ReactNode;

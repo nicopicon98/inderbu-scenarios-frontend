@@ -1,7 +1,7 @@
 "use client";
 
+import { SidebarProvider } from "@/shared/providers/dashboard-sidebar.provider";
 import { ProtectedRouteProvider } from "@/shared/providers/protected-route-provider";
-import { SidebarProvider } from "@/shared/components/layout/simple-sidebar";
 
 
 export default function DashboardLayout({

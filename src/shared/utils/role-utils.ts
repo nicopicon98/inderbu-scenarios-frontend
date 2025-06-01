@@ -4,8 +4,9 @@ export function getRoleDisplayName(role: EUserRole): string {
   const names = {
     [EUserRole.SUPER_ADMIN]: "Super Administrador",
     [EUserRole.ADMIN]: "Administrador",
-    [EUserRole.USER]: "Usuario",
-    [EUserRole.MODERATOR]: "Moderador",
+    [EUserRole.INDEPENDIENTE]: "Usuario Independiente",
+    [EUserRole.CLUB_DEPORTIVO]: "Club Deportivo",
+    [EUserRole.ENTRENADOR]: "Entrenador",
   };
   return names[role] || "Usuario";
 }
@@ -25,9 +26,24 @@ export function canRoleModify(
 export function getAvailableRolesForUser(currentRole: EUserRole): EUserRole[] {
   switch (currentRole) {
     case EUserRole.SUPER_ADMIN:
-      return [EUserRole.ADMIN, EUserRole.USER, EUserRole.MODERATOR];
+      return [
+        EUserRole.ADMIN,
+        EUserRole.INDEPENDIENTE,
+        EUserRole.CLUB_DEPORTIVO,
+        EUserRole.ENTRENADOR,
+      ];
     case EUserRole.ADMIN:
-      return [EUserRole.USER, EUserRole.MODERATOR];
+      return [
+        EUserRole.INDEPENDIENTE,
+        EUserRole.CLUB_DEPORTIVO,
+        EUserRole.ENTRENADOR,
+      ];
+    case EUserRole.INDEPENDIENTE:
+      return [EUserRole.INDEPENDIENTE];
+    case EUserRole.CLUB_DEPORTIVO:
+      return [EUserRole.CLUB_DEPORTIVO];
+    case EUserRole.ENTRENADOR:
+      return [EUserRole.ENTRENADOR];
     default:
       return [];
   }

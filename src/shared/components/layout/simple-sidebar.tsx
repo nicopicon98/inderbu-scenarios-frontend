@@ -1,55 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
-import { menuItems, reportItems } from "./data/menu-items";
-import { usePathname } from "next/navigation";
-import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
-import type React from "react";
+import { useSidebar } from "@/shared/providers/dashboard-sidebar.provider";
+import { Button } from "@/shared/ui/button";
+import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { menuItems } from "./data/menu-items";
 
-
-// Crear un contexto para compartir el estado del sidebar
-type SidebarContextType = {
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
-};
-
-const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
-
-// Hook para usar el contexto del sidebar
-export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (context === undefined) {
-    throw new Error("useSidebar must be used within a SidebarProvider");
-  }
-  return context;
-};
-
-// Proveedor del contexto del sidebar
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  // Guardar el estado en localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem("sidebar-collapsed");
-    if (savedState) {
-      setCollapsed(savedState === "true");
-    }
-  }, []);
-
-  // Actualizar localStorage cuando cambia el estado
-  useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", String(collapsed));
-  }, [collapsed]);
-
-  return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
-      {children}
-    </SidebarContext.Provider>
-  );
-}
 
 export function SimpleSidebar() {
   const pathname = usePathname();
@@ -85,7 +43,7 @@ export function SimpleSidebar() {
               item.href === "/dashboard"
                 ? pathname === item.href
                 : pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                pathname.startsWith(`${item.href}/`);
             return (
               <Link
                 key={item.href}
@@ -109,29 +67,6 @@ export function SimpleSidebar() {
           })}
 
           <div className="my-2 border-t border-gray-200"></div>
-          {/* {reportItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center rounded-md px-3 py-2 text-sm transition-colors",
-                  isActive
-                    ? "bg-accent text-primary font-medium"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-primary"
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 mr-2",
-                    isActive ? "text-primary" : "text-gray-400"
-                  )}
-                />
-                {!collapsed && <span>{item.title}</span>}
-              </Link>
-            );
-          })} */}
         </div>
         <div>
           <div className="mt-2 border-t border-gray-200 mb-2"></div>

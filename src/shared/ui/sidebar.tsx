@@ -1,5 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/shared/hooks/use-mobile.hook";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Separator } from "@/shared/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -7,21 +12,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/ui/sheet";
+import { Skeleton } from "@/shared/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import { VariantProps, cva } from "class-variance-authority";
-import { useIsMobile } from "@/shared/hooks/use-mobile";
-import { Separator } from "@/shared/ui/separator";
-import { Skeleton } from "@/shared/ui/skeleton";
-import { Button } from "@/shared/ui/button";
 import { Slot } from "@radix-ui/react-slot";
-import { Input } from "@/shared/ui/input";
+import { VariantProps, cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
 import * as React from "react";
 
 
@@ -632,7 +632,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className,
       )}
       {...props}
@@ -777,5 +777,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
+  useSidebar
 };
+

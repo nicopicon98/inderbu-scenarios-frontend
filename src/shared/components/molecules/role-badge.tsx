@@ -16,13 +16,18 @@ const roleConfig = {
     color: "bg-blue-100 text-blue-800 border-blue-200",
     outlineColor: "border-blue-300 text-blue-700",
   },
-  [EUserRole.USER]: {
+  [EUserRole.INDEPENDIENTE]: {
     label: "Usuario",
     color: "bg-green-100 text-green-800 border-green-200",
     outlineColor: "border-green-300 text-green-700",
   },
-  [EUserRole.MODERATOR]: {
-    label: "Moderador",
+  [EUserRole.CLUB_DEPORTIVO]: {
+    label: "Club Deportivo",
+    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    outlineColor: "border-yellow-300 text-yellow-700",
+  },
+  [EUserRole.ENTRENADOR]: {
+    label: "Entrenador",
     color: "bg-orange-100 text-orange-800 border-orange-200",
     outlineColor: "border-orange-300 text-orange-700",
   },

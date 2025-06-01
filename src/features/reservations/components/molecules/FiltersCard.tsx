@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  searchActivityAreas,
-  searchNeighborhoods,
-  searchScenarios,
-  searchUsers,
-} from "../../api/dashboard-search.service";
+import { SearchSelect } from "@/shared/components/molecules/search-select";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -13,12 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Building, Calendar, Filter, MapPin, Tag, User, X } from "lucide-react";
-import { SearchSelect } from "@/shared/components/molecules/search-select";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
+import { Building, Calendar, Filter, MapPin, Tag, User, X } from "lucide-react";
 import { useRef, useState } from "react";
+import {
+  searchActivityAreas,
+  searchNeighborhoods,
+  searchScenarios,
+  searchUsers,
+} from "../../services/dashboard-search.service";
 
 
 type Filters = {
@@ -163,15 +163,15 @@ export const FiltersCard = ({
               filters.userId ||
               filters.dateFrom ||
               filters.dateTo) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="text-xs"
-              >
-                Limpiar todo
-              </Button>
-            )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-xs"
+                >
+                  Limpiar todo
+                </Button>
+              )}
           </CardDescription>
         </CardHeader>
 

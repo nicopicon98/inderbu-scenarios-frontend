@@ -19,14 +19,21 @@ const ROLE_PERMISSIONS: Record<EUserRole, IPermission> = {
     canManageScenarios: true,
     canViewAdminPanel: true,
   },
-  [EUserRole.USER]: {
+  [EUserRole.INDEPENDIENTE]: {
     canAccessDashboard: false,
     canViewReservations: true,
     canManageUsers: false,
     canManageScenarios: false,
     canViewAdminPanel: false,
   },
-  [EUserRole.MODERATOR]: {
+  [EUserRole.CLUB_DEPORTIVO]: {
+    canAccessDashboard: false,
+    canViewReservations: true,
+    canManageUsers: false,
+    canManageScenarios: false,
+    canViewAdminPanel: false,
+  },
+  [EUserRole.ENTRENADOR]: {
     canAccessDashboard: false,
     canViewReservations: true,
     canManageUsers: false,
@@ -56,7 +63,7 @@ export function usePermissions(): IPermission {
     const userPermissions = ROLE_PERMISSIONS[user.role];
     if (!userPermissions) {
       console.warn(`⚠️ Unknown user role: ${user.role}, using default USER permissions`);
-      return ROLE_PERMISSIONS[EUserRole.USER];
+      return ROLE_PERMISSIONS[EUserRole.INDEPENDIENTE]; // Retorna permisos de usuario independiente por defecto
     }
 
     return userPermissions;

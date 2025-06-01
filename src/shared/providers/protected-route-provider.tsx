@@ -5,6 +5,7 @@ import { EUserRole } from "@/shared/enums/user-role.enum";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { getRedirectPath } from "../utils/get-redirect-path";
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;
@@ -71,7 +72,6 @@ export function ProtectedRouteProvider({
     if (!accessConditions.authReady || hasCheckedAccess) return;
 
     const checkAccess = async () => {
-      console.log("🔍 Checking access - one time only");
 
       // Si no está autenticado, redirigir inmediatamente
       if (!accessConditions.isAuthenticated) {
@@ -82,14 +82,10 @@ export function ProtectedRouteProvider({
 
       // Verificar permisos de rol
       if (!accessConditions.hasRole) {
-        // Redirigir basado en el rol del usuario
-        const redirectPath = accessConditions.userRole === EUserRole.USER ? "/" : "/dashboard";
-        router.replace(redirectPath);
+        router.replace(getRedirectPath(accessConditions.userRole));
         setHasCheckedAccess(true);
         return;
       }
-
-      console.log("✅ User has required role", accessConditions.hasRole);
 
       // Validar sesión con el servidor si está habilitado
       if (validateSession && !isValidating) {
@@ -121,17 +117,13 @@ export function ProtectedRouteProvider({
         }
       }
 
+      console.log("✅ Access granted");
       setHasCheckedAccess(true);
       console.log("🎯 Access check completed");
     };
 
     checkAccess();
   }, [accessConditions, hasCheckedAccess, validateSession, isValidating, router, fallbackPath, validateCurrentSession, isTokenExpired]);
-
-  // Reset cuando cambie el usuario
-  useEffect(() => {
-    setHasCheckedAccess(false);
-  }, [accessConditions.userId]);
 
   // Loading states
   if (!accessConditions.authReady || isValidating || !hasCheckedAccess) {
@@ -169,8 +161,16 @@ export function usePermissionGuard() {
     return hasRole(EUserRole.SUPER_ADMIN);
   };
 
-  const isUser = (): boolean => {
-    return hasRole(EUserRole.USER);
+  const isIndependiente = (): boolean => {
+    return hasRole(EUserRole.INDEPENDIENTE);
+  };
+
+  const isClubDeportivo = (): boolean => {
+    return hasRole(EUserRole.CLUB_DEPORTIVO);
+  };
+
+  const isEntrenador = (): boolean => {
+    return hasRole(EUserRole.ENTRENADOR);
   };
 
   return {
@@ -178,7 +178,9 @@ export function usePermissionGuard() {
     hasAnyRole,
     isAdmin,
     isSuperAdmin,
-    isUser,
+    isIndependiente,
+    isClubDeportivo,
+    isEntrenador,
     user,
     isAuthenticated,
   };

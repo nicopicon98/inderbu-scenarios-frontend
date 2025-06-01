@@ -1,17 +1,9 @@
 "use client";
 
-import {
-  CalendarIcon,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Loader2,
-  MapPin,
-  Settings,
-  Tag,
-  Users,
-  X,
-} from "lucide-react";
+import { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -20,17 +12,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { cancelReservation } from "../../api/user-reservations.service";
-import { ReservationDto } from "@/services/reservation.service";
-import { Card, CardContent } from "@/shared/ui/card";
-import { StatusBadge } from "../atoms/StatusBadge";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { es } from "date-fns/locale";
 import { format } from "date-fns";
-import { useState } from "react";
+import { es } from "date-fns/locale";
+import {
+  CalendarIcon,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  MapPin,
+  Settings,
+  Tag,
+  Users,
+  X
+} from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 import { toast } from "sonner";
+import { cancelReservation } from "../../services/user-reservations.service";
+import { StatusBadge } from "../atoms/StatusBadge";
 
 
 interface ModernReservationItemProps {
@@ -150,11 +149,10 @@ export function ModernReservationItem({
           <div className="flex items-center justify-between mb-3">
             <Badge
               variant="outline"
-              className={`text-xs ${
-                reservation.subScenario.hasCost
+              className={`text-xs ${reservation.subScenario.hasCost
                   ? "bg-yellow-50 text-yellow-700 border-yellow-200"
                   : "bg-green-50 text-green-700 border-green-200"
-              }`}
+                }`}
             >
               <Tag className="w-3 h-3 mr-1" />
               {reservation.subScenario.hasCost ? "De pago" : "Gratuito"}
@@ -214,11 +212,10 @@ export function ModernReservationItem({
                 <Button
                   variant="default"
                   className={`w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg
-                           transition-all duration-200 group/btn font-medium relative ${
-                             highlightManageButton
-                               ? "animate-pulse ring-4 ring-blue-300 ring-opacity-50"
-                               : ""
-                           }`}
+                           transition-all duration-200 group/btn font-medium relative ${highlightManageButton
+                      ? "animate-pulse ring-4 ring-blue-300 ring-opacity-50"
+                      : ""
+                    }`}
                   onClick={() => onModify(reservation)}
                 >
                   {highlightManageButton && (

@@ -1,5 +1,16 @@
 "use client";
 
+import { ReservationDto } from "@/services/reservation.service";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { Separator } from "@/shared/ui/separator";
 import {
   AlertTriangle,
   Calendar,
@@ -13,22 +24,11 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
-import { cancelReservation } from "../../api/user-reservations.service";
-import { ReservationDto } from "@/services/reservation.service";
-import { Separator } from "@/shared/ui/separator";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { cancelReservation } from "../../services/user-reservations.service";
+import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
 
 
 interface ModifyReservationModalProps {

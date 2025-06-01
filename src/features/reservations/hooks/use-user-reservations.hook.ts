@@ -1,11 +1,11 @@
 "use client";
 
 import { ReservationDto } from "@/services/reservation.service";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   UserReservationList,
   getUserReservations,
-} from "../api/user-reservations.service";
+} from "../services/user-reservations.service";
 
 
 interface UseUserReservationsProps {
@@ -43,12 +43,8 @@ export const useUserReservations = ({
     pageNumber: number = page,
     currentFilters: Filters = filters,
   ) => {
-    if (!userId) {
-      console.log("❌ No userId provided, skipping fetch");
-      return;
-    }
+    if (!userId) return;
 
-    console.log(`🔄 Fetching reservations - Page: ${pageNumber}, UserId: ${userId}`);
     setIsLoading(true);
     setError(null);
 

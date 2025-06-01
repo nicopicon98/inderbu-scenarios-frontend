@@ -17,8 +17,10 @@ interface HomePageProps {
   };
 }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  // Parse parámetros de URL para SSR completo
+export default async function HomePage(props: HomePageProps) {
+
+  const searchParams = await props.searchParams;
+
   const page = Number(searchParams.page) || 1;
   const limit = Number(searchParams.limit) || 6;
   const searchQuery = searchParams.search || "";
@@ -31,6 +33,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const hasCost = searchParams.hasCost
     ? searchParams.hasCost === "true"
     : undefined;
+
 
   try {
     // Fetch paralelo con filtros incluidos para SSR

@@ -15,8 +15,9 @@ export function useRoleChecks() {
     // Checks específicos de negocio
     isSuperAdmin: () => isAuthenticated && user?.role === EUserRole.SUPER_ADMIN,
     isAdmin: () => isAuthenticated && user?.role === EUserRole.ADMIN,
-    isRegularUser: () => isAuthenticated && user?.role === EUserRole.USER,
-    isModerator: () => isAuthenticated && user?.role === EUserRole.MODERATOR,
+    isRegularUser: () => isAuthenticated && user?.role === EUserRole.INDEPENDIENTE,
+    isClubDeportivo: () => isAuthenticated && user?.role === EUserRole.CLUB_DEPORTIVO,
+    isEntrenador: () => isAuthenticated && user?.role === EUserRole.ENTRENADOR,
 
     // Checks compuestos
     isAnyAdmin: () =>
