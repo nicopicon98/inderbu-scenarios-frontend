@@ -16,14 +16,15 @@ export default async function UserReservationsRoute({ params }: PageProps) {
   const { reservationService } = createUserReservationsContainer();
 
   try {
-    // 🎯 Execute use case through service layer
+    // Execute use case through service layer
     // All business logic, validation, and authorization happens in domain/application layers
     const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
+    console.log(`🔍 Fetching reservations for user: ${userId}`);
 
     console.log(`✅ SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
     console.log(`📊 Access metadata:`, result.metadata);
 
-    // 🎨 Render page component with clean separation
+    // Render page component with clean separation
     return (
       <ReservationsPage
         userId={result.metadata.userId}
@@ -35,7 +36,7 @@ export default async function UserReservationsRoute({ params }: PageProps) {
   } catch (error) {
     console.error(`SSR Error for user ${userId}:`, error);
 
-    // 🔒 Handle domain-specific errors with proper redirects
+    // Handle domain-specific errors with proper redirects
     if (error instanceof InvalidUserIdError) {
       console.warn(`Invalid user ID: ${userId}`);
       redirect('/404');
@@ -46,7 +47,7 @@ export default async function UserReservationsRoute({ params }: PageProps) {
       redirect('/auth/login?redirect=' + encodeURIComponent(`/reservations/${userId}`));
     }
 
-    // 🚨 For unexpected errors, let Next.js error boundary handle it
+    // For unexpected errors, let Next.js error boundary handle it
     console.error('Unexpected error in UserReservationsRoute:', error);
     throw error;
   }

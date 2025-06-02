@@ -11,7 +11,7 @@ import {
   isTokenExpired
 } from '@/entities/user/model/types';
 import { ClientAuthManager } from '@/shared/api/auth';
-import { HttpClientFactory, createClientAuthContext } from '@/shared/api/http-client';
+import { ClientHttpClientFactory, createClientAuthContext } from '@/shared/api/http-client-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -24,10 +24,17 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
 
+  // Validation methods (for compatibility with ProtectedRouteProvider)
+  validateCurrentSession: () => Promise<boolean>;
+  isTokenExpired: () => boolean;
+
   // State setters (for server actions integration)
   setUser: (user: User | null) => void;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
+
+  // Compatibility alias
+  authReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -101,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Create repository instance
   const createRepository = () => {
     const authContext = createClientAuthContext();
-    const httpClient = HttpClientFactory.createClientClient(authContext);
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
     return createUserRepository(httpClient);
   };
 
@@ -197,7 +204,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Refresh token function
+  // Validate current session
+  const validateCurrentSession = async (): Promise<boolean> => {
+    try {
+      const token = ClientAuthManager.getToken();
+      
+      if (!token) {
+        return false;
+      }
+
+      if (isTokenExpired(token)) {
+        // Try to refresh token
+        const refreshToken = ClientAuthManager.getRefreshToken();
+        if (refreshToken) {
+          return await handleRefreshToken();
+        }
+        return false;
+      }
+
+      // Token exists and is not expired - session is valid
+      return true;
+    } catch (error) {
+      console.error('Error validating session:', error);
+      return false;
+    }
+  };
+
+  // Check if current token is expired
+  const checkTokenExpired = (): boolean => {
+    const token = ClientAuthManager.getToken();
+    if (!token) return true;
+    return isTokenExpired(token);
+  };
   const handleRefreshToken = async (): Promise<boolean> => {
     try {
       const refreshToken = ClientAuthManager.getRefreshToken();
@@ -250,6 +288,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await logoutMutation.mutateAsync();
     },
     refreshToken: handleRefreshToken,
+    validateCurrentSession,
+    isTokenExpired: checkTokenExpired,
+    authReady: !authState.isLoading, // Compatibility alias
     setUser: (user: User | null) => {
       setAuthState(prev => ({
         ...prev,

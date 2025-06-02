@@ -20,10 +20,10 @@ export class ServerReservationService {
     requestingUserId?: number
   ): Promise<GetUserReservationsResponse> {
     
-    // 🔒 Infrastructure concern: Input validation
+    // Infrastructure concern: Input validation
     const validUserId = UserAccessPolicy.validateUserId(targetUserId);
     
-    // 🎯 Execute use case - it will handle user lookup and authorization
+    // Execute use case - it will handle user lookup and authorization
     const request: GetUserReservationsRequest = {
       targetUserId: validUserId,
       requestingUser: null, // Use case will look up current user if needed

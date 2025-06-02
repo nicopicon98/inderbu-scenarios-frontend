@@ -1,19 +1,15 @@
 import { z } from 'zod';
+import { EUserRole } from '@/shared/enums/user-role.enum';
 
-// User roles enum - matching backend
-export enum UserRole {
-  SUPER_ADMIN = 1,
-  ADMIN = 2,
-  INDEPENDIENTE = 3,
-  CLUB_DEPORTIVO = 4,
-  ENTRENADOR = 5,
-}
+// Re-export for convenience and backward compatibility
+export { EUserRole };
+export { EUserRole as UserRole }; // Alias for migration
 
 // Core user entity
 export interface User {
   id: number;
   email: string;
-  role: UserRole;
+  role: EUserRole;
   first_name?: string;
   last_name?: string;
   phone?: string;
@@ -38,7 +34,7 @@ export interface RegisterData {
   first_name: string;
   last_name: string;
   phone: string;
-  role: UserRole;
+  role: EUserRole;
 }
 
 export interface ResetPasswordData {
@@ -51,7 +47,7 @@ export interface JwtPayload {
   id?: number;
   userId?: number;
   email: string;
-  role: UserRole;
+  role: EUserRole;
   exp: number;
   iat: number;
 }
@@ -76,7 +72,7 @@ export const RegisterSchema = z.object({
   first_name: z.string().min(1, 'Nombre es requerido'),
   last_name: z.string().min(1, 'Apellido es requerido'),
   phone: z.string().min(1, 'Teléfono es requerido'),
-  role: z.nativeEnum(UserRole),
+  role: z.nativeEnum(EUserRole),
 });
 
 export const ResetPasswordSchema = z.object({
@@ -85,7 +81,7 @@ export const ResetPasswordSchema = z.object({
 
 // Type guards
 export const isAdmin = (user: User | null): boolean => {
-  return user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
+  return user?.role === EUserRole.SUPER_ADMIN || user?.role === EUserRole.ADMIN;
 };
 
 export const canViewUserReservations = (currentUser: User | null, targetUserId: number): boolean => {
@@ -105,17 +101,17 @@ export const getUserFullName = (user: User): string => {
   return `${firstName} ${lastName}`.trim() || user.email;
 };
 
-export const getUserRoleName = (role: UserRole): string => {
+export const getUserRoleName = (role: EUserRole): string => {
   switch (role) {
-    case UserRole.SUPER_ADMIN:
+    case EUserRole.SUPER_ADMIN:
       return 'Super Admin';
-    case UserRole.ADMIN:
+    case EUserRole.ADMIN:
       return 'Administrador';
-    case UserRole.INDEPENDIENTE:
+    case EUserRole.INDEPENDIENTE:
       return 'Independiente';
-    case UserRole.CLUB_DEPORTIVO:
+    case EUserRole.CLUB_DEPORTIVO:
       return 'Club Deportivo';
-    case UserRole.ENTRENADOR:
+    case EUserRole.ENTRENADOR:
       return 'Entrenador';
     default:
       return 'Usuario';

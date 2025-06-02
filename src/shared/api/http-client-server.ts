@@ -1,13 +1,10 @@
-import { AuthContext, createClientAuthContext } from './auth';
-import { ServerAuthContext } from './server-auth';
+import { createServerAuthContext, ServerAuthContext } from './server-auth';
 import { ApiError } from './types';
 
-type AnyAuthContext = AuthContext | ServerAuthContext;
-
-export interface HttpClientConfig {
+export interface ServerHttpClientConfig {
   baseURL: string;
   timeout?: number;
-  authContext?: AnyAuthContext;
+  authContext?: ServerAuthContext;
   headers?: Record<string, string>;
 }
 
@@ -17,18 +14,20 @@ export interface RequestConfig {
   signal?: AbortSignal;
 }
 
-export class HttpClient {
+// ✅ SERVER-ONLY HTTP Client (can use server dependencies)
+export class ServerHttpClient {
   private baseURL: string;
   private timeout: number;
-  private authContext?: AnyAuthContext;
+  private authContext?: ServerAuthContext;
   private defaultHeaders: Record<string, string>;
 
-  constructor(config: HttpClientConfig) {
+  constructor(config: ServerHttpClientConfig) {
     this.baseURL = config.baseURL.replace(/\/$/, '');
     this.timeout = config.timeout || 10000;
     this.authContext = config.authContext;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
+      'User-Agent': 'NextJS-Server/1.0',
       ...config.headers,
     };
   }
@@ -140,55 +139,32 @@ export class HttpClient {
   }
 }
 
-// Factory for creating HTTP clients
-export class HttpClientFactory {
+// ✅ SERVER-ONLY Factory (can use server dependencies)
+export class ServerHttpClientFactory {
   private static readonly SERVER_BASE_URL = process.env.API_URL || 'http://localhost:3001';
-  private static readonly CLIENT_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-  static async createServerClient(authContext?: AnyAuthContext): Promise<HttpClient> {
-    // If no auth context provided, try to create one dynamically
-    if (!authContext && typeof window === 'undefined') {
-      try {
-        const { createServerAuthContext } = await import('./server-auth');
-        authContext = createServerAuthContext();
-      } catch (error) {
-        console.warn('Could not create server auth context:', error);
-      }
-    }
-
-    return new HttpClient({
+  static createServer(authContext?: ServerAuthContext): ServerHttpClient {
+    return new ServerHttpClient({
       baseURL: this.SERVER_BASE_URL,
-      authContext,
-      headers: {
-        'User-Agent': 'NextJS-Server/1.0',
-      },
-    });
-  }
-
-  static createClientClient(authContext?: AnyAuthContext): HttpClient {
-    return new HttpClient({
-      baseURL: this.CLIENT_BASE_URL,
       authContext,
     });
   }
 
-  // Synchronous version for server actions that already have auth context
-  static createServerClientSync(authContext?: AnyAuthContext): HttpClient {
-    return new HttpClient({
+  static createServerWithAuth(): ServerHttpClient {
+    const authContext = createServerAuthContext();
+    return this.createServer(authContext);
+  }
+
+  static createServerSync(authContext?: ServerAuthContext): ServerHttpClient {
+    return new ServerHttpClient({
       baseURL: this.SERVER_BASE_URL,
       authContext,
-      headers: {
-        'User-Agent': 'NextJS-Server/1.0',
-      },
     });
   }
 }
 
-// Export auth context creators for convenience
-export { createClientAuthContext };
+// ✅ Re-export server auth context creator
+export { createServerAuthContext };
 
-// Server auth context creator (async to handle dynamic import)
-export async function createServerAuthContext(): Promise<ServerAuthContext> {
-  const { createServerAuthContext: createServerAuth } = await import('./server-auth');
-  return createServerAuth();
-}
+// ✅ Type alias for backward compatibility
+export type HttpClient = ServerHttpClient;

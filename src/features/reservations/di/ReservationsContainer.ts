@@ -1,7 +1,7 @@
 import { createReservationRepository, ReservationRepository } from '@/entities/reservation/api/reservationRepository';
 import { EventBus } from '@/entities/reservation/domain/ReservationDomain';
 import { createUserRepository, UserRepository } from '@/entities/user/api/userRepository';
-import { HttpClientFactory } from '@/shared/api/http-client';
+import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 import {
@@ -38,7 +38,7 @@ export function createUserReservationsContainer(): UserReservationsContainer {
 
   // Infrastructure layer: HTTP Client and Auth
   const authContext = createServerAuthContext();
-  const httpClient = HttpClientFactory.createServerClientSync(authContext);
+  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
 
   // Infrastructure layer: Use existing repositories directly
   // ✅ No adapters needed - existing interfaces are sufficient for our domain
@@ -67,36 +67,3 @@ export function createUserReservationsContainer(): UserReservationsContainer {
     getUserReservationsUseCase
   };
 }
-
-// TODO: Future containers for other reservation use cases
-
-/**
- * Container for Create Reservation Use Case
- * TODO: Implement when create reservation is migrated to new architecture
- */
-export interface CreateReservationContainer {
-  // createReservationService: CreateReservationService;
-  // createReservationUseCase: CreateReservationUseCase;
-}
-
-export function createCreateReservationContainer(): CreateReservationContainer {
-  throw new Error('CreateReservation container not implemented yet');
-}
-
-/**
- * Container for Cancel Reservation Use Case  
- * TODO: Implement when cancel reservation is migrated to new architecture
- */
-export interface CancelReservationContainer {
-  // cancelReservationService: CancelReservationService;
-  // cancelReservationUseCase: CancelReservationUseCase;
-}
-
-export function createCancelReservationContainer(): CancelReservationContainer {
-  throw new Error('CancelReservation container not implemented yet');
-}
-
-// Type-safe dependency access
-export type UserReservationsDependencies = ReturnType<typeof createUserReservationsContainer>;
-export type CreateReservationDependencies = ReturnType<typeof createCreateReservationContainer>;
-export type CancelReservationDependencies = ReturnType<typeof createCancelReservationContainer>;

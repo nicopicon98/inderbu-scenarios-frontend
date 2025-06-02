@@ -27,8 +27,8 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { cancelReservation } from "../../services/user-reservations.service";
 import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
+import { cancelReservationAction } from "../../cancel/api/cancelReservationAction";
 
 
 interface ModifyReservationModalProps {
@@ -54,7 +54,7 @@ export function ModifyReservationModal({
   const handleCancelReservation = async () => {
     setIsLoading(true);
     try {
-      await cancelReservation(reservation.id);
+      await cancelReservationAction(reservation.id);
       toast.success("Tu reserva ha sido cancelada exitosamente");
       onReservationUpdated(reservation.id);
       onClose();

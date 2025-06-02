@@ -1,3 +1,4 @@
+import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
 import 'server-only';
 
@@ -7,7 +8,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 // Server-side token management
 export async function getToken(): Promise<string | null> {
   try {
-    const cookieStore = await cookies();
+    const cookieStore: ReadonlyRequestCookies = await cookies();
     return cookieStore.get(TOKEN_KEY)?.value || null;
   } catch {
     return null;
@@ -16,7 +17,7 @@ export async function getToken(): Promise<string | null> {
 
 export async function setToken(token: string): Promise<void> {
   try {
-    const cookieStore = await cookies();
+    const cookieStore: ReadonlyRequestCookies = await cookies();
     cookieStore.set(TOKEN_KEY, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

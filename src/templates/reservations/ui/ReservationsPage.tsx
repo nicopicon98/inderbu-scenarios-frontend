@@ -3,7 +3,7 @@
 import { PaginatedReservations } from '@/entities/reservation/model/types';
 import { UserReservationsGuard } from '@/features/auth';
 import { MainHeader } from '@/shared/components/organisms/main-header';
-import { ReservationsContainer } from '@/widgets/reservations-list/ui/ReservationsContainer';
+import { ReservationsContainer } from '@/widgets/reservations-list';
 
 // ✅ Updated interface to include access metadata from DDD use case
 interface ReservationsPageProps {

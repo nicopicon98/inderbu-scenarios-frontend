@@ -1,14 +1,14 @@
 import Footer from "@/features/home/components/organisms/footer";
 
 export default function PublicLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <>
-            {children}
-            <Footer />
-        </>
-    );
+  return (
+    <>
+      {children}
+      <Footer />
+    </>
+  );
 }

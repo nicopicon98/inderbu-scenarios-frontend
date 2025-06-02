@@ -1,4 +1,3 @@
-// Client-side only auth management
 export interface AuthTokens {
   accessToken: string;
   refreshToken?: string;

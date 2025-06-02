@@ -1,7 +1,7 @@
 'use server';
 
 import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
-import { HttpClientFactory } from '@/shared/api/http-client';
+import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
@@ -18,7 +18,7 @@ export async function cancelReservationAction(
   try {
     // Create repository
     const authContext = createServerAuthContext();
-    const httpClient = HttpClientFactory.createServerClientSync(authContext);
+    const httpClient = ServerHttpClientFactory.createServerSync(authContext);
     const repository = createReservationRepository(httpClient);
 
     // Update reservation state to CANCELLED (assuming ID 3 is CANCELADA)
@@ -54,7 +54,7 @@ export async function cancelMultipleReservationsAction(
 ): Promise<CancelReservationResult> {
   try {
     const authContext = createServerAuthContext();
-    const httpClient = HttpClientFactory.createServerClientSync(authContext);
+    const httpClient = ServerHttpClientFactory.createServerSync(authContext);
     const repository = createReservationRepository(httpClient);
 
     // Cancel all reservations in parallel

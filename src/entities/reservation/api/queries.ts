@@ -1,4 +1,4 @@
-import { HttpClientFactory } from '@/shared/api/http-client';
+import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { cache } from 'react';
 import { GetReservationsQuery, PaginatedReservations, ReservationDto } from '../model/types';
@@ -10,7 +10,7 @@ export const getReservationsByUserId = cache(async (
   query: GetReservationsQuery = {}
 ): Promise<PaginatedReservations> => {
   const authContext: ServerAuthContext = createServerAuthContext();
-  const httpClient = HttpClientFactory.createServerClientSync(authContext);
+  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
   const repository = createReservationRepository(httpClient);
 
   return repository.getByUserId(userId, query);
@@ -18,7 +18,7 @@ export const getReservationsByUserId = cache(async (
 
 export const getReservationById = cache(async (id: number): Promise<ReservationDto> => {
   const authContext = createServerAuthContext();
-  const httpClient = HttpClientFactory.createServerClientSync(authContext);
+  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
   const repository = createReservationRepository(httpClient);
 
   return repository.getById(id);
@@ -26,7 +26,7 @@ export const getReservationById = cache(async (id: number): Promise<ReservationD
 
 export const getReservationStates = cache(async () => {
   const authContext = createServerAuthContext();
-  const httpClient = HttpClientFactory.createServerClientSync(authContext);
+  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
   const repository = createReservationRepository(httpClient);
 
   return repository.getStates();
@@ -34,7 +34,7 @@ export const getReservationStates = cache(async () => {
 
 export const getAvailableTimeSlots = cache(async (subScenarioId: number, date: string) => {
   const authContext = createServerAuthContext();
-  const httpClient = HttpClientFactory.createServerClientSync(authContext);
+  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
   const repository = createReservationRepository(httpClient);
 
   return repository.getAvailableTimeSlots(subScenarioId, date);

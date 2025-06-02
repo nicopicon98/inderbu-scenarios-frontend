@@ -1,4 +1,4 @@
-import { User, UserRole } from '../model/types';
+import { User, EUserRole } from '../model/types';
 
 // ✅ DDD: Domain service for user access control
 export class UserAccessPolicy {
@@ -33,7 +33,7 @@ export class UserAccessPolicy {
     }
     
     // Admin users can access any reservations
-    if (requestingUser.role === UserRole.ADMIN) {
+    if (requestingUser.role === EUserRole.ADMIN || requestingUser.role === EUserRole.SUPER_ADMIN) {
       return true;
     }
     
@@ -46,7 +46,7 @@ export class UserAccessPolicy {
    */
   static getAccessLevel(user: User | null): AccessLevel {
     if (!user) return AccessLevel.NONE;
-    if (user.role === UserRole.ADMIN) return AccessLevel.ADMIN;
+    if (user.role === EUserRole.ADMIN || user.role === EUserRole.SUPER_ADMIN) return AccessLevel.ADMIN;
     return AccessLevel.USER;
   }
 }
@@ -64,7 +64,7 @@ export class InvalidUserIdError extends Error {
 export class AccessDeniedError extends Error {
   readonly name = 'AccessDeniedError';
   
-  constructor(message: string, public readonly requiredRole?: UserRole) {
+  constructor(message: string, public readonly requiredRole?: EUserRole) {
     super(message);
     Object.setPrototypeOf(this, AccessDeniedError.prototype);
   }

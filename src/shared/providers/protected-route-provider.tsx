@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth";
 import { EUserRole } from "@/shared/enums/user-role.enum";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
