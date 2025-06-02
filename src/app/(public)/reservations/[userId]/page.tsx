@@ -25,12 +25,11 @@ export default async function UserReservationsRoute({ params }: PageProps) {
 
     // Render page component with clean separation
     return (
-      <></>
-      // <ReservationsPage
-      //   userId={result.metadata.userId}
-      //   initialData={result.reservations}
-      //   accessMetadata={result.metadata}
-      // />
+      <ReservationsPage
+        userId={result.metadata.userId}
+        initialData={result.reservations}
+        accessMetadata={result.metadata}
+      />
     );
 
   } catch (error) {

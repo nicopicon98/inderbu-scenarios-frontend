@@ -2,7 +2,8 @@
 
 import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
 import { CreateReservationDto, CreateReservationSchema } from '@/entities/reservation/model/types';
-import { HttpClientFactory } from '@/shared/api/http-client';
+// import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { createFormDataValidator } from '@/shared/lib/validation';
 import { revalidateTag } from 'next/cache';
@@ -26,7 +27,8 @@ export async function createReservationAction(
 
     // Create repository
     const authContext = createServerAuthContext();
-    const httpClient = HttpClientFactory.createServerClientSync(authContext);
+    // FIXED: Use ClientHttpClientFactory
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
     const repository = createReservationRepository(httpClient);
 
     // Execute command
@@ -73,30 +75,52 @@ export async function createReservationAction(
 // Simplified version for direct calls (not form-based)
 export async function createReservation(command: CreateReservationDto): Promise<CreateReservationResult> {
   try {
+    console.log('🎯 Server Action createReservation: Starting execution');
+    console.log('📦 Input command:', command);
+    
     // Validate input
+    console.log('🔍 Validating input with schema...');
     const validatedCommand = CreateReservationSchema.parse(command);
+    console.log('Validation successful:', validatedCommand);
 
     // Create repository
+    console.log('🏗️ Creating auth context...');
     const authContext = createServerAuthContext();
-    const httpClient = HttpClientFactory.createServerClientSync(authContext);
+    
+    console.log('🏗️ Creating HTTP client...');
+    // FIXED: Use ServerHttpClientFactory
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
+    
+    console.log('🏗️ Creating reservation repository...');
     const repository = createReservationRepository(httpClient);
 
     // Execute command
+    console.log('🚀 Executing repository.create...');
     const reservation = await repository.create(validatedCommand);
+    console.log('Repository result:', reservation);
 
     // Invalidate cache
+    console.log('🔄 Invalidating cache...');
     revalidateTag('reservations');
     revalidateTag(`reservations-user-${reservation.userId}`);
+    console.log('Cache invalidated');
 
-    return {
+    const result = {
       success: true,
       data: {
         id: reservation.id,
         reservationDate: reservation.reservationDate,
       },
     };
+    
+    console.log('Server Action createReservation: Success result:', result);
+    return result;
+    
   } catch (error) {
-    console.error('Error creating reservation:', error);
+    console.error('❌ Server Action createReservation: Error occurred:', error);
+    console.error('❌ Error name:', error instanceof Error ? error.name : 'Unknown');
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown');
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'Unknown');
 
     return {
       success: false,

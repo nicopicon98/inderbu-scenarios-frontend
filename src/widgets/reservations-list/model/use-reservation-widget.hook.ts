@@ -9,7 +9,7 @@ import {
   isActiveReservation,
   isPastReservation
 } from '@/entities/reservation/model/types';
-import { HttpClientFactory, createClientAuthContext } from '@/shared/api/http-client';
+import { ClientHttpClientFactory, createClientAuthContext } from '@/shared/api/http-client-client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
@@ -42,7 +42,7 @@ export function useReservationsWidget({
   // Create repository
   const createRepository = () => {
     const authContext = createClientAuthContext();
-    const httpClient = HttpClientFactory.createClientClient(authContext);
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
     return createReservationRepository(httpClient);
   };
 

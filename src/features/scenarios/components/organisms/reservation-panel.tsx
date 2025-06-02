@@ -1,7 +1,8 @@
 "use client";
 
 import { AuthModal } from "@/features/auth";
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth/model/use-auth";
+import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
 import { getTodayLocalISO } from "@/lib/utils";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
@@ -10,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useState } from "react";
 import { FiCalendar, FiCheck, FiClock, FiLoader } from "react-icons/fi";
 import { toast } from "sonner";
-import { createReservation } from "../../services/reservation.service";
+import { createReservation } from '@/features/reservations/create/api/createReservationAction';
 
 interface IReservationPanelProps {
   subScenarioId: number;
@@ -25,7 +26,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const { isAuthenticated, handleLogin } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   // --- handlers -------------------------------------------------------------
   const doReservation = async () => {
@@ -35,16 +36,36 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
     }
     setIsSubmitting(true);
     try {
-      await createReservation({
+      // USE SERVER ACTION DIRECTLY
+      console.log('🎯 ReservationPanel: Using Server Action directly');
+      
+      const command = {
         subScenarioId,
         timeSlotId: selectedTimeSlotId,
         reservationDate: date,
-      });
-      toast.success("¡Reserva realizada con éxito!");
-      setSelectedTimeSlotId(null);
-      setRefreshTrigger((r) => r + 1);
+      };
+      
+      console.log('📦 ReservationPanel: Sending command to server action:', command);
+      console.log('🔍 Command details:');
+      console.log('  - subScenarioId:', subScenarioId, typeof subScenarioId);
+      console.log('  - timeSlotId:', selectedTimeSlotId, typeof selectedTimeSlotId);
+      console.log('  - reservationDate:', date, typeof date);
+      
+      const result = await createReservation(command);
+      
+      console.log('Server Action result:', result);
+      
+      if (result.success) {
+        toast.success("¡Reserva realizada con éxito!");
+        setSelectedTimeSlotId(null);
+        setRefreshTrigger((r) => r + 1);
+      } else {
+        console.error('❌ Server action failed:', result.error);
+        toast.error(result.error || "No se pudo completar la reserva");
+      }
+      
     } catch (err) {
-      console.error(err);
+      console.error('❌ Server Action error (caught in try/catch):', err);
       toast.error("No se pudo completar la reserva, inténtalo de nuevo");
     } finally {
       setIsSubmitting(false);

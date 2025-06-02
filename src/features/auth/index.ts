@@ -13,6 +13,7 @@ export {
 
 // Export auth UI components
 export { AuthGuard, UserReservationsGuard } from './ui/AuthGuard';
+export { AuthModal } from './components'; // NEW: Export AuthModal
 
 // Export auth types from entities
 export type { 

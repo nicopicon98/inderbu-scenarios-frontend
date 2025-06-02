@@ -1,18 +1,34 @@
-import ReservationService from "@/services/reservation.service";
+// NEW DDD ARCHITECTURE - Reservation Service (Clean, uses authenticated HTTP client)
 
-// URL base del API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 
 export async function createReservation(payload: {
   subScenarioId: number;
   timeSlotId: number;
   reservationDate: string;
+  comments?: string;
 }) {
+  console.log('🎯 ReservationService: Using NEW DDD Architecture with Authenticated HTTP Client');
+  
   try {
-    // Llamada real al API para crear la reserva
-    return await ReservationService.createReservation(payload);
+    // NEW: Use authenticated HTTP client (handles auth headers automatically)
+    const httpClient = ClientHttpClientFactory.createClientWithAuth();
+    const repository = createReservationRepository(httpClient);
+    
+    // Create reservation using repository pattern
+    const reservation = await repository.create({
+      subScenarioId: payload.subScenarioId,
+      timeSlotId: payload.timeSlotId,
+      reservationDate: payload.reservationDate,
+      comments: payload.comments
+    });
+
+    console.log('ReservationService: Reservation created successfully via authenticated HTTP client');
+    return reservation;
+
   } catch (error) {
-    console.error("Error creating reservation:", error);
+    console.error("❌ ReservationService: Error creating reservation:", error);
     throw error;
   }
 }

@@ -1,4 +1,4 @@
-import { HttpClient } from '@/shared/api/http-client';
+import { ClientHttpClient } from '@/shared/api/http-client-client';
 import { PaginatedApiResponse, SimpleApiResponse } from '@/shared/api/types';
 import {
   CreateReservationDto,
@@ -22,7 +22,7 @@ export interface ReservationRepository {
 }
 
 export class ApiReservationRepository implements ReservationRepository {
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: ClientHttpClient) { }
 
   async getByUserId(userId: number, query: GetReservationsQuery = {}): Promise<PaginatedReservations> {
     const searchParams = new URLSearchParams();
@@ -127,6 +127,6 @@ export class ApiReservationRepository implements ReservationRepository {
 }
 
 // Factory function for creating repository instances
-export const createReservationRepository = (httpClient: HttpClient): ReservationRepository => {
+export const createReservationRepository = (httpClient: ClientHttpClient): ReservationRepository => {
   return new ApiReservationRepository(httpClient);
 };

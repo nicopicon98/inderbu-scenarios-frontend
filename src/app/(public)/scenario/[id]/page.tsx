@@ -1,5 +1,3 @@
-// DDD + FSD + Atomic Design: Scenario Detail Page Route
-
 import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
 import { ScenarioDetailPage } from '@/templates/scenario-detail/ui';
 import { 
@@ -8,7 +6,6 @@ import {
   ScenarioAccessDeniedError 
 } from '@/entities/scenario/domain/ScenarioDetailDomain';
 import { redirect, notFound } from 'next/navigation';
-
 interface PageProps {
   params: { id: string };
 }
@@ -16,7 +13,7 @@ interface PageProps {
 export default async function ScenarioDetailRoute({ params }: PageProps) {
   const { id } = await params;
   
-  console.log('🌟 ScenarioDetailRoute: Starting SSR with ID:', id);
+  console.log('ScenarioDetailRoute: Starting SSR with ID:', id);
 
   // DDD: Dependency injection - build complete container
   const { scenarioDetailService } = createScenarioDetailContainer();
@@ -33,7 +30,10 @@ export default async function ScenarioDetailRoute({ params }: PageProps) {
     console.log(`🔐 Requires reservation: ${result.metadata.requiresReservation}`);
 
     // Atomic Design: Render page template with clean separation
-    return <ScenarioDetailPage initialData={result} />;
+    // PASS SERVER ACTION AS PROP
+    return <ScenarioDetailPage 
+      initialData={result} 
+    />;
 
   } catch (error) {
     console.error('SSR Error in ScenarioDetailRoute:', error);

@@ -13,7 +13,7 @@ import { SelectField } from "../molecules/select-field";
 import { registerSchema, TRegisterData } from "../../schemas/auth-schemas";
 import { IFormHandler } from "../../interfaces/form-handler.interface";
 import { IFormNavigation } from "../../interfaces/form-navigation.interface";
-// ✅ NEW DDD ARCHITECTURE
+// NEW DDD ARCHITECTURE
 import { getRoleOptions, type RoleOption } from "../../utils/role-helpers";
 import { getNeighborhoods } from "@/features/home/services/home.service";
 
@@ -45,10 +45,10 @@ export function RegisterForm({ onSubmit, isLoading, navigation }: RegisterFormPr
     },
   });
 
-  // ✅ NEW DDD ARCHITECTURE: Roles from enum
+  // NEW DDD ARCHITECTURE: Roles from enum
   const roles: RoleOption[] = getRoleOptions();
 
-  // ✅ NEW DDD ARCHITECTURE: Neighborhoods from repository
+  // NEW DDD ARCHITECTURE: Neighborhoods from repository
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodOption[]>([]);
   const [isLoadingNeighborhoods, setIsLoadingNeighborhoods] = useState(true);
 

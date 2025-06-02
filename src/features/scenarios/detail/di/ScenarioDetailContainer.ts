@@ -7,8 +7,8 @@ import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus
 // Import repository adapter
 import { createScenarioDetailRepositoryAdapter } from '@/entities/scenario/infrastructure/ScenarioDetailRepositoryAdapter';
 
-// Import existing API service (bridge)
-import { ScenarioService } from '@/features/scenarios/services/scenario.service';
+// NEW: Import CLEAN repository (no legacy dependencies)
+import { CleanScenarioRepositoryAdapter } from '@/features/scenarios/infrastructure/scenarioRepository';
 
 // DDD: Container interface
 export interface ScenarioDetailContainer {
@@ -26,8 +26,19 @@ export function createScenarioDetailContainer(): ScenarioDetailContainer {
   // Infrastructure: Event Bus
   const eventBus = createInMemoryEventBus();
 
-  // Infrastructure: Repository Adapter (Bridge existing API to domain interface)
-  const scenarioDetailRepository = createScenarioDetailRepositoryAdapter(ScenarioService);
+  // NEW: Use CLEAN repository adapter (no legacy dependencies)
+  const cleanRepository = new CleanScenarioRepositoryAdapter();
+  
+  // Create bridge wrapper to match expected interface
+  const apiServiceBridge = {
+    async getById(request: { id: string }) {
+      console.log('🌉 ApiServiceBridge: Converting findById call for ID:', request.id);
+      return await cleanRepository.findById(request.id);
+    }
+  };
+
+  // Infrastructure: Repository Adapter (Bridge clean API to domain interface)
+  const scenarioDetailRepository = createScenarioDetailRepositoryAdapter(apiServiceBridge);
 
   console.log('Repository adapter created');
 

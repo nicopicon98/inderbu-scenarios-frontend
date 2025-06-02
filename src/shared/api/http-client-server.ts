@@ -36,10 +36,17 @@ export class ServerHttpClient {
     const headers: Record<string, string> = {};
 
     if (this.authContext) {
+      console.log('📞 HTTP Client: Getting token from auth context...');
       const token = await this.authContext.getToken();
+      
       if (token) {
         headers.Authorization = `Bearer ${token}`;
+        console.log('HTTP Client: Authorization header set, token length:', token.length);
+      } else {
+        console.log('❌ HTTP Client: No token received from auth context');
       }
+    } else {
+      console.log('❌ HTTP Client: No auth context provided');
     }
 
     return headers;

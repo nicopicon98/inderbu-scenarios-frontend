@@ -8,13 +8,22 @@ export { EUserRole as UserRole }; // Alias for migration
 // Core user entity
 export interface User {
   id: number;
+  dni: number;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: EUserRole;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
+  phone: string;
+  roleId: number;
+  role?: EUserRole; // Computed from roleId for backward compatibility
+  address: string;
+  neighborhoodId: number;
+  isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+  
+  // Deprecated fields for backward compatibility
+  first_name?: string;
+  last_name?: string;
 }
 
 // Auth-related types
@@ -81,7 +90,9 @@ export const ResetPasswordSchema = z.object({
 
 // Type guards
 export const isAdmin = (user: User | null): boolean => {
-  return user?.role === EUserRole.SUPER_ADMIN || user?.role === EUserRole.ADMIN;
+  if (!user) return false;
+  const role = user.role || getRoleFromId(user.roleId);
+  return role === EUserRole.SUPER_ADMIN || role === EUserRole.ADMIN;
 };
 
 export const canViewUserReservations = (currentUser: User | null, targetUserId: number): boolean => {
@@ -94,10 +105,24 @@ export const canViewUserReservations = (currentUser: User | null, targetUserId: 
   return isAdmin(currentUser);
 };
 
+// Helper to convert roleId to EUserRole
+export const getRoleFromId = (roleId: number): EUserRole => {
+  // Map roleId to EUserRole - adjust these mappings based on your backend
+  switch (roleId) {
+    case 1: return EUserRole.SUPER_ADMIN;
+    case 2: return EUserRole.ADMIN;
+    case 3: return EUserRole.INDEPENDIENTE;
+    case 4: return EUserRole.CLUB_DEPORTIVO;
+    case 5: return EUserRole.ENTRENADOR;
+    default: return EUserRole.INDEPENDIENTE; // Default role
+  }
+};
+
 // Helper functions
 export const getUserFullName = (user: User): string => {
-  const firstName = user.first_name || '';
-  const lastName = user.last_name || '';
+  // Use new fields first, fallback to deprecated ones
+  const firstName = user.firstName || user.first_name || '';
+  const lastName = user.lastName || user.last_name || '';
   return `${firstName} ${lastName}`.trim() || user.email;
 };
 
@@ -149,9 +174,19 @@ export const extractUserFromToken = (token: string): User | null => {
     return null;
   }
   
+  // Create user object with minimal data from token
   return {
     id: userId,
     email: payload.email,
-    role: payload.role,
+    roleId: payload.role, // JWT contains roleId as 'role'
+    role: getRoleFromId(payload.role), // Convert to enum
+    // Set default values for required fields
+    dni: 0,
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    neighborhoodId: 0,
+    isActive: true,
   };
 };

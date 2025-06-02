@@ -3,6 +3,7 @@
 "use client";
 
 import { GetScenarioDetailResponse } from '@/features/scenarios/detail/application/GetScenarioDetailUseCase';
+import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
 import { Badge } from "@/shared/ui/badge";
@@ -94,23 +95,14 @@ export function ScenarioDetailPage({ initialData }: ScenarioDetailPageProps) {
                 </Badge>
               )}
             </div>
-
-            {/* Debug info in development */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
-                <div>🎯 <strong>Domain Metadata:</strong></div>
-                <div>• Category: {metadata.category}</div>
-                <div>• Requires Reservation: {metadata.requiresReservation ? 'Yes' : 'No'}</div>
-                <div>• Valid Recommendations: {metadata.hasValidRecommendations ? 'Yes' : 'No'}</div>
-                <div>• Load Time: {metadata.loadTime}ms</div>
-                <div>• Accessed: {metadata.accessedAt.toLocaleTimeString()}</div>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Main Content - Existing ScenarioDetail Component */}
-        <ScenarioDetail subScenario={scenario} />
+        {/* PASS SERVER ACTION TO ScenarioDetail */}
+        <ScenarioDetail 
+          subScenario={scenario} 
+        />
 
         {/* Additional metadata section */}
         {metadata.hasValidRecommendations && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-res.interface";
+import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { ScenarioImageCarousel } from "./scenario-image-carousel";
 import { ScenarioInfoCard } from "./scenario-info-card";
 import { ReservationPanel } from "./reservation-panel";
@@ -21,7 +22,10 @@ export function ScenarioDetail({ subScenario }: Props) {
 
       {/* Right side ---------------------------------------------------------- */}
       <div className="lg:col-span-1 space-y-6">
-        <ReservationPanel subScenarioId={subScenario.id} />
+        {/* PASS SERVER ACTION TO ReservationPanel */}
+        <ReservationPanel 
+          subScenarioId={subScenario.id} 
+        />
       </div>
     </div>
   );

@@ -5,8 +5,8 @@
 // - Auth Context: @/shared/api/auth.ts y @/shared/api/server-auth.ts
 // - Repository Pattern: @/entities/[entity]/api/[entity]Repository.ts
 // 
-// ✅ USO CORRECTO EN NUEVA ARQUITECTURA:
-// import { createClientHttpClient } from '@/shared/api/http-client-client';
+// USO CORRECTO EN NUEVA ARQUITECTURA:
+// import { ClientHttpClient } from '@/shared/api/http-client-client';
 // import { createServerHttpClient } from '@/shared/api/http-client-server';
 // 
 // Este archivo evita errores de compilación de archivos obsoletos
@@ -20,8 +20,8 @@ export const authApiClient = {
       
       🔄 MIGRADO A: Nueva arquitectura DDD
       
-      ✅ USO CORRECTO:
-      import { createClientHttpClient } from '@/shared/api/http-client-client';
+      USO CORRECTO:
+      import { ClientHttpClient } from '@/shared/api/http-client-client';
       import { createServerHttpClient } from '@/shared/api/http-client-server';
       
       Este cliente será eliminado en el siguiente deploy.
@@ -50,13 +50,14 @@ export const authApiClient = {
   }
 };
 
-// Re-export current working implementations
-export { ApiClient } from './api-client';
+// Re-export CLIENT-ONLY implementations (no server contamination)
 export { ClientAuthManager, createClientAuthContext } from './auth';
 export { CacheStrategies } from './cache-strategies';
-export { createClientHttpClient } from './http-client-client';
-export { createServerHttpClient } from './http-client-server';
-export { createServerAuthContext, ServerAuthManager } from './server-auth';
+export { ClientHttpClient, ClientHttpClientFactory } from './http-client-client';
+// ❌ REMOVED SERVER-ONLY EXPORTS TO PREVENT CLIENT CONTAMINATION:
+// export { createServerHttpClient } from './http-client-server';
+// export { createServerAuthContext, ServerAuthManager } from './server-auth';
+// ❌ REMOVED: export { ApiClient } from './api-client'; // File doesn't exist
 
 // Default export for apiClient (for existing usage)
 export const apiClient = authApiClient;
