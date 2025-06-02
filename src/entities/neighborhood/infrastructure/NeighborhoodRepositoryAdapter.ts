@@ -22,7 +22,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
       return result;
 
     } catch (error) {
-      console.error('❌ NeighborhoodRepositoryAdapter: Error in findAll:', error);
+      console.error('NeighborhoodRepositoryAdapter: Error in findAll:', error);
       throw error; // Re-throw to let domain handle it
     }
   }
@@ -38,7 +38,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
       return found || null;
 
     } catch (error) {
-      console.error('❌ NeighborhoodRepositoryAdapter: Error in findById:', error);
+      console.error('NeighborhoodRepositoryAdapter: Error in findById:', error);
       throw error;
     }
   }
@@ -56,7 +56,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
       return filtered;
 
     } catch (error) {
-      console.error('❌ NeighborhoodRepositoryAdapter: Error in findByName:', error);
+      console.error('NeighborhoodRepositoryAdapter: Error in findByName:', error);
       throw error;
     }
   }

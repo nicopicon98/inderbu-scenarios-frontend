@@ -23,7 +23,7 @@ export class ScenarioDetailServiceImpl implements ScenarioDetailService {
       // Transform raw ID to use case input
       const input: GetScenarioDetailInput = this.parseInput(id);
       
-      console.log('🔄 ScenarioDetailService: Transformed to use case input:', input);
+      console.log('ScenarioDetailService: Transformed to use case input:', input);
 
       // Execute use case
       const result = await this.getScenarioDetailUseCase.execute(input);
@@ -32,7 +32,7 @@ export class ScenarioDetailServiceImpl implements ScenarioDetailService {
       return result;
 
     } catch (error) {
-      console.error('❌ ScenarioDetailService: Error in getScenarioDetail:', error);
+      console.error('ScenarioDetailService: Error in getScenarioDetail:', error);
       throw error; // Re-throw domain exceptions
     }
   }

@@ -1,4 +1,4 @@
-import { HttpClient } from '@/shared/api/http-client';
+import { ClientHttpClient } from '@/shared/api/http-client-client';
 import { SimpleApiResponse } from '@/shared/api/types';
 import {
   AuthTokens,
@@ -18,7 +18,7 @@ export interface UserRepository {
 }
 
 export class ApiUserRepository implements UserRepository {
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: ClientHttpClient) { }
 
   async login(credentials: LoginCredentials): Promise<AuthTokens> {
     const response = await this.httpClient.post<SimpleApiResponse<AuthTokens>>(
@@ -65,6 +65,6 @@ export class ApiUserRepository implements UserRepository {
 }
 
 // Factory function for creating repository instances
-export const createUserRepository = (httpClient: HttpClient): UserRepository => {
+export const createUserRepository = (httpClient: ClientHttpClient): UserRepository => {
   return new ApiUserRepository(httpClient);
 };

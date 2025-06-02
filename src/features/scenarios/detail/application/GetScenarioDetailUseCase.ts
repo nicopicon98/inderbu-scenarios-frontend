@@ -59,7 +59,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
       const scenario = await this.scenarioDetailRepository.findById(scenarioId);
       
       if (!scenario) {
-        console.warn(`❌ Scenario not found: ${scenarioId.value}`);
+        console.warn(`Scenario not found: ${scenarioId.value}`);
         
         // Domain Event: Scenario not found
         await this.publishNotFoundEvent(input.id);
@@ -84,7 +84,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
       return response;
 
     } catch (error) {
-      console.error('❌ GetScenarioDetailUseCase: Execution failed:', error);
+      console.error('GetScenarioDetailUseCase: Execution failed:', error);
       
       // Domain Event: Error occurred (but don't throw from event publishing)
       try {

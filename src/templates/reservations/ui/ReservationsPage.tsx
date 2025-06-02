@@ -30,7 +30,7 @@ export function ReservationsPage({
 
       {/* 🔒 Feature: Auth guard handles client-side protection */}
       <UserReservationsGuard userId={userId}>
-        {/* 📊 Widget: Complex orchestration component */}
+        {/* Widget: Complex orchestration component */}
         <ReservationsContainer
           userId={userId}
           initialData={initialData}

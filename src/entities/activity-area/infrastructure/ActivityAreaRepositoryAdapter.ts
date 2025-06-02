@@ -22,7 +22,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
       return result;
 
     } catch (error) {
-      console.error('❌ ActivityAreaRepositoryAdapter: Error in findAll:', error);
+      console.error('ActivityAreaRepositoryAdapter: Error in findAll:', error);
       throw error; // Re-throw to let domain handle it
     }
   }
@@ -38,7 +38,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
       return found || null;
 
     } catch (error) {
-      console.error('❌ ActivityAreaRepositoryAdapter: Error in findById:', error);
+      console.error('ActivityAreaRepositoryAdapter: Error in findById:', error);
       throw error;
     }
   }
@@ -56,7 +56,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
       return filtered;
 
     } catch (error) {
-      console.error('❌ ActivityAreaRepositoryAdapter: Error in findByName:', error);
+      console.error('ActivityAreaRepositoryAdapter: Error in findByName:', error);
       throw error;
     }
   }

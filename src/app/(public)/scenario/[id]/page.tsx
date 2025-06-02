@@ -27,7 +27,7 @@ export default async function ScenarioDetailRoute({ params }: PageProps) {
     const result = await scenarioDetailService.getScenarioDetail(id);
 
     console.log(`SSR: Scenario detail loaded successfully`);
-    console.log(`📊 Scenario: "${result.scenario.name}" (ID: ${result.scenario.id})`);
+    console.log(`Scenario: "${result.scenario.name}" (ID: ${result.scenario.id})`);
     console.log(`🎯 Category: ${result.metadata.category}`);
     console.log(`⏱️ Load time: ${result.metadata.loadTime}ms`);
     console.log(`🔐 Requires reservation: ${result.metadata.requiresReservation}`);

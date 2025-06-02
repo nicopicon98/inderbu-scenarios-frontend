@@ -15,7 +15,7 @@
 3. Updated `HomeDataResponse` to use serialized version
 
 ```typescript
-// ❌ BEFORE: Class passed to client
+// BEFORE: Class passed to client
 appliedFilters: SubScenarioFilters; // Class instance
 
 // AFTER: Plain object passed to client
@@ -61,7 +61,7 @@ export async function searchNeighborhoods(
 3. Added TODO comments for future implementation
 
 ```typescript
-// ❌ BEFORE: Importing non-existent AuthModal
+// BEFORE: Importing non-existent AuthModal
 import { useAuth } from "@/features/auth/hooks/use-auth"; // Obsolete
 import { AuthModal } from "@/features/auth"; // Doesn't exist
 
@@ -89,7 +89,7 @@ import { useAuth } from "@/features/auth"; // New implementation
 
 ```
 SSR: Home data loaded successfully
-📊 Results: 6 scenarios, 6 areas, 20 neighborhoods
+Results: 6 scenarios, 6 areas, 20 neighborhoods
 🎯 Filters: None
 ⏱️ Load time: 153ms
 📢 Domain events published successfully

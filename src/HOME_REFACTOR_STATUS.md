@@ -42,9 +42,9 @@
 
 ## 🚀 **TRANSFORMATION ACHIEVED:**
 
-### **📊 Before vs After Comparison:**
+### **Before vs After Comparison:**
 
-| Aspect             | ❌ **Before**                    | **After**                         |
+| Aspect             | **Before**                       | **After**                         |
 | ------------------ | -------------------------------- | --------------------------------- |
 | **page.tsx Lines** | 80+ lines mixed responsibilities | 15 lines clean routing            |
 | **Architecture**   | Monolithic mixed concerns        | DDD layered architecture          |
@@ -84,7 +84,7 @@
 ### **Type-Safe Domain Validation:**
 
 ```typescript
-// ❌ Before: Manual parsing vulnerable to errors
+// Before: Manual parsing vulnerable to errors
 const page = Number(searchParams.page) || 1;
 
 // After: Domain validation with business rules
@@ -94,7 +94,7 @@ const filters = SubScenarioFilters.validate(input);
 ### **Domain-Specific Error Handling:**
 
 ```typescript
-// ❌ Before: Generic error handling
+// Before: Generic error handling
 console.error("Error loading home page:", error);
 
 // After: Type-safe domain exceptions
@@ -106,7 +106,7 @@ if (error instanceof SearchLimitExceededError)
 ### **Clean Separation of Concerns:**
 
 ```typescript
-// ❌ Before: Everything mixed in page.tsx
+// Before: Everything mixed in page.tsx
 const [activityAreas, neighborhoods, subScenariosResult] = await Promise.all([...]);
 
 // After: Single use case call
@@ -158,7 +158,7 @@ features/home/
 └── recommendations/   # 🔮 Future: AI recommendations use case
 ```
 
-### 📊 **Monitoring & Analytics:**
+### **Monitoring & Analytics:**
 
 - Domain events already implemented
 - Load time tracking built-in

@@ -21,7 +21,7 @@ export default async function UserReservationsRoute({ params }: PageProps) {
     const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
 
     console.log(`SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
-    console.log(`📊 Access metadata:`, result.metadata);
+    console.log(`Access metadata:`, result.metadata);
 
     // Render page component with clean separation
     return (

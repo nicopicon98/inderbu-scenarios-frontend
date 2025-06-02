@@ -8,8 +8,7 @@ import {
 } from "react";
 import { IUseHomeDataParams } from "../interfaces/use-home-data-params.interface";
 import { IUseHomeDataState } from "../interfaces/use-home-data-state.interface";
-import { IFilters, IMetaDto, ISubScenario } from "../types/filters.types";
-import { TUseHomeDataAction } from "../types/use-home-data-action.types";
+import { IFilters } from "../types/filters.types";
 import { useHomeDataReducer } from "../reducers/use-home-data.reducer";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSubScenarios } from "../services/home.service";
@@ -94,7 +93,7 @@ export function useHomeData({
         console.error("Error fetching sub scenarios:", error);
       }
     },
-    [],
+    []
   );
 
   // Effect para fetch SOLO en renders subsecuentes (NO en primer render)
@@ -125,7 +124,7 @@ export function useHomeData({
         dispatch({ type: "SET_FILTERS", payload: filtersOrUpdater });
       }
     },
-    [],
+    []
   );
 
   const setActiveFilters: Dispatch<SetStateAction<string[]>> = useCallback(
@@ -142,7 +141,7 @@ export function useHomeData({
         });
       }
     },
-    [],
+    []
   );
 
   const clearFilters = useCallback(() => {

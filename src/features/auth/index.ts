@@ -1,5 +1,5 @@
 // Export auth model
-export { useAuth, useAuthActions, AuthProvider } from './model/useAuth';
+export { useAuth, useAuthActions, AuthProvider } from './model/use-auth';
 
 // Export auth actions
 export { 

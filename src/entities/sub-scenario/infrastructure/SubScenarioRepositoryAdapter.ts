@@ -32,7 +32,7 @@ export class SubScenarioRepositoryAdapter implements SubScenarioRepository {
         hasCost: filters.hasCost
       };
 
-      console.log('🔄 Calling existing API with transformed params:', apiParams);
+      console.log('Calling existing API with transformed params:', apiParams);
 
       // Call existing API service
       const result = await this.apiService.getSubScenarios(apiParams);
@@ -41,7 +41,7 @@ export class SubScenarioRepositoryAdapter implements SubScenarioRepository {
       return result;
 
     } catch (error) {
-      console.error('❌ SubScenarioRepositoryAdapter: Error in findFiltered:', error);
+      console.error('SubScenarioRepositoryAdapter: Error in findFiltered:', error);
       throw error; // Re-throw to let domain handle it
     }
   }

@@ -75,7 +75,7 @@ export async function loginAction(
       },
     };
   } catch (error) {
-    console.error('❌ Error in login action:', error);
+    console.error('Error in login action:', error);
 
     if (error instanceof Error) {
       if (error.name === 'ValidationError') {
@@ -121,7 +121,7 @@ export async function registerAction(
       data: { message: 'Registrado correctamente. Revisa tu correo para confirmar tu cuenta.' },
     };
   } catch (error) {
-    console.error('❌ Error in register action:', error);
+    console.error('Error in register action:', error);
 
     if (error instanceof Error) {
       if (error.name === 'ValidationError') {
@@ -202,7 +202,7 @@ export async function logoutAction(): Promise<AuthResult> {
       data: { message: 'Sesión cerrada correctamente' },
     };
   } catch (error) {
-    console.error('❌ Error in logout action:', error);
+    console.error('Error in logout action:', error);
 
     return {
       success: false,
@@ -249,7 +249,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResult> 
       data: { user, tokens },
     };
   } catch (error) {
-    console.error('❌ Error in direct login:', error);
+    console.error('Error in direct login:', error);
 
     return {
       success: false,
@@ -272,7 +272,7 @@ export async function register(data: RegisterData): Promise<AuthResult> {
       data: { message: 'Usuario registrado correctamente' },
     };
   } catch (error) {
-    console.error('❌ Error in direct register:', error);
+    console.error('Error in direct register:', error);
 
     return {
       success: false,

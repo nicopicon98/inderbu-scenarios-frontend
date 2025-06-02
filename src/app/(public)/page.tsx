@@ -3,8 +3,6 @@ import { HomeDataResponse } from '@/features/home/data/application/GetHomeDataUs
 import { createHomeContainer } from '@/features/home/di';
 import { HomePage } from '@/templates/home/ui';
 import { redirect } from 'next/navigation';
-// DDD + FSD + Atomic Design: Home Page Route
-
 
 interface HomePageProps {
   searchParams: {
@@ -20,8 +18,6 @@ interface HomePageProps {
 export default async function HomeRoute(props: HomePageProps) {
   const searchParams = await props.searchParams;
   
-  console.log('HomeRoute: Starting SSR with searchParams:', searchParams);
-
   // DDD: Dependency injection - build complete container
   const { homeService } = createHomeContainer();
 

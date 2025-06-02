@@ -1,15 +1,15 @@
 "use client";
 
 import { MainHeader } from "@/shared/components/organisms/main-header";
-import { useAuth } from "@/shared/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { useAuth } from "@/features/auth";
 
 
 export default function ReservationsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, authReady } = useAuthActions();
+  const { user, isAuthenticated, authReady } = useAuth();
 
   useEffect(() => {
     if (!authReady) return;

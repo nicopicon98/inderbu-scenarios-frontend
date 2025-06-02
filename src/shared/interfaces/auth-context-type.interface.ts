@@ -1,4 +1,4 @@
-// ❌ INTERFACE OBSOLETA ELIMINADA
+// INTERFACE OBSOLETA ELIMINADA
 // Esta interface ha sido migrada a @/features/auth/model/useAuth.tsx
 // siguiendo la nueva arquitectura DDD + FSD + Atomic Design
 //

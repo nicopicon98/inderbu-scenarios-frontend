@@ -19,7 +19,7 @@ export class HomeServiceImpl implements HomeService {
       // Transform raw search params to use case input
       const input: HomeFiltersInput = this.parseSearchParams(searchParams);
       
-      console.log('🔄 HomeService: Transformed to use case input:', input);
+      console.log('HomeService: Transformed to use case input:', input);
 
       // Execute use case
       const result = await this.getHomeDataUseCase.execute(input);
@@ -28,7 +28,7 @@ export class HomeServiceImpl implements HomeService {
       return result;
 
     } catch (error) {
-      console.error('❌ HomeService: Error in getHomeData:', error);
+      console.error('HomeService: Error in getHomeData:', error);
       throw error; // Re-throw domain exceptions
     }
   }

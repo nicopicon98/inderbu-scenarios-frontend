@@ -55,7 +55,7 @@ toast("Notificación básica");
 // Login exitoso - Verde
 toast.success("¡Bienvenido! Inicio de sesión correcto");
 
-// ❌ Error de login - Rojo
+// Error de login - Rojo
 toast.error("Credenciales incorrectas");
 
 // ⚠️ Advertencia - Amarillo

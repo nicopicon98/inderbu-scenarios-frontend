@@ -46,7 +46,7 @@ export async function createReservationAction(
       },
     };
   } catch (error) {
-    console.error('❌ Error creating reservation:', error);
+    console.error('Error creating reservation:', error);
 
     if (error instanceof Error) {
       if (error.name === 'ValidationError') {
@@ -96,7 +96,7 @@ export async function createReservation(command: CreateReservationDto): Promise<
       },
     };
   } catch (error) {
-    console.error('❌ Error creating reservation:', error);
+    console.error('Error creating reservation:', error);
 
     return {
       success: false,

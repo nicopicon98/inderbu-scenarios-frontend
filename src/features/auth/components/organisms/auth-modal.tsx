@@ -8,13 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { useAuth } from "@/features/auth/hooks/use-auth";
 import { AuthFormFactory } from "@/features/auth/utils/auth-form-factory";
 import { AuthModalController } from "@/features/auth/controllers/auth-modal-controller";
 import { AuthMode } from "@/features/auth/types/auth-mode.type";
 import { IFormHandler } from "@/features/auth/interfaces/form-handler.interface";
 import { IFormNavigation } from "@/features/auth/interfaces/form-navigation.interface";
 import { IModalController } from "@/features/auth/interfaces/modal-controller.interface";
+import { useAuth } from "../../model/use-auth";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     onSuccess: onLoginSuccess,
   };
 
-  const controller = useMemo(
+  const controller: AuthModalController = useMemo(
     () => new AuthModalController(authService, modalController),
     [authService, modalController]
   );

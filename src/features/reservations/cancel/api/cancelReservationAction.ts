@@ -39,7 +39,7 @@ export async function cancelReservationAction(
       message: 'Reserva cancelada exitosamente',
     };
   } catch (error) {
-    console.error(`❌ Error cancelling reservation ${reservationId}:`, error);
+    console.error(`Error cancelling reservation ${reservationId}:`, error);
 
     return {
       success: false,
@@ -78,7 +78,7 @@ export async function cancelMultipleReservationsAction(
       message: `${reservationIds.length} reservas canceladas exitosamente`,
     };
   } catch (error) {
-    console.error('❌ Error cancelling multiple reservations:', error);
+    console.error('Error cancelling multiple reservations:', error);
 
     return {
       success: false,

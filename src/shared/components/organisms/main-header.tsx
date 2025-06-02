@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/features/auth"; // Use new auth implementation
 import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
@@ -13,11 +12,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { PermissionGuard } from "../molecules/permission-guard";
-// import { AuthModal } from "@/features/auth"; // ❌ AuthModal not implemented yet
+import { useAuth } from "@/features/auth";
+import { AuthModal } from "@/features/auth/components";
+// import { AuthModal } from "@/features/auth"; // AuthModal not implemented yet
 
 
 export function MainHeader() {
-  const { user, handleLogout, isAuthenticated, authReady } = useAuth();
+  const { user, logout, isAuthenticated, authReady } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -168,7 +169,7 @@ export function MainHeader() {
 
                     {/* Logout */}
                     <DropdownMenuItem
-                      onClick={handleLogout}
+                      onClick={logout}
                       className="cursor-pointer text-red-600 hover:bg-red-50"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -261,7 +262,7 @@ export function MainHeader() {
                     variant="outline"
                     className="w-full border-red-200 text-red-600 hover:bg-red-50"
                     onClick={() => {
-                      handleLogout();
+                      logout();
                       setIsMenuOpen(false);
                     }}
                   >
@@ -276,12 +277,11 @@ export function MainHeader() {
       </div>
 
       {/* Modal para Login / Register / Reset */}
-      {/* TODO: Implement AuthModal component */}
-      {/* <AuthModal
+      <AuthModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
-      /> */}
+      />
     </header>
   );
 }

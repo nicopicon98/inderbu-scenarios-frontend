@@ -99,7 +99,7 @@ export async function getSubScenarios(params: {
     };
 
   } catch (error) {
-    console.error('❌ Error fetching sub-scenarios:', error);
+    console.error('Error fetching sub-scenarios:', error);
     throw error;
   }
 }
@@ -127,7 +127,7 @@ export async function getActivityAreas(): Promise<ActivityAreaApiData[]> {
     return result.data;
 
   } catch (error) {
-    console.error('❌ Error fetching activity areas:', error);
+    console.error('Error fetching activity areas:', error);
     throw error;
   }
 }
@@ -155,7 +155,7 @@ export async function getNeighborhoods(): Promise<NeighborhoodApiData[]> {
     return result.data;
 
   } catch (error) {
-    console.error('❌ Error fetching neighborhoods:', error);
+    console.error('Error fetching neighborhoods:', error);
     throw error;
   }
 }
@@ -188,7 +188,7 @@ export async function searchActivityAreas(search: string = ""): Promise<Activity
     return result.data;
 
   } catch (error) {
-    console.error('❌ Error searching activity areas:', error);
+    console.error('Error searching activity areas:', error);
     return []; // Return empty array on error
   }
 }
@@ -220,7 +220,7 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
     return result.data;
 
   } catch (error) {
-    console.error('❌ Error searching neighborhoods:', error);
+    console.error('Error searching neighborhoods:', error);
     return []; // Return empty array on error
   }
 }

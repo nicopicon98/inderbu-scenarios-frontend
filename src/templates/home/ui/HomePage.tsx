@@ -12,6 +12,7 @@ import HomeFilters from "@/features/home/components/organisms/home-filters";
 import Footer from "@/features/home/components/organisms/footer";
 import { useHomeData } from "@/features/home/hooks/use-home-data";
 import { useMemo } from "react";
+import { IUseHomeDataParams } from '@/features/home/interfaces/use-home-data-params.interface';
 
 // Template Props (Atomic Design Page Level)
 export interface HomePageProps {
@@ -20,15 +21,7 @@ export interface HomePageProps {
 
 // Atomic Design: Home Page Template
 export function HomePage({ initialData }: HomePageProps) {
-  console.log('🎨 HomePage Template: Rendering with initial data:', {
-    subScenarios: initialData.subScenarios.data.length,
-    activityAreas: initialData.activityAreas.length, 
-    neighborhoods: initialData.neighborhoods.length,
-    metadata: initialData.metadata
-  });
-
-  // Transform new architecture data to existing hook format (backward compatibility)
-  const homeDataInput = {
+  const homeDataInput: IUseHomeDataParams = {
     initialSubScenarios: initialData.subScenarios.data,
     initialMeta: initialData.subScenarios.meta,
     initialFilters: {
@@ -40,7 +33,6 @@ export function HomePage({ initialData }: HomePageProps) {
     initialPage: initialData.subScenarios.meta.page,
   };
 
-  // Use existing hook (maintains client-side functionality)
   const {
     subScenarios,
     meta,
@@ -62,21 +54,20 @@ export function HomePage({ initialData }: HomePageProps) {
   // Content rendering logic
   const contentSection = useMemo(() => {
     if (loading) {
-      console.log('🔄 HomePage: Showing loading state');
+      console.log('HomePage: Showing loading state');
       return <LoadingIndicator />;
     }
     
     if (hasError && error) {
-      console.log('❌ HomePage: Showing error state:', error);
+      console.log('HomePage: Showing error state:', error);
       return <ErrorMessage error={error} onRetry={retryFetch} />;
     }
     
     if (isEmpty) {
-      console.log('📭 HomePage: Showing empty state');
+      console.log('HomePage: Showing empty state');
       return <EmptyState onClearFilters={clearFilters} />;
     }
 
-    console.log(`📊 HomePage: Showing ${subScenarios.length} facilities`);
     return (
       <>
         <div className="mt-12">
@@ -130,8 +121,6 @@ export function HomePage({ initialData }: HomePageProps) {
         {contentSection}
       </div>
 
-      {/* Footer Organism */}
-      <Footer />
     </main>
   );
 }

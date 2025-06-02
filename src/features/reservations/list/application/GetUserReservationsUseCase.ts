@@ -62,7 +62,7 @@ export class GetUserReservationsUseCase {
       );
     }
 
-    // 📊 Business operation: Fetch reservations
+    // Business operation: Fetch reservations
     const query: GetReservationsQuery = {
       page: pagination.page || 1,
       limit: pagination.limit || 6

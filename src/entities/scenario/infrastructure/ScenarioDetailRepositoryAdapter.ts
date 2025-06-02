@@ -25,7 +25,7 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
         id: scenarioId.toString()
       };
 
-      console.log('🔄 Calling existing ScenarioService.getById with:', apiRequest);
+      console.log('Calling existing ScenarioService.getById with:', apiRequest);
 
       // Call existing API service
       const rawData = await this.apiService.getById(apiRequest);
@@ -42,11 +42,11 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
       return scenario;
 
     } catch (error) {
-      console.error('❌ ScenarioDetailRepositoryAdapter: Error in findById:', error);
+      console.error('ScenarioDetailRepositoryAdapter: Error in findById:', error);
       
       // Handle specific API errors
       if (this.isNotFoundError(error)) {
-        console.log(`📭 Scenario ${scenarioId.value} not found in API`);
+        console.log(`Scenario ${scenarioId.value} not found in API`);
         return null; // Not found is a valid domain state
       }
       
@@ -65,7 +65,7 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
       return exists;
 
     } catch (error) {
-      console.error('❌ ScenarioDetailRepositoryAdapter: Error checking existence:', error);
+      console.error('ScenarioDetailRepositoryAdapter: Error checking existence:', error);
       return false; // Assume doesn't exist on error
     }
   }
