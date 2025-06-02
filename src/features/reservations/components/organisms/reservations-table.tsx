@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { formatDate, reservationStateById } from "@/utils/reservation.utils";
-import { ClickableStatusBadge } from "../molecules/ClickableStatusBadge";
+import { ClickableStatusBadge } from "../molecules/clickable-statud-badge";
 import type { ReservationDto } from "@/services/reservation.service";
 import { FileEdit, MoreHorizontal } from "lucide-react";
 import { DataTable } from "@/shared/ui/data-table";

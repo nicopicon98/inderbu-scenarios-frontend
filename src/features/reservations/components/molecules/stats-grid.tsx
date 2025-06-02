@@ -1,6 +1,6 @@
 import { useReservations } from "@/features/reservations/hooks/use-reservations.hook";
 import { Calendar, MapPin, Users } from "lucide-react";
-import { StatCard } from "../atoms/StatCard";
+import { StatCard } from "../atoms/stat-card";
 
 export const StatsGrid = ({
   stats,

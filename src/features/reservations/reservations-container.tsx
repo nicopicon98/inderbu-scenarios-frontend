@@ -6,11 +6,11 @@ import { Button } from "@/shared/ui/button";
 import { Filter, Plus, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FiltersCard } from "./components/molecules/FiltersCard";
-import { StatsGrid } from "./components/molecules/StatsGrid";
-import { CreateReservationModal } from "./components/organisms/CreateReservationModal";
-import { ReservationDetailsModal } from "./components/organisms/ReservationDetailsModal";
-import { ReservationsTable } from "./components/organisms/ReservationsTable";
+import { FiltersCard } from "./components/molecules/filters-card";
+import { StatsGrid } from "./components/molecules/stats-grid";
+import { CreateReservationModal } from "./components/organisms/create-reservation-modal";
+import { ReservationDetailsModal } from "./components/organisms/reservation-details-modal";
+import { ReservationsTable } from "./components/organisms/reservations-table";
 import { useReservations } from "./hooks/use-reservations.hook";
 
 

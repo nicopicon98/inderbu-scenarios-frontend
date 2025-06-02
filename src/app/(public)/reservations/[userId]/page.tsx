@@ -19,7 +19,6 @@ export default async function UserReservationsRoute({ params }: PageProps) {
     // Execute use case through service layer
     // All business logic, validation, and authorization happens in domain/application layers
     const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
-    console.log(`🔍 Fetching reservations for user: ${userId}`);
 
     console.log(`✅ SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
     console.log(`📊 Access metadata:`, result.metadata);

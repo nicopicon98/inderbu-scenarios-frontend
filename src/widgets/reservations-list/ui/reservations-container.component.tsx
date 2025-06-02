@@ -24,10 +24,8 @@ import { Pagination } from '@/shared/components/organisms/pagination';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-
-// Existing reservation components that work well
-import { ModernReservationItem } from '@/features/reservations/components/organisms/modern-reservation-item';
-import { ModifyReservationModal } from '@/features/reservations/components/organisms/ModifyReservationModal';
+import { ModifyReservationModal } from '@/features/reservations/components/organisms/modify-reservation-modal';
+import { ReservationItem } from '@/features/reservations/components/organisms/reservation-item';
 
 interface ReservationsContainerProps {
   userId: number;
@@ -406,7 +404,7 @@ function ReservationsContent({
                     </div>
                   </div>
                 )}
-                <ModernReservationItem
+                <ReservationItem
                   reservation={reservation}
                   isActive={true}
                   onModify={() => onEdit(reservation)}
@@ -441,7 +439,7 @@ function ReservationsContent({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pastReservations.map((reservation) => (
-              <ModernReservationItem
+              <ReservationItem
                 key={reservation.id}
                 reservation={reservation}
                 isActive={false}

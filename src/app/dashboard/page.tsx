@@ -1,6 +1,6 @@
 "use client";
 
-import { ReservationsContainer } from "@/features/reservations/ReservationsContainer";
+import { ReservationsContainer } from "@/features/reservations/reservations-container";
 import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 
 
