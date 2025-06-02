@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 export default function ReservationsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, authReady } = useAuth();
+  const { user, isAuthenticated, authReady } = useAuthActions();
 
   useEffect(() => {
     if (!authReady) return;

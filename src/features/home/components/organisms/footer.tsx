@@ -1,6 +1,5 @@
 import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { RiTwitterXLine } from "react-icons/ri";
+import { Mail, MapPin, Phone, Twitter } from "lucide-react"; // Using lucide-react instead of ri
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,7 +8,7 @@ export default function Footer() {
     { name: "Facebook", Icon: SiFacebook, href: "#" },
     { name: "Instagram", Icon: SiInstagram, href: "#" },
     { name: "YouTube", Icon: SiYoutube, href: "#" },
-    { name: "X", Icon: RiTwitterXLine, href: "#" },
+    { name: "X", Icon: Twitter, href: "#" }, // Using Twitter icon from lucide-react
   ];
 
   const contactInfo = [

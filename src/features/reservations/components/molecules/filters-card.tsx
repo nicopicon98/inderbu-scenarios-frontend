@@ -48,7 +48,7 @@ export const FiltersCard = ({
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
+  // AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
   if (!open) return null;
 
   /* ─────────── Handlers ─────────── */

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth"; // Use new auth implementation
 import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { PermissionGuard } from "../molecules/permission-guard";
-import { AuthModal } from "@/features/auth";
+// import { AuthModal } from "@/features/auth"; // ❌ AuthModal not implemented yet
 
 
 export function MainHeader() {
@@ -182,7 +182,7 @@ export function MainHeader() {
                 variant="outline"
                 className="bg-white text-blue-600 hover:bg-blue-50 border-blue-200 
                          hover:border-blue-300 transition-all duration-200 shadow-sm"
-                onClick={() => setModalOpen(true)}
+                onClick={() => {/* TODO: Implement login modal */}}
               >
                 <User className="w-4 h-4 mr-2" />
                 <span>Iniciar Sesión</span>
@@ -213,7 +213,7 @@ export function MainHeader() {
                 <Button
                   className="w-full bg-blue-600 text-white hover:bg-blue-700"
                   onClick={() => {
-                    setModalOpen(true);
+                    /* TODO: Implement login modal */
                     setIsMenuOpen(false);
                   }}
                 >
@@ -276,11 +276,12 @@ export function MainHeader() {
       </div>
 
       {/* Modal para Login / Register / Reset */}
-      <AuthModal
+      {/* TODO: Implement AuthModal component */}
+      {/* <AuthModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
-      />
+      /> */}
     </header>
   );
 }

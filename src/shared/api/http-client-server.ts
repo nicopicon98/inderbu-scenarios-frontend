@@ -14,7 +14,7 @@ export interface RequestConfig {
   signal?: AbortSignal;
 }
 
-// ✅ SERVER-ONLY HTTP Client (can use server dependencies)
+// SERVER-ONLY HTTP Client (can use server dependencies)
 export class ServerHttpClient {
   private baseURL: string;
   private timeout: number;
@@ -139,7 +139,7 @@ export class ServerHttpClient {
   }
 }
 
-// ✅ SERVER-ONLY Factory (can use server dependencies)
+// SERVER-ONLY Factory (can use server dependencies)
 export class ServerHttpClientFactory {
   private static readonly SERVER_BASE_URL = process.env.API_URL || 'http://localhost:3001';
 
@@ -163,8 +163,8 @@ export class ServerHttpClientFactory {
   }
 }
 
-// ✅ Re-export server auth context creator
+// Re-export server auth context creator
 export { createServerAuthContext };
 
-// ✅ Type alias for backward compatibility
+// Type alias for backward compatibility
 export type HttpClient = ServerHttpClient;

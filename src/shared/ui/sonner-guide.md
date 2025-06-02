@@ -1,12 +1,12 @@
 # 🎨 Toasts de Sonner - Guía de Uso
 
-## ✅ Problema Solucionado
+## Problema Solucionado
 
 Los toasts ahora aparecen con los colores correctos gracias a:
 
-1. ✅ **ThemeProvider configurado** en layout.tsx
-2. ✅ **Componente Sonner customizado** con colores específicos
-3. ✅ **RichColors habilitado** para mejor UX
+1. **ThemeProvider configurado** en layout.tsx
+2. **Componente Sonner customizado** con colores específicos
+3. **RichColors habilitado** para mejor UX
 
 ## 🎯 Tipos de Toast Disponibles
 
@@ -52,7 +52,7 @@ toast("Notificación básica");
 ### **En Autenticación:**
 
 ```typescript
-// ✅ Login exitoso - Verde
+// Login exitoso - Verde
 toast.success("¡Bienvenido! Inicio de sesión correcto");
 
 // ❌ Error de login - Rojo

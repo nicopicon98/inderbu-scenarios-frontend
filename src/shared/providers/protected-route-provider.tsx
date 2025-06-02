@@ -117,7 +117,7 @@ export function ProtectedRouteProvider({
         }
       }
 
-      console.log("✅ Access granted");
+      console.log("Access granted");
       setHasCheckedAccess(true);
       console.log("🎯 Access check completed");
     };

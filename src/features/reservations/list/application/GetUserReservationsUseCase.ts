@@ -1,11 +1,11 @@
 import { User } from '@/entities/user/model/types';
 import { UserAccessPolicy, AccessDeniedError } from '@/entities/user/domain/UserAccessPolicy';
-import { UserRepository } from '@/entities/user/api/userRepository'; // ✅ Use existing
-import { ReservationRepository } from '@/entities/reservation/api/reservationRepository'; // ✅ Use existing  
+import { UserRepository } from '@/entities/user/api/userRepository'; // Use existing
+import { ReservationRepository } from '@/entities/reservation/api/reservationRepository'; // Use existing  
 import { EventBus, ReservationsAccessedEvent } from '@/entities/reservation/domain/ReservationDomain';
 import { PaginatedReservations, GetReservationsQuery } from '@/entities/reservation/model/types';
 
-// ✅ DDD: Use Case Input DTOs
+// DDD: Use Case Input DTOs
 export interface GetUserReservationsRequest {
   targetUserId: number;
   requestingUser?: User | null;
@@ -15,7 +15,7 @@ export interface GetUserReservationsRequest {
   };
 }
 
-// ✅ DDD: Use Case Output DTOs  
+// DDD: Use Case Output DTOs  
 export interface GetUserReservationsResponse {
   reservations: PaginatedReservations;
   metadata: {
@@ -26,7 +26,7 @@ export interface GetUserReservationsResponse {
   };
 }
 
-// ✅ DDD: Application Service (Use Case)
+// DDD: Application Service (Use Case)
 export class GetUserReservationsUseCase {
   constructor(
     private readonly reservationRepo: ReservationRepository,
@@ -89,7 +89,7 @@ export class GetUserReservationsUseCase {
   }
 }
 
-// ✅ DDD: Use Case factory for dependency injection
+// DDD: Use Case factory for dependency injection
 export function createGetUserReservationsUseCase(
   reservationRepo: ReservationRepository,
   userRepo: UserRepository,

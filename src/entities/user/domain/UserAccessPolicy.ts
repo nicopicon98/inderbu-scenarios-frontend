@@ -1,6 +1,6 @@
 import { User, EUserRole } from '../model/types';
 
-// ✅ DDD: Domain service for user access control
+// DDD: Domain service for user access control
 export class UserAccessPolicy {
   /**
    * Validates and parses a user ID from string
@@ -51,7 +51,7 @@ export class UserAccessPolicy {
   }
 }
 
-// ✅ DDD: Domain exceptions
+// DDD: Domain exceptions
 export class InvalidUserIdError extends Error {
   readonly name = 'InvalidUserIdError';
   
@@ -70,7 +70,7 @@ export class AccessDeniedError extends Error {
   }
 }
 
-// ✅ DDD: Value objects
+// DDD: Value objects
 export enum AccessLevel {
   NONE = 'none',
   USER = 'user', 

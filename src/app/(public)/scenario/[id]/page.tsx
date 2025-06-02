@@ -1,57 +1,84 @@
-import { IGetScenarioByIdResponse } from "@/features/scenarios/interfaces/get-scenario-by-id-res.interface";
-import { IGetScenarioByIdRequest } from "@/features/scenarios/interfaces/get-scenario-by-id-req.interface";
-import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
-import { ScenarioService } from "@/features/scenarios/services/scenario.service";
-import { MainHeader } from "@/shared/components/organisms/main-header";
-import { FiChevronLeft, FiGrid, FiTag } from "react-icons/fi";
-import { Badge } from "@/shared/ui/badge";
-import Link from "next/link";
+// DDD + FSD + Atomic Design: Scenario Detail Page Route
+
+import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
+import { ScenarioDetailPage } from '@/templates/scenario-detail/ui';
+import { 
+  InvalidScenarioIdError, 
+  ScenarioNotFoundError,
+  ScenarioAccessDeniedError 
+} from '@/entities/scenario/domain/ScenarioDetailDomain';
+import { redirect, notFound } from 'next/navigation';
 
 interface PageProps {
   params: { id: string };
 }
 
-export default async function ScenarioPage({ params }: PageProps) {
+export default async function ScenarioDetailRoute({ params }: PageProps) {
   const { id } = await params;
-  const subscenario: IGetScenarioByIdResponse = await ScenarioService.getById({
-    id,
-  } as IGetScenarioByIdRequest);
+  
+  console.log('🌟 ScenarioDetailRoute: Starting SSR with ID:', id);
 
-  return (
-    <main className="min-h-screen flex flex-col bg-gray-50">
-      <MainHeader />
+  // DDD: Dependency injection - build complete container
+  const { scenarioDetailService } = createScenarioDetailContainer();
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Header básico */}
-        <div className="flex flex-col md:flex-row items-start gap-2 mb-6">
-          <div className="flex-1">
-            <Link
-              href="/"
-              className="inline-flex items-center text-teal-600 hover:text-teal-700 text-sm mb-2"
-            >
-              <FiChevronLeft className="h-4 w-4 mr-1" />
-              Volver a todos los escenarios
-            </Link>
+  try {
+    // DDD: Execute use case through service layer
+    // All business logic, validation, and data fetching happens in domain/application layers
+    const result = await scenarioDetailService.getScenarioDetail(id);
 
-            <h1 className="text-3xl md:text-4xl font-bold text-teal-600">
-              {subscenario.name}
-            </h1>
+    console.log(`SSR: Scenario detail loaded successfully`);
+    console.log(`📊 Scenario: "${result.scenario.name}" (ID: ${result.scenario.id})`);
+    console.log(`🎯 Category: ${result.metadata.category}`);
+    console.log(`⏱️ Load time: ${result.metadata.loadTime}ms`);
+    console.log(`🔐 Requires reservation: ${result.metadata.requiresReservation}`);
 
-            <div className="flex items-center gap-2 mt-4">
-              <Badge className="flex items-center bg-teal-50 text-teal-700 border-teal-200">
-                <FiGrid className="h-4 w-4 mr-1" />
-                {subscenario.scenario.name}
-              </Badge>
-              <Badge className="flex items-center bg-green-50 text-green-700 border-green-200">
-                <FiTag className="h-4 w-4 mr-1" />
-                {subscenario.hasCost ? "De pago" : "Gratuito"}
-              </Badge>
-            </div>
-          </div>
-        </div>
+    // Atomic Design: Render page template with clean separation
+    return <ScenarioDetailPage initialData={result} />;
 
-        <ScenarioDetail subScenario={subscenario} />
-      </div>
-    </main>
-  );
+  } catch (error) {
+    console.error('SSR Error in ScenarioDetailRoute:', error);
+
+    // DDD: Handle domain-specific errors with proper responses
+    if (error instanceof InvalidScenarioIdError) {
+      console.warn('Invalid scenario ID provided:', error.message);
+      redirect('/?error=invalid-scenario-id');
+    }
+
+    if (error instanceof ScenarioNotFoundError) {
+      console.warn('Scenario not found:', error.message);
+      notFound(); // Next.js 404 page
+    }
+
+    if (error instanceof ScenarioAccessDeniedError) {
+      console.warn('Access denied to scenario:', error.message);
+      redirect('/auth/login?redirect=' + encodeURIComponent(`/scenario/${id}`));
+    }
+
+    // For unexpected errors, let Next.js error boundary handle it
+    console.error('Unexpected error in ScenarioDetailRoute:', error);
+    throw error;
+  }
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps) {
+  const { id } = await params;
+  
+  try {
+    // Use the same DI container for metadata generation
+    const { scenarioDetailService } = createScenarioDetailContainer();
+    const result = await scenarioDetailService.getScenarioDetail(id);
+    
+    return {
+      title: `${result.scenario.name} | Reserva tu Espacio Deportivo`,
+      description: `Reserva ${result.scenario.name} en ${result.scenario.scenario.name}. ${result.scenario.hasCost ? 'Espacio de pago' : 'Espacio gratuito'} con capacidad para ${result.scenario.numberOfPlayers} jugadores.`,
+      keywords: `${result.scenario.name}, ${result.scenario.scenario.name}, ${result.scenario.activityArea.name}, reserva deportiva`,
+    };
+  } catch (error) {
+    console.warn('Failed to generate metadata for scenario:', id, error);
+    return {
+      title: 'Escenario Deportivo | Reserva tu Espacio',
+      description: 'Encuentra y reserva espacios deportivos para tus actividades.',
+    };
+  }
 }

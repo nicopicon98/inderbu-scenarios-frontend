@@ -71,7 +71,7 @@ export function useHomeData({
       dispatch({ type: "SET_LOADING", payload: true });
 
       try {
-        // ✅ CAMBIO: Mapear IFilters a la interfaz del service
+        // CAMBIO: Mapear IFilters a la interfaz del service
         const { data, meta } = await getSubScenarios({
           page,
           limit,
@@ -97,7 +97,7 @@ export function useHomeData({
     [],
   );
 
-  // ✅ Effect para fetch SOLO en renders subsecuentes (NO en primer render)
+  // Effect para fetch SOLO en renders subsecuentes (NO en primer render)
   useEffect(() => {
     // Evitar fetch en el primer render (datos ya vienen del SSR)
     if (initialRender.current) {

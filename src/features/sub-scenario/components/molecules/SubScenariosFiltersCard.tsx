@@ -41,12 +41,12 @@ export const SubScenariosFiltersCard = ({
     filters.search || "",
   );
 
-  // ✅ Sincronizar estado local con filtros externos (para limpiar correctamente)
+  // Sincronizar estado local con filtros externos (para limpiar correctamente)
   useEffect(() => {
     setLocalSearchValue(filters.search || "");
   }, [filters.search]);
 
-  // ✅ AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
+  // AHORA SÍ PODEMOS HACER RETURN CONDICIONAL
   if (!visible) return null;
 
   /* ─────────── Handlers ─────────── */
@@ -88,10 +88,10 @@ export const SubScenariosFiltersCard = ({
 
   /* Debounce de búsqueda - SEPARADO del estado local del input */
   const handleSearchChange = (q: string) => {
-    // ✅ Actualizar inmediatamente el estado local (sin lag)
+    // Actualizar inmediatamente el estado local (sin lag)
     setLocalSearchValue(q);
 
-    // ✅ Debounce solo para la petición al servidor
+    // Debounce solo para la petición al servidor
     if (searchTimeout.current !== null) {
       clearTimeout(searchTimeout.current);
     }
@@ -122,14 +122,14 @@ export const SubScenariosFiltersCard = ({
     else if (type === "activity") handleActivityAreaChange("all");
     else if (type === "neighborhood") handleNeighborhoodChange("all");
     else if (type === "search") {
-      setLocalSearchValue(""); // ✅ Limpiar estado local
+      setLocalSearchValue(""); // Limpiar estado local
       onChange({ ...filters, search: "" });
     }
     setActiveFilters((c) => c.filter((x) => x !== chip));
   };
 
   const clearAllFilters = () => {
-    setLocalSearchValue(""); // ✅ Limpiar estado local
+    setLocalSearchValue(""); // Limpiar estado local
     const clearedFilters: FilterState = {
       search: "",
       scenarioId: undefined,

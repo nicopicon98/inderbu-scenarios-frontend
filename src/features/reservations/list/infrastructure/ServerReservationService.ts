@@ -5,7 +5,7 @@ import {
   GetUserReservationsResponse 
 } from '../application/GetUserReservationsUseCase';
 
-// ✅ DDD: Infrastructure Service (adapts use case for external consumption)
+// DDD: Infrastructure Service (adapts use case for external consumption)
 export class ServerReservationService {
   constructor(
     private readonly useCase: GetUserReservationsUseCase
@@ -34,7 +34,7 @@ export class ServerReservationService {
   }
 }
 
-// ✅ Factory for dependency injection
+// Factory for dependency injection
 export function createServerReservationService(
   useCase: GetUserReservationsUseCase
 ): ServerReservationService {

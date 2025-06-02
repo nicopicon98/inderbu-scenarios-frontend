@@ -13,7 +13,7 @@ import {
   ServerReservationService
 } from '../list/infrastructure/ServerReservationService';
 
-// ✅ DDD: Dependency Injection Containers for Reservations Feature
+// DDD: Dependency Injection Containers for Reservations Feature
 
 // Container for User Reservations List Use Case
 export interface UserReservationsContainer {
@@ -41,7 +41,7 @@ export function createUserReservationsContainer(): UserReservationsContainer {
   const httpClient = ServerHttpClientFactory.createServerSync(authContext);
 
   // Infrastructure layer: Use existing repositories directly
-  // ✅ No adapters needed - existing interfaces are sufficient for our domain
+  // No adapters needed - existing interfaces are sufficient for our domain
   const userRepo: UserRepository = createUserRepository(httpClient);
   const reservationRepo: ReservationRepository = createReservationRepository(httpClient);
 
@@ -60,7 +60,7 @@ export function createUserReservationsContainer(): UserReservationsContainer {
     getUserReservationsUseCase
   );
 
-  console.log('✅ UserReservations DI Container ready');
+  console.log('UserReservations DI Container ready');
 
   return {
     reservationService,

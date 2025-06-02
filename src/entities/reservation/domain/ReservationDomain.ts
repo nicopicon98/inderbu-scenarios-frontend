@@ -1,6 +1,6 @@
 import { PaginatedReservations, PaginationQuery } from '../model/types';
 
-// ✅ DDD: Repository abstraction (Domain layer)
+// DDD: Repository abstraction (Domain layer)
 export interface ReservationRepository {
   /**
    * Find reservations by user ID with pagination
@@ -26,7 +26,7 @@ export interface ReservationRepository {
   create(reservationData: any): Promise<any>;
 }
 
-// ✅ DDD: Domain events
+// DDD: Domain events
 export abstract class DomainEvent {
   public readonly occurredOn: Date;
   public readonly eventId: string;
@@ -70,7 +70,7 @@ export class ReservationCreatedEvent extends DomainEvent {
   }
 }
 
-// ✅ DDD: Event bus abstraction
+// DDD: Event bus abstraction
 export interface EventBus {
   publish(event: DomainEvent): Promise<void>;
   subscribe<T extends DomainEvent>(

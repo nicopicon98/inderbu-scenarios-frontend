@@ -69,4 +69,4 @@ const finalContent = [
   .join("\n");
 
 fs.writeFileSync(absolutePath, finalContent, "utf8");
-console.log(`✅ Imports ordenados (+ línea en blanco) en: ${filePath}`);
+console.log(`Imports ordenados (+ línea en blanco) en: ${filePath}`);

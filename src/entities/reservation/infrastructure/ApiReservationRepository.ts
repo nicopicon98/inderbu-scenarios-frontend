@@ -3,7 +3,7 @@ import { ReservationRepository } from '@/entities/reservation/domain/Reservation
 import { PaginatedReservations, PaginationQuery } from '@/entities/reservation/model/types';
 import { HttpClient } from '@/shared/api/http-client';
 
-// ✅ DDD: Repository implementation (Infrastructure layer)
+// DDD: Repository implementation (Infrastructure layer)
 // Adapts existing queries to domain interface
 export class ApiReservationRepository implements ReservationRepository {
   constructor(private readonly httpClient: HttpClient) {}
@@ -32,12 +32,12 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 }
 
-// ✅ Factory function for dependency injection
+// Factory function for dependency injection
 export function createApiReservationRepository(httpClient: HttpClient): ReservationRepository {
   return new ApiReservationRepository(httpClient);
 }
 
-// ✅ Update existing factory to use new implementation
+// Update existing factory to use new implementation
 export function createReservationRepository(httpClient: HttpClient): ReservationRepository {
   return createApiReservationRepository(httpClient);
 }

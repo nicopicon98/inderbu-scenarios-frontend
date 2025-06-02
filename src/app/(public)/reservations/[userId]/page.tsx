@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 export default async function UserReservationsRoute({ params }: PageProps) {
-  const { userId } = use(params);
+  const { userId } = await params;
 
   // Dependency injection - build the complete DDD container
   const { reservationService } = createUserReservationsContainer();
@@ -20,16 +20,17 @@ export default async function UserReservationsRoute({ params }: PageProps) {
     // All business logic, validation, and authorization happens in domain/application layers
     const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
 
-    console.log(`✅ SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
+    console.log(`SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
     console.log(`📊 Access metadata:`, result.metadata);
 
     // Render page component with clean separation
     return (
-      <ReservationsPage
-        userId={result.metadata.userId}
-        initialData={result.reservations}
-        accessMetadata={result.metadata}
-      />
+      <></>
+      // <ReservationsPage
+      //   userId={result.metadata.userId}
+      //   initialData={result.reservations}
+      //   accessMetadata={result.metadata}
+      // />
     );
 
   } catch (error) {
@@ -54,7 +55,7 @@ export default async function UserReservationsRoute({ params }: PageProps) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps) {
-  const { userId } = use(params);
+  const { userId } = await params;
 
   return {
     title: `Mis Reservas - Usuario ${userId}`,

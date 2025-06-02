@@ -9,7 +9,7 @@ export {
   logoutAction,
   login,
   register
-} from './api/authActions';
+} from './api/auth-actions';
 
 // Export auth UI components
 export { AuthGuard, UserReservationsGuard } from './ui/AuthGuard';

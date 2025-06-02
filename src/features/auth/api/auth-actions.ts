@@ -9,7 +9,7 @@ import {
   ResetPasswordSchema,
   extractUserFromToken
 } from '@/entities/user/model/types';
-import { HttpClientFactory } from '@/shared/api/http-client';
+import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { createFormDataValidator } from '@/shared/lib/validation';
 import { cookies } from 'next/headers';
@@ -35,7 +35,7 @@ export async function loginAction(
     const credentials = validateLogin(formData);
 
     // Create repository (no auth needed for login)
-    const httpClient = await HttpClientFactory.createServerClient();
+    const httpClient = await ServerHttpClientFactory.createServerSync();
     const repository = createUserRepository(httpClient);
 
     // Execute login
@@ -65,7 +65,7 @@ export async function loginAction(
       });
     }
 
-    console.log(`✅ User logged in successfully: ${user.email}`);
+    console.log(`User logged in successfully: ${user.email}`);
 
     return {
       success: true,
@@ -108,13 +108,13 @@ export async function registerAction(
     const registerData = validateRegister(formData);
 
     // Create repository
-    const httpClient = await HttpClientFactory.createServerClient();
+    const httpClient = await ServerHttpClientFactory.createServerSync();
     const repository = createUserRepository(httpClient);
 
     // Execute registration
     await repository.register(registerData);
 
-    console.log(`✅ User registered successfully: ${registerData.email}`);
+    console.log(`User registered successfully: ${registerData.email}`);
 
     return {
       success: true,
@@ -154,13 +154,13 @@ export async function resetPasswordAction(
     const resetData = validateResetPassword(formData);
 
     // Create repository
-    const httpClient = await HttpClientFactory.createServerClient();
+    const httpClient = await ServerHttpClientFactory.createServer();
     const repository = createUserRepository(httpClient);
 
     // Execute reset password
     await repository.resetPassword(resetData);
 
-    console.log(`✅ Password reset sent for: ${resetData.email}`);
+    console.log(`Password reset sent for: ${resetData.email}`);
 
     return {
       success: true,
@@ -181,7 +181,7 @@ export async function logoutAction(): Promise<AuthResult> {
     // Try to call logout endpoint
     try {
       const authContext = createServerAuthContext();
-      const httpClient = HttpClientFactory.createServerClientSync(authContext);
+      const httpClient = ServerHttpClientFactory.createServer(authContext);
       const repository = createUserRepository(httpClient);
 
       await repository.logout();
@@ -195,7 +195,7 @@ export async function logoutAction(): Promise<AuthResult> {
     cookieStore.delete('auth_token');
     cookieStore.delete('refresh_token');
 
-    console.log('✅ User logged out successfully');
+    console.log('User logged out successfully');
 
     return {
       success: true,
@@ -216,7 +216,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResult> 
   try {
     const validatedCredentials = LoginSchema.parse(credentials);
 
-    const httpClient = await HttpClientFactory.createServerClient();
+    const httpClient = await ServerHttpClientFactory.createServer();
     const repository = createUserRepository(httpClient);
 
     const tokens = await repository.login(validatedCredentials);
@@ -262,7 +262,7 @@ export async function register(data: RegisterData): Promise<AuthResult> {
   try {
     const validatedData = RegisterSchema.parse(data);
 
-    const httpClient = await HttpClientFactory.createServerClient();
+    const httpClient = await ServerHttpClientFactory.createServer();
     const repository = createUserRepository(httpClient);
 
     await repository.register(validatedData);

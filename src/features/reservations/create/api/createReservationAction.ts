@@ -36,7 +36,7 @@ export async function createReservationAction(
     revalidateTag('reservations');
     revalidateTag(`reservations-user-${reservation.userId}`);
 
-    console.log(`✅ Reservation created successfully: ${reservation.id}`);
+    console.log(`Reservation created successfully: ${reservation.id}`);
 
     return {
       success: true,

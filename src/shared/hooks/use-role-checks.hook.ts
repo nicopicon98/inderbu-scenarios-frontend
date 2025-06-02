@@ -1,4 +1,4 @@
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth"; // Updated to new implementation
 import { EUserRole } from "../enums/user-role.enum";
 
 export function useRoleChecks() {

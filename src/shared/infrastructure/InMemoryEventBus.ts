@@ -42,7 +42,7 @@ export class InMemoryEventBus implements EventBus {
   }
 }
 
-// ✅ Factory function
+// Factory function
 export function createInMemoryEventBus(): EventBus {
   return new InMemoryEventBus();
 }

@@ -1,9 +1,9 @@
-import {
-  getActivityAreas,
-  getNeighborhoods,
-  getSubScenarios,
-} from "@/features/home/services/home.service";
-import HomeMain from "@/features/home/components/organisms/home-main";
+import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/SubScenarioDomain';
+import { HomeDataResponse } from '@/features/home/data/application/GetHomeDataUseCase';
+import { createHomeContainer } from '@/features/home/di';
+import { HomePage } from '@/templates/home/ui';
+import { redirect } from 'next/navigation';
+// DDD + FSD + Atomic Design: Home Page Route
 
 
 interface HomePageProps {
@@ -17,76 +17,43 @@ interface HomePageProps {
   };
 }
 
-export default async function HomePage(props: HomePageProps) {
-
+export default async function HomeRoute(props: HomePageProps) {
   const searchParams = await props.searchParams;
+  
+  console.log('HomeRoute: Starting SSR with searchParams:', searchParams);
 
-  const page = Number(searchParams.page) || 1;
-  const limit = Number(searchParams.limit) || 6;
-  const searchQuery = searchParams.search || "";
-  const activityAreaId = searchParams.activityAreaId
-    ? Number(searchParams.activityAreaId)
-    : undefined;
-  const neighborhoodId = searchParams.neighborhoodId
-    ? Number(searchParams.neighborhoodId)
-    : undefined;
-  const hasCost = searchParams.hasCost
-    ? searchParams.hasCost === "true"
-    : undefined;
-
+  // DDD: Dependency injection - build complete container
+  const { homeService } = createHomeContainer();
 
   try {
-    // Fetch paralelo con filtros incluidos para SSR
-    const [activityAreas, neighborhoods, subScenariosResult] =
-      await Promise.all([
-        getActivityAreas(),
-        getNeighborhoods(),
-        getSubScenarios({
-          page,
-          limit,
-          searchQuery,
-          activityAreaId: activityAreaId || 0,
-          neighborhoodId: neighborhoodId || 0,
-          hasCost,
-        }),
-      ]);
+    // DDD: Execute use case through service layer
+    // All business logic, validation, and data fetching happens in domain/application layers
+    const result: HomeDataResponse = await homeService.getHomeData(searchParams);
 
-    return (
-      <HomeMain
-        initialActivityAreas={activityAreas}
-        initialNeighborhoods={neighborhoods}
-        initialSubScenarios={subScenariosResult.data}
-        initialMeta={subScenariosResult.meta}
-        // Props para SSR completo con sincronización URL
-        initialFilters={{
-          searchQuery,
-          activityAreaId,
-          neighborhoodId,
-          hasCost,
-        }}
-        initialPage={page}
-      />
-    );
+    console.log(`SSR: Home data loaded successfully with data ${result}`);
+    console.log(`Results: ${result.subScenarios.data.length} scenarios, ${result.activityAreas.length} areas, ${result.neighborhoods.length} neighborhoods`);
+    console.log(`Filters: ${result.appliedFilters.appliedFiltersList.join(', ') || 'None'}`);
+    console.log(`Load time: ${result.metadata.loadTime}ms`);
+
+    // Atomic Design: Render page template with clean separation
+    return <HomePage initialData={result} />;
+
   } catch (error) {
-    console.error("Error loading home page:", error);
+    console.error('SSR Error in HomeRoute:', error);
 
-    // Fallback: cargar solo datos básicos sin filtros
-    const [activityAreas, neighborhoods] = await Promise.allSettled([
-      getActivityAreas(),
-      getNeighborhoods(),
-    ]);
+    // DDD: Handle domain-specific errors with proper redirects
+    if (error instanceof InvalidFiltersError) {
+      console.warn('Invalid filters provided:', error.message);
+      redirect('/?error=invalid-filters');
+    }
 
-    return (
-      <HomeMain
-        initialActivityAreas={
-          activityAreas.status === "fulfilled" ? activityAreas.value : []
-        }
-        initialNeighborhoods={
-          neighborhoods.status === "fulfilled" ? neighborhoods.value : []
-        }
-        initialSubScenarios={[]}
-        initialMeta={{ page: 1, limit: 6, totalPages: 0, totalItems: 0 }}
-      />
-    );
+    if (error instanceof SearchLimitExceededError) {
+      console.warn('Search limit exceeded:', error.message);
+      redirect('/?error=search-limit-exceeded');
+    }
+
+    // For unexpected errors, let Next.js error boundary handle it
+    console.error('Unexpected error in HomeRoute:', error);
+    throw error;
   }
 }

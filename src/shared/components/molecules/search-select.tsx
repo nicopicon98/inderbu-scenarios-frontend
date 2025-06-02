@@ -69,12 +69,12 @@ export function SearchSelect({
   // Update selected option when value changes or options load
   useEffect(() => {
     if (value && value !== "all") {
-      // ✅ Primero buscar en opciones actuales
+      // Primero buscar en opciones actuales
       let option = options.find(
         (opt) => opt.id.toString() === value.toString(),
       );
 
-      // ✅ Si no está en opciones actuales, buscar en cache
+      // Si no está en opciones actuales, buscar en cache
       if (!option) {
         option = selectedCache.get(value) ?? undefined;
       }
@@ -93,7 +93,7 @@ export function SearchSelect({
       const results = await onSearch(query);
       setOptions(results);
 
-      // ✅ Si hay opciones nuevas y un valor seleccionado, actualizar cache
+      // Si hay opciones nuevas y un valor seleccionado, actualizar cache
       if (results.length > 0 && value && value !== "all") {
         const matchingOption = results.find(
           (opt) => opt.id.toString() === value.toString(),
@@ -116,7 +116,7 @@ export function SearchSelect({
 
   const handleSelect = (option: SearchSelectOption) => {
     setSelectedOption(option);
-    // ✅ Guardar en cache para uso futuro
+    // Guardar en cache para uso futuro
     setSelectedCache((prev) => {
       const newCache = new Map(prev);
       newCache.set(option.id, option);

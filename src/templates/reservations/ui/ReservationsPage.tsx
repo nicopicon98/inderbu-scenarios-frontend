@@ -5,7 +5,7 @@ import { UserReservationsGuard } from '@/features/auth';
 import { MainHeader } from '@/shared/components/organisms/main-header';
 import { ReservationsContainer } from '@/widgets/reservations-list';
 
-// ✅ Updated interface to include access metadata from DDD use case
+// Updated interface to include access metadata from DDD use case
 interface ReservationsPageProps {
   userId: number;
   initialData?: PaginatedReservations | null;
@@ -17,8 +17,8 @@ interface ReservationsPageProps {
   };
 }
 
-// ✅ Atomic: Page-level component (template with real data)
-// ✅ FSD: Template layer - orchestrates widgets and features
+// Atomic: Page-level component (template with real data)
+// FSD: Template layer - orchestrates widgets and features
 export function ReservationsPage({ 
   userId, 
   initialData, 

@@ -3,7 +3,7 @@
 // siguiendo la nueva arquitectura DDD + FSD + Atomic Design
 //
 // 🚫 NO IMPORTAR DESDE AQUÍ
-// ✅ Usar: AuthContextType de @/features/auth/model/useAuth.tsx
+// Usar: AuthContextType de @/features/auth/model/useAuth.tsx
 //
 // El archivo será eliminado en la siguiente limpieza.
 

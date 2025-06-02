@@ -5,6 +5,7 @@ import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
+
 export interface CancelReservationResult {
   success: boolean;
   message?: string;
@@ -31,7 +32,7 @@ export async function cancelReservationAction(
     revalidateTag('reservations');
     revalidateTag(`reservation-${reservationId}`);
 
-    console.log(`✅ Reservation ${reservationId} cancelled successfully`);
+    console.log(`Reservation ${reservationId} cancelled successfully`);
 
     return {
       success: true,
@@ -70,7 +71,7 @@ export async function cancelMultipleReservationsAction(
     revalidateTag('reservations');
     reservationIds.forEach(id => revalidateTag(`reservation-${id}`));
 
-    console.log(`✅ ${reservationIds.length} reservations cancelled successfully`);
+    console.log(`${reservationIds.length} reservations cancelled successfully`);
 
     return {
       success: true,

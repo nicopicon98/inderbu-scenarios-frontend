@@ -14,7 +14,7 @@ export interface RequestConfig {
   signal?: AbortSignal;
 }
 
-// ✅ CLIENT-ONLY HTTP Client (no server dependencies)
+// CLIENT-ONLY HTTP Client (no server dependencies)
 export class ClientHttpClient {
   private baseURL: string;
   private timeout: number;
@@ -138,7 +138,7 @@ export class ClientHttpClient {
   }
 }
 
-// ✅ CLIENT-ONLY Factory (no server dependencies)
+// CLIENT-ONLY Factory (no server dependencies)
 export class ClientHttpClientFactory {
   private static readonly CLIENT_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -155,8 +155,8 @@ export class ClientHttpClientFactory {
   }
 }
 
-// ✅ Re-export client auth context creator
+// Re-export client auth context creator
 export { createClientAuthContext };
 
-// ✅ Type alias for backward compatibility
+// Type alias for backward compatibility
 export type HttpClient = ClientHttpClient;
