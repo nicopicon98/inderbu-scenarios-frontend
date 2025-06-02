@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { Form } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import { AuthFormField } from "@/shared/ui/auth-form-field";
@@ -12,13 +13,19 @@ import { SelectField } from "../molecules/select-field";
 import { registerSchema, TRegisterData } from "../../schemas/auth-schemas";
 import { IFormHandler } from "../../interfaces/form-handler.interface";
 import { IFormNavigation } from "../../interfaces/form-navigation.interface";
-import { useRoles } from "../../hooks/use-roles";
-import { useNeighborhoods } from "../../hooks/use-neighborhoods";
+// ✅ NEW DDD ARCHITECTURE
+import { getRoleOptions, type RoleOption } from "../../utils/role-helpers";
+import { getNeighborhoods } from "@/features/home/services/home.service";
 
 interface RegisterFormProps {
   onSubmit: IFormHandler<TRegisterData>["onSubmit"];
   isLoading: boolean;
   navigation: IFormNavigation;
+}
+
+interface NeighborhoodOption {
+  id: number;
+  name: string;
 }
 
 export function RegisterForm({ onSubmit, isLoading, navigation }: RegisterFormProps) {
@@ -38,8 +45,29 @@ export function RegisterForm({ onSubmit, isLoading, navigation }: RegisterFormPr
     },
   });
 
-  const { roles } = useRoles();
-  const { neighborhoods } = useNeighborhoods();
+  // ✅ NEW DDD ARCHITECTURE: Roles from enum
+  const roles: RoleOption[] = getRoleOptions();
+
+  // ✅ NEW DDD ARCHITECTURE: Neighborhoods from repository
+  const [neighborhoods, setNeighborhoods] = useState<NeighborhoodOption[]>([]);
+  const [isLoadingNeighborhoods, setIsLoadingNeighborhoods] = useState(true);
+
+  useEffect(() => {
+    const loadNeighborhoods = async () => {
+      try {
+        setIsLoadingNeighborhoods(true);
+        const data = await getNeighborhoods();
+        setNeighborhoods(data);
+      } catch (error) {
+        console.error('Error loading neighborhoods:', error);
+        setNeighborhoods([]);
+      } finally {
+        setIsLoadingNeighborhoods(false);
+      }
+    };
+
+    loadNeighborhoods();
+  }, []);
 
   const handleSubmit = form.handleSubmit(async (data) => {
     await onSubmit(data);
@@ -130,11 +158,11 @@ export function RegisterForm({ onSubmit, isLoading, navigation }: RegisterFormPr
 
           <SelectField
             label="Barrio"
-            placeholder="Selecciona un barrio..."
+            placeholder={isLoadingNeighborhoods ? "Cargando barrios..." : "Selecciona un barrio..."}
             options={neighborhoods}
             value={form.watch("neighborhoodId") ? String(form.watch("neighborhoodId")) : undefined}
             onChange={(value) => form.setValue("neighborhoodId", Number(value))}
-            disabled={isLoading}
+            disabled={isLoading || isLoadingNeighborhoods}
             error={form.formState.errors.neighborhoodId?.message}
             getOptionValue={(neighborhood) => String(neighborhood.id)}
             getOptionLabel={(neighborhood) => neighborhood.name}

@@ -1,5 +1,3 @@
-import { ClientHttpClient } from '@/shared/api/http-client-client';
-import { SimpleApiResponse } from '@/shared/api/types';
 import {
   AuthTokens,
   LoginCredentials,
@@ -7,10 +5,13 @@ import {
   ResetPasswordData,
   User
 } from '../model/types';
+import { TRegisterData } from '@/features/auth/schemas/auth-schemas';
+import { ClientHttpClient } from '@/shared/api/http-client-client';
+import { SimpleApiResponse } from '@/shared/api/types';
 
 export interface UserRepository {
   login(credentials: LoginCredentials): Promise<AuthTokens>;
-  register(data: RegisterData): Promise<void>;
+  register(data: TRegisterData): Promise<void>;
   getCurrentUser(): Promise<User>;
   refreshToken(refreshToken: string): Promise<AuthTokens>;
   resetPassword(data: ResetPasswordData): Promise<void>;
@@ -28,7 +29,7 @@ export class ApiUserRepository implements UserRepository {
     return response.data;
   }
 
-  async register(data: RegisterData): Promise<void> {
+  async register(data: TRegisterData): Promise<void> {
     await this.httpClient.post<SimpleApiResponse<void>>(
       '/auth/register',
       data

@@ -3,12 +3,12 @@ import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
 
 export class LoginStrategy implements IAuthStrategy<TLoginData> {
   constructor(
-    private authService: { handleLogin: (data: TLoginData) => Promise<any> },
+    private authService: { login: (data: TLoginData) => Promise<any> },
     private onSuccess: () => void
   ) {}
 
   async execute(data: TLoginData): Promise<void> {
-    await this.authService.handleLogin(data);
+    await this.authService.login(data);
     this.onSuccess();
   }
 
@@ -23,12 +23,12 @@ export class LoginStrategy implements IAuthStrategy<TLoginData> {
 
 export class RegisterStrategy implements IAuthStrategy<TRegisterData> {
   constructor(
-    private authService: { handleRegister: (data: TRegisterData) => Promise<any> },
+    private authService: { register: (data: TRegisterData) => Promise<any> },
     private onSuccess: () => void
   ) {}
 
   async execute(data: TRegisterData): Promise<void> {
-    await this.authService.handleRegister(data);
+    await this.authService.register(data);
     this.onSuccess();
   }
 
@@ -43,12 +43,12 @@ export class RegisterStrategy implements IAuthStrategy<TRegisterData> {
 
 export class ResetPasswordStrategy implements IAuthStrategy<TResetData> {
   constructor(
-    private authService: { handleResetPassword: (data: TResetData) => Promise<any> },
+    private authService: { resetPassword: (data: TResetData) => Promise<any> },
     private onSuccess: () => void
   ) {}
 
   async execute(data: TResetData): Promise<void> {
-    await this.authService.handleResetPassword(data);
+    await this.authService.resetPassword(data);
     this.onSuccess();
   }
 

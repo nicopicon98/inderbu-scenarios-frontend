@@ -1,11 +1,20 @@
-// Componentes principales
+// ✅ COMPONENTES ACTIVOS EN NUEVA ARQUITECTURA DDD
+// (Componentes que SÍ están siendo usados)
+
+// 🔄 AuthModal - MIGRADO A NUEVA ARQUITECTURA DDD ✅
 export { AuthModal } from "./organisms/auth-modal";
 
-// Formularios individuales
-export { LoginForm } from "./organisms/login-form";
-export { RegisterForm } from "./organisms/register-form";
-export { ResetPasswordForm } from "./organisms/reset-password-form";
+// ✅ FORMS MIGRADOS A NUEVA ARQUITECTURA DDD
+export { RegisterForm } from "./organisms/register-form";  // ✅ Migrado - Usa DDD architecture
 
-// Componentes moleculares
-export { FormNavigation } from "./molecules/form-navigation";
-export { SelectField } from "./molecules/select-field";
+// ❌ COMPONENTES OBSOLETOS - NO ESTÁN SIENDO USADOS
+// (Serán eliminados en el siguiente deploy)
+
+// export { LoginForm } from "./organisms/login-form";        // ❌ Obsoleto
+// export { ResetPasswordForm } from "./organisms/reset-password-form"; // ❌ Obsoleto
+
+// export { FormNavigation } from "./molecules/form-navigation";  // ❌ Obsoleto
+// export { SelectField } from "./molecules/select-field";        // ❌ Obsoleto
+
+// 📝 NOTA: Estos componentes no están siendo importados en ningún lugar
+// Se mantienen comentados para evitar errores de compilación hasta su eliminación completa

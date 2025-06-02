@@ -15,11 +15,12 @@ import { ClientHttpClientFactory, createClientAuthContext } from '@/shared/api/h
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { TRegisterData } from '../schemas/auth-schemas';
 
 interface AuthContextType extends AuthState {
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: TRegisterData) => Promise<void>;
   resetPassword: (data: ResetPasswordData) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
@@ -146,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Register mutation
   const registerMutation = useMutation({
-    mutationFn: async (data: RegisterData) => {
+    mutationFn: async (data: TRegisterData) => {
       const repository = createRepository();
       return repository.register(data);
     },
@@ -275,7 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       await loginMutation.mutateAsync(credentials);
     },
-    register: async (data: RegisterData) => {
+    register: async (data: TRegisterData) => {
       setAuthState(prev => ({ ...prev, error: null }));
       await registerMutation.mutateAsync(data);
     },
