@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { AuthFormFactory } from "@/features/auth/utils/auth-form-factory";
-import { AuthModalController } from "@/features/auth/controllers/auth-modal-controller";
-import { AuthMode } from "@/features/auth/types/auth-mode.type";
-import { IFormHandler } from "@/features/auth/interfaces/form-handler.interface";
-import { IFormNavigation } from "@/features/auth/interfaces/form-navigation.interface";
 import { IModalController } from "@/features/auth/interfaces/modal-controller.interface";
+import { AuthModalController } from "@/features/auth/controllers/auth-modal-controller";
+import { IFormNavigation } from "@/features/auth/interfaces/form-navigation.interface";
+import { IFormHandler } from "@/features/auth/interfaces/form-handler.interface";
+import { AuthFormFactory } from "@/features/auth/utils/auth-form-factory";
+import { AuthMode } from "@/features/auth/types/auth-mode.type";
 import { useAuth } from "../../model/use-auth";
 
 interface AuthModalProps {
@@ -27,38 +27,52 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const authService = useAuth();
-  const modalController: IModalController = {
-    isOpen,
-    onClose,
-    onSuccess: onLoginSuccess,
-  };
+  
+  // ✅ FIX: Memorizar modalController con deps estables
+  const modalController: IModalController = useMemo(
+    () => ({
+      isOpen,
+      onClose,
+      onSuccess: onLoginSuccess,
+    }),
+    [isOpen, onClose, onLoginSuccess]
+  );
 
+  // ✅ FIX: Controller estable
   const controller: AuthModalController = useMemo(
     () => new AuthModalController(authService, modalController),
     [authService, modalController]
   );
 
-  const navigation: IFormNavigation = {
-    currentMode,
-    onModeChange: setCurrentMode,
-  };
+  // ✅ FIX: Navigation estable
+  const navigation: IFormNavigation = useMemo(
+    () => ({
+      currentMode,
+      onModeChange: setCurrentMode,
+    }),
+    [currentMode]
+  );
 
-  const createFormHandler = <TData,>(mode: AuthMode): IFormHandler<TData> => ({
-    async onSubmit(data: TData) {
-      setIsLoading(true);
-      try {
-        await controller.executeStrategy(mode, data);
-        
-        // Post-procesamiento específico por modo
-        if (mode === "register" || mode === "reset") {
-          setCurrentMode("login");
+  // ✅ FIX: createFormHandler con useCallback y deps reales
+  const createFormHandler = useCallback(
+    <TData,>(mode: AuthMode): IFormHandler<TData> => ({
+      async onSubmit(data: TData) {
+        setIsLoading(true);
+        try {
+          await controller.executeStrategy(mode, data);
+          
+          // Post-procesamiento específico por modo
+          if (mode === "register" || mode === "reset") {
+            setCurrentMode("login");
+          }
+        } finally {
+          setIsLoading(false);
         }
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    isLoading,
-  });
+      },
+      isLoading,
+    }),
+    [controller, isLoading] // deps reales
+  );
 
   const formConfig = AuthFormFactory.createForm(currentMode);
   const FormComponent = formConfig.component;

@@ -67,12 +67,13 @@ export async function loginAction(
       throw new Error('Invalid token received from server');
     }
 
-    // COOKIES: httpOnly + secure + strict
+    // ✅ COOKIES: httpOnly + secure + strict + path
     const cookieStore = await cookies();
     cookieStore.set('auth_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/', // ✅ Path específico
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -81,6 +82,7 @@ export async function loginAction(
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
+        path: '/', // ✅ Path específico
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
     }
@@ -268,12 +270,13 @@ export async function login(credentials: TLoginData): Promise<AuthResult> {
       throw new Error('Invalid token received from server');
     }
 
-    // Set cookies
+    // ✅ Set cookies con máxima seguridad
     const cookieStore = await cookies();
     cookieStore.set('auth_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/', // ✅ Path específico
       maxAge: 60 * 60 * 24 * 7,
     });
 
@@ -282,6 +285,7 @@ export async function login(credentials: TLoginData): Promise<AuthResult> {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
+        path: '/', // ✅ Path específico
         maxAge: 60 * 60 * 24 * 30,
       });
     }

@@ -24,13 +24,14 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
     defaultValues: { email: "", password: "" },
   });
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    await onSubmit(data);
-  });
+  // ✅ FIX: Usar form.handleSubmit directo para mejor manejo de errores
+  // ✅ FIX: Usar isSubmitting local para evitar re-renders innecesarios
+  const { isSubmitting } = form.formState;
+  const loading = isLoading || isSubmitting;
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <AuthFormField 
           label="Correo electrónico" 
           error={form.formState.errors.email?.message}
@@ -40,7 +41,7 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
             {...form.register("email")}
             type="email"
             placeholder="ejemplo@correo.com"
-            disabled={isLoading}
+            disabled={loading}
           />
         </AuthFormField>
 
@@ -52,7 +53,7 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
           <PasswordInput
             {...form.register("password")}
             placeholder="••••••••"
-            disabled={isLoading}
+            disabled={loading}
           />
         </AuthFormField>
 
@@ -61,7 +62,7 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
           onModeChange={navigation.onModeChange} 
         />
 
-        <SubmitButton isLoading={isLoading}>
+        <SubmitButton isLoading={loading}>
           Iniciar sesión
         </SubmitButton>
       </form>
