@@ -1,6 +1,6 @@
 // Infrastructure: Sub-Scenario Repository Adapter (bridges existing API to domain interface)
 
-import { SubScenarioRepository, SubScenarioFilters, PaginatedSubScenarios } from '@/entities/sub-scenario/domain/SubScenarioDomain';
+import { SubScenarioRepository, SubScenarioFilters, PaginatedSubScenarios } from '@/entities/sub-scenario/domain/sub-scenario.domain';
 
 // Existing API interface (what currently exists)
 interface SubScenarioApiService {

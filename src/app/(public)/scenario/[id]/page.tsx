@@ -4,7 +4,7 @@ import {
   InvalidScenarioIdError, 
   ScenarioNotFoundError,
   ScenarioAccessDeniedError 
-} from '@/entities/scenario/domain/ScenarioDetailDomain';
+} from '@/entities/scenario/domain/scenario-detail.domain';
 import { redirect, notFound } from 'next/navigation';
 interface PageProps {
   params: { id: string };

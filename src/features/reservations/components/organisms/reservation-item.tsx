@@ -29,7 +29,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { StatusBadge } from "../atoms/status-badge";
-import { cancelReservationAction } from "../../cancel/api/cancelReservationAction";
+import { cancelReservationAction, CancelReservationResult } from "../../cancel/api/cancelReservationAction";
 
 
 interface ReservationItemProps {
@@ -53,7 +53,7 @@ export function ReservationItem({
   const handleCancelReservation = async () => {
     setIsCancelling(true);
     try {
-      const success = await cancelReservationAction(reservation.id);
+      const success: CancelReservationResult = await cancelReservationAction(reservation.id);
       if (success) {
         toast.success("La reserva ha sido cancelada exitosamente");
         onCancelled(reservation.id);
@@ -213,13 +213,13 @@ export function ReservationItem({
                   variant="default"
                   className={`w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg
                            transition-all duration-200 group/btn font-medium relative ${highlightManageButton
-                      ? "animate-pulse ring-4 ring-blue-300 ring-opacity-50"
+                      ? "ring-2 ring-blue-300 ring-offset-2 shadow-blue-200/50 shadow-lg"
                       : ""
                     }`}
                   onClick={() => onModify(reservation)}
                 >
                   {highlightManageButton && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></div>
                   )}
                   <Settings className="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform" />
                   Gestionar reserva

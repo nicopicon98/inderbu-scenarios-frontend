@@ -1,4 +1,4 @@
-import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/SubScenarioDomain';
+import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/sub-scenario.domain';
 import { HomeDataResponse } from '@/features/home/data/application/GetHomeDataUseCase';
 import { createHomeContainer } from '@/features/home/di';
 import { HomePage } from '@/templates/home/ui';

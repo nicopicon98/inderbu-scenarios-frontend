@@ -21,7 +21,7 @@ interface ReservationApiResponse {
 export async function createReservationApi(payload: CreateReservationPayload): Promise<ReservationApiResponse> {
   try {
     const url = `${API_BASE_URL}/reservations`;
-    console.log('🌐 Creating reservation at:', url, 'with payload:', payload);
+    console.log('Creating reservation at:', url, 'with payload:', payload);
 
     const response = await fetch(url, {
       method: 'POST',

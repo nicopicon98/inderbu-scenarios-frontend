@@ -1,6 +1,6 @@
 // NEW DDD ARCHITECTURE - Reservation Service (Clean, uses authenticated HTTP client)
 
-import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
+import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 
 export async function createReservation(payload: {

@@ -22,7 +22,7 @@ export async function getTimeSlots(params: GetTimeSlotParams): Promise<TimeSlotA
     searchParams.append('date', params.date);
 
     const url = `${API_BASE_URL}/reservations/available-timeslots?${searchParams.toString()}`;
-    console.log('🌐 Fetching time slots from:', url);
+    console.log('Fetching time slots from:', url);
 
     const response = await fetch(url, {
       cache: 'no-store', // Dynamic data

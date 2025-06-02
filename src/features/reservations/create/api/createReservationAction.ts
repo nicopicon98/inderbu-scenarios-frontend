@@ -1,6 +1,6 @@
 'use server';
 
-import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
+import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
 import { CreateReservationDto, CreateReservationSchema } from '@/entities/reservation/model/types';
 // import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';

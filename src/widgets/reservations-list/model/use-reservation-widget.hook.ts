@@ -1,7 +1,7 @@
 'use client';
 
-import { reservationQueryKeys } from '@/entities/reservation/api/queries';
-import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
+import { reservationQueryKeys } from '@/entities/reservation/api/reservation-query-keys';
+import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
 import {
   GetReservationsQuery,
   PaginatedReservations,

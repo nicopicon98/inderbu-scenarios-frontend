@@ -71,7 +71,7 @@ export async function getSubScenarios(params: {
     }
 
     const url = `${API_BASE_URL}/sub-scenarios?${searchParams.toString()}`;
-    console.log('🌐 Fetching sub-scenarios from:', url);
+    console.log('Fetching sub-scenarios from:', url);
 
     const response = await fetch(url, {
       cache: 'no-store', // SSR fresh data
@@ -108,7 +108,7 @@ export async function getSubScenarios(params: {
 export async function getActivityAreas(): Promise<ActivityAreaApiData[]> {
   try {
     const url = `${API_BASE_URL}/activity-areas`;
-    console.log('🌐 Fetching activity areas from:', url);
+    console.log('Fetching activity areas from:', url);
 
     const response = await fetch(url, {
       cache: 'force-cache', // Static data can be cached
@@ -136,7 +136,7 @@ export async function getActivityAreas(): Promise<ActivityAreaApiData[]> {
 export async function getNeighborhoods(): Promise<NeighborhoodApiData[]> {
   try {
     const url = `${API_BASE_URL}/neighborhoods`;
-    console.log('🌐 Fetching neighborhoods from:', url);
+    console.log('Fetching neighborhoods from:', url);
 
     const response = await fetch(url, {
       cache: 'force-cache', // Static data can be cached

@@ -1,4 +1,4 @@
-import { DomainEvent } from "@/entities/reservation/domain/ReservationDomain";
+import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
 import { IActivityArea } from "@/features/home/types/filters.types";
 
 export interface ActivityAreaRepository {

@@ -1,6 +1,6 @@
 // Infrastructure: Neighborhood Repository Adapter (bridges existing API to domain interface)
 
-import { NeighborhoodRepository, Neighborhood } from '@/entities/neighborhood/domain/NeighborhoodDomain';
+import { NeighborhoodRepository, Neighborhood } from '@/entities/neighborhood/domain/neighborhood.domain';
 
 // Existing API interface (what currently exists)
 interface NeighborhoodApiService {

@@ -19,7 +19,7 @@ export { AuthModal } from './components'; // NEW: Export AuthModal
 export type { 
   User, 
   AuthTokens, 
-  LoginCredentials, 
+  ILoginCredentials, 
   RegisterData, 
   ResetPasswordData,
   AuthState,

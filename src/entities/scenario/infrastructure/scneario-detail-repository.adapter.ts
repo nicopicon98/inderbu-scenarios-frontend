@@ -5,7 +5,7 @@ import {
   ScenarioDetail, 
   ScenarioId,
   ScenarioDetailMapper 
-} from '@/entities/scenario/domain/ScenarioDetailDomain';
+} from '@/entities/scenario/domain/scenario-detail.domain';
 
 // Existing API interface (what currently exists)
 interface ScenarioApiService {

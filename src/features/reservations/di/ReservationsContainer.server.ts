@@ -1,7 +1,8 @@
-import { createReservationRepository, ReservationRepository } from '@/entities/reservation/api/reservationRepository';
-import { EventBus } from '@/entities/reservation/domain/ReservationDomain';
-import { createUserRepository, UserRepository } from '@/entities/user/api/userRepository';
-import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
+import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
+import { EventBus } from '@/entities/reservation/domain/reservation.domain';
+import { createUserRepository, UserRepository } from '@/entities/user/infrastructure/user-repository.adapter';
+// import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
 import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 import {
@@ -38,7 +39,7 @@ export function createUserReservationsContainer(): UserReservationsContainer {
 
   // Infrastructure layer: HTTP Client and Auth
   const authContext = createServerAuthContext();
-  const httpClient = ServerHttpClientFactory.createServerSync(authContext);
+  const httpClient = ClientHttpClientFactory.createClient(authContext);
 
   // Infrastructure layer: Use existing repositories directly
   // No adapters needed - existing interfaces are sufficient for our domain
@@ -55,7 +56,7 @@ export function createUserReservationsContainer(): UserReservationsContainer {
     eventBus
   );
 
-  // 🌐 Infrastructure layer: Service (External API)
+  // Infrastructure layer: Service (External API)
   const reservationService: ServerReservationService = createServerReservationService(
     getUserReservationsUseCase
   );

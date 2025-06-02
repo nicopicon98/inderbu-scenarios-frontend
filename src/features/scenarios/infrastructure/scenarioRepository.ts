@@ -23,7 +23,7 @@ interface ScenarioApiData {
 export async function getScenarioById(scenarioId: string): Promise<ScenarioApiData> {
   try {
     const url = `${API_BASE_URL}/sub-scenarios/${scenarioId}`;
-    console.log('🌐 Fetching scenario from:', url);
+    console.log('Fetching scenario from:', url);
 
     const response = await fetch(url, {
       cache: 'no-store', // Dynamic data for individual scenarios

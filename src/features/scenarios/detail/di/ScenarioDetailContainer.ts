@@ -5,7 +5,7 @@ import { ScenarioDetailService, createScenarioDetailService } from '@/features/s
 import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Import repository adapter
-import { createScenarioDetailRepositoryAdapter } from '@/entities/scenario/infrastructure/ScenarioDetailRepositoryAdapter';
+import { createScenarioDetailRepositoryAdapter } from '@/entities/scenario/infrastructure/scneario-detail-repository.adapter';
 
 // NEW: Import CLEAN repository (no legacy dependencies)
 import { CleanScenarioRepositoryAdapter } from '@/features/scenarios/infrastructure/scenarioRepository';

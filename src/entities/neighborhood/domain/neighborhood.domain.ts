@@ -1,4 +1,4 @@
-import { DomainEvent } from "@/entities/reservation/domain/ReservationDomain";
+import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
 import { INeighborhood } from "@/features/auth/interfaces/neighborhood.interface";
 
 export interface NeighborhoodRepository {

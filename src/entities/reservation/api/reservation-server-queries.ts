@@ -2,9 +2,9 @@ import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { cache } from 'react';
 import { GetReservationsQuery, PaginatedReservations, ReservationDto } from '../model/types';
-import { createReservationRepository } from './reservationRepository';
+import { createReservationRepository } from '../infrastructure/reservation-repository.adapter';
 
-// Server-side data fetching with caching
+// Server-side data fetching with caching (SERVER-ONLY)
 export const getReservationsByUserId = cache(async (
   userId: number,
   query: GetReservationsQuery = {}
@@ -39,15 +39,3 @@ export const getAvailableTimeSlots = cache(async (subScenarioId: number, date: s
 
   return repository.getAvailableTimeSlots(subScenarioId, date);
 });
-
-// Query key factory for React Query
-export const reservationQueryKeys = {
-  all: ['reservations'] as const,
-  lists: () => [...reservationQueryKeys.all, 'list'] as const,
-  list: (filters: GetReservationsQuery) => [...reservationQueryKeys.lists(), { filters }] as const,
-  details: () => [...reservationQueryKeys.all, 'detail'] as const,
-  detail: (id: number) => [...reservationQueryKeys.details(), id] as const,
-  states: () => [...reservationQueryKeys.all, 'states'] as const,
-  timeSlots: () => [...reservationQueryKeys.all, 'timeSlots'] as const,
-  timeSlot: (subScenarioId: number, date: string) => [...reservationQueryKeys.timeSlots(), { subScenarioId, date }] as const,
-} as const;

@@ -32,7 +32,7 @@ export interface AuthTokens {
   refresh_token?: string;
 }
 
-export interface LoginCredentials {
+export interface ILoginCredentials {
   email: string;
   password: string;
 }

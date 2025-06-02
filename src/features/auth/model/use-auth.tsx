@@ -1,40 +1,25 @@
 'use client';
 
-import { createUserRepository } from '@/entities/user/api/userRepository';
 import {
   AuthState,
-  LoginCredentials,
-  RegisterData,
-  ResetPasswordData,
-  User,
-  extractUserFromToken,
-  isTokenExpired
 } from '@/entities/user/model/types';
-import { ClientAuthManager } from '@/shared/api/auth';
-import { ClientHttpClientFactory, createClientAuthContext } from '@/shared/api/http-client-client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { TRegisterData } from '../schemas/auth-schemas';
+import { login, register, resetPassword, logout } from '../api/auth-actions';
+import { TLoginData, TRegisterData, TResetData } from '../schemas/auth-schemas';
 
 interface AuthContextType extends AuthState {
   // Actions
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: TLoginData) => Promise<void>;
   register: (data: TRegisterData) => Promise<void>;
-  resetPassword: (data: ResetPasswordData) => Promise<void>;
+  resetPassword: (data: TResetData) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<boolean>;
 
-  // Validation methods (for compatibility with ProtectedRouteProvider)
+  // Compatibility methods (legacy support)
   validateCurrentSession: () => Promise<boolean>;
   isTokenExpired: () => boolean;
-
-  // State setters (for server actions integration)
-  setUser: (user: User | null) => void;
-  setError: (error: string | null) => void;
-  setLoading: (loading: boolean) => void;
-
-  // Compatibility alias
+  refreshToken: () => Promise<boolean>;
   authReady: boolean;
 }
 
@@ -50,50 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const queryClient = useQueryClient();
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from server cookies
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = ClientAuthManager.getToken();
-
-        if (!token) {
-          setAuthState(prev => ({ ...prev, isLoading: false }));
-          return;
-        }
-
-        if (isTokenExpired(token)) {
-          // Try to refresh token
-          const refreshToken = ClientAuthManager.getRefreshToken();
-          if (refreshToken) {
-            const refreshed = await handleRefreshToken();
-            if (!refreshed) {
-              ClientAuthManager.clearTokens();
-              setAuthState(prev => ({ ...prev, isLoading: false }));
-              return;
-            }
-          } else {
-            ClientAuthManager.clearTokens();
-            setAuthState(prev => ({ ...prev, isLoading: false }));
-            return;
-          }
-        }
-
-        // Extract user from token
-        const user = extractUserFromToken(token);
-        if (user) {
-          setAuthState({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-        } else {
-          ClientAuthManager.clearTokens();
-          setAuthState(prev => ({ ...prev, isLoading: false }));
-        }
+        // Server maneja la inicialización via httpOnly cookies
+        // No más localStorage - el servidor tiene la fuente de verdad
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       } catch (error) {
         console.error('Error initializing auth:', error);
-        ClientAuthManager.clearTokens();
         setAuthState({
           user: null,
           isAuthenticated: false,
@@ -106,205 +56,154 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, []);
 
-  // Create repository instance
-  const createRepository = () => {
-    const authContext = createClientAuthContext();
-    const httpClient = ClientHttpClientFactory.createClient(authContext);
-    return createUserRepository(httpClient);
-  };
-
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      const repository = createRepository();
-      return repository.login(credentials);
-    },
-    onSuccess: (tokens) => {
-      // Store tokens
-      ClientAuthManager.setTokens(tokens.access_token, tokens.refresh_token);
-
-      // Extract user from token
-      const user = extractUserFromToken(tokens.access_token);
-      if (user) {
+  // Login con useCallback y función directa
+  const handleLogin = useCallback(async (credentials: TLoginData): Promise<void> => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      // Usar función directa (sin FormData)
+      const result = await login(credentials);
+      
+      if (result.success && result.data) {
+        // Server action ya configuró httpOnly cookies + revalidatePath
+        // Solo actualizamos estado del cliente
         setAuthState({
-          user,
+          user: result.data.user,
           isAuthenticated: true,
           isLoading: false,
           error: null,
         });
-
+        
         toast.success('¡Bienvenido! Inicio de sesión correcto');
+        
+        // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
       } else {
-        throw new Error('Token inválido recibido del servidor');
+        throw new Error(result.error || 'Error de autenticación');
       }
-    },
-    onError: (error: any) => {
-      const errorMessage = error.message || 'Error de autenticación';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error de autenticación';
       setAuthState(prev => ({ ...prev, error: errorMessage, isLoading: false }));
       toast.error(errorMessage);
-    },
-  });
-
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: async (data: TRegisterData) => {
-      const repository = createRepository();
-      return repository.register(data);
-    },
-    onSuccess: () => {
-      toast.success('Registrado correctamente. Revisa tu correo para confirmar tu cuenta.');
-    },
-    onError: (error: any) => {
-      const errorMessage = error.message || 'Error de registro';
-      setAuthState(prev => ({ ...prev, error: errorMessage }));
-      toast.error(errorMessage);
-    },
-  });
-
-  // Reset password mutation
-  const resetPasswordMutation = useMutation({
-    mutationFn: async (data: ResetPasswordData) => {
-      const repository = createRepository();
-      return repository.resetPassword(data);
-    },
-    onSuccess: () => {
-      toast.success('Correo enviado. Revisa tu bandeja para restablecer tu contraseña.');
-    },
-    onError: (error: any) => {
-      const errorMessage = error.message || 'Error al enviar correo';
-      setAuthState(prev => ({ ...prev, error: errorMessage }));
-      toast.error(errorMessage);
-    },
-  });
-
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      try {
-        const repository = createRepository();
-        await repository.logout();
-      } catch (error) {
-        console.warn('Error calling logout endpoint:', error);
-        // Continue with local logout even if server call fails
-      }
-    },
-    onSettled: () => {
-      // Clear tokens and state regardless of server call result
-      ClientAuthManager.clearTokens();
-      setAuthState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-      });
-
-      // Clear all queries
-      queryClient.clear();
-
-      toast.success('Sesión cerrada correctamente');
-    },
-  });
-
-  // Validate current session
-  const validateCurrentSession = async (): Promise<boolean> => {
+      throw error;
+    }
+  }, []);
+  
+  // Register con useCallback y función directa
+  const handleRegister = useCallback(async (data: TRegisterData): Promise<void> => {
+    setAuthState(prev => ({ ...prev, error: null }));
+    
     try {
-      const token = ClientAuthManager.getToken();
+      // Usar función directa (sin FormData)
+      const result = await register(data);
       
-      if (!token) {
-        return false;
+      if (result.success) {
+        toast.success('Registrado correctamente. Revisa tu correo para confirmar tu cuenta.');
+      } else {
+        throw new Error(result.error || 'Error de registro');
       }
-
-      if (isTokenExpired(token)) {
-        // Try to refresh token
-        const refreshToken = ClientAuthManager.getRefreshToken();
-        if (refreshToken) {
-          return await handleRefreshToken();
-        }
-        return false;
-      }
-
-      // Token exists and is not expired - session is valid
-      return true;
     } catch (error) {
-      console.error('Error validating session:', error);
-      return false;
+      const errorMessage = error instanceof Error ? error.message : 'Error de registro';
+      setAuthState(prev => ({ ...prev, error: errorMessage }));
+      toast.error(errorMessage);
+      throw error;
     }
-  };
-
-  // Check if current token is expired
-  const checkTokenExpired = (): boolean => {
-    const token = ClientAuthManager.getToken();
-    if (!token) return true;
-    return isTokenExpired(token);
-  };
-  const handleRefreshToken = async (): Promise<boolean> => {
+  }, []);
+  
+  // Reset password con useCallback y función directa
+  const handleResetPassword = useCallback(async (data: TResetData): Promise<void> => {
+    setAuthState(prev => ({ ...prev, error: null }));
+    
     try {
-      const refreshToken = ClientAuthManager.getRefreshToken();
-      if (!refreshToken) return false;
-
-      const repository = createRepository();
-      const tokens = await repository.refreshToken(refreshToken);
-
-      // Store new tokens
-      ClientAuthManager.setTokens(tokens.access_token, tokens.refresh_token);
-
-      // Update user from new token
-      const user = extractUserFromToken(tokens.access_token);
-      if (user) {
-        setAuthState(prev => ({ ...prev, user, isAuthenticated: true }));
-        return true;
+      // Usar función directa (sin FormData)
+      const result = await resetPassword(data);
+      
+      if (result.success) {
+        toast.success('Correo enviado. Revisa tu bandeja para restablecer tu contraseña.');
+      } else {
+        throw new Error(result.error || 'Error al enviar correo');
       }
-
-      return false;
     } catch (error) {
-      console.error('Error refreshing token:', error);
-      ClientAuthManager.clearTokens();
+      const errorMessage = error instanceof Error ? error.message : 'Error al enviar correo';
+      setAuthState(prev => ({ ...prev, error: errorMessage }));
+      toast.error(errorMessage);
+      throw error;
+    }
+  }, []);
+  
+  // Logout con useCallback y función directa
+  const handleLogout = useCallback(async (): Promise<void> => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const result = await logout();
+      
+      if (result.success) {
+        // Server action ya limpió cookies httpOnly + revalidatePath
+        // Solo limpiar estado del cliente
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
+        
+        // INVALIDACIÓN ESPECÍFICA: Solo queries relevantes
+        queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        
+        toast.success('Sesión cerrada correctamente');
+        
+        // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
+      } else {
+        throw new Error(result.error || 'Error al cerrar sesión');
+      }
+    } catch (error) {
+      // Incluso si hay error, limpiar estado local
       setAuthState({
         user: null,
         isAuthenticated: false,
         isLoading: false,
         error: null,
       });
-      return false;
+      
+      // LIMPIAR solo queries específicas
+      queryClient.invalidateQueries({ queryKey: ['current-user'] });
+      
+      const errorMessage = error instanceof Error ? error.message : 'Error al cerrar sesión';
+      toast.error(errorMessage);
     }
-  };
+  }, [queryClient]);
 
-  // Context value
+  // Compatibilidad - Session validation (delegado al servidor)
+  const validateCurrentSession = useCallback(async (): Promise<boolean> => {
+    // Con httpOnly cookies, el servidor maneja la validación automáticamente
+    return authState.isAuthenticated;
+  }, [authState.isAuthenticated]);
+
+  // Compatibilidad - Token expiration (ya no relevante)
+  const checkTokenExpired = useCallback((): boolean => {
+    // El servidor maneja expiración automáticamente con httpOnly cookies
+    return !authState.isAuthenticated;
+  }, [authState.isAuthenticated]);
+  
+  // Compatibilidad - Refresh token (automático en servidor)
+  const handleRefreshToken = useCallback(async (): Promise<boolean> => {
+    // Con httpOnly cookies, el refresh es automático en el servidor
+    return authState.isAuthenticated;
+  }, [authState.isAuthenticated]);
+
+  // OPTIMIZADO: Context value con callbacks memoizados
   const contextValue: AuthContextType = {
     ...authState,
-    login: async (credentials: LoginCredentials) => {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      await loginMutation.mutateAsync(credentials);
-    },
-    register: async (data: TRegisterData) => {
-      setAuthState(prev => ({ ...prev, error: null }));
-      await registerMutation.mutateAsync(data);
-    },
-    resetPassword: async (data: ResetPasswordData) => {
-      setAuthState(prev => ({ ...prev, error: null }));
-      await resetPasswordMutation.mutateAsync(data);
-    },
-    logout: async () => {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
-      await logoutMutation.mutateAsync();
-    },
+    // Usar server actions optimizados
+    login: handleLogin,
+    register: handleRegister,
+    resetPassword: handleResetPassword,
+    logout: handleLogout,
     refreshToken: handleRefreshToken,
     validateCurrentSession,
     isTokenExpired: checkTokenExpired,
     authReady: !authState.isLoading, // Compatibility alias
-    setUser: (user: User | null) => {
-      setAuthState(prev => ({
-        ...prev,
-        user,
-        isAuthenticated: !!user
-      }));
-    },
-    setError: (error: string | null) => {
-      setAuthState(prev => ({ ...prev, error }));
-    },
-    setLoading: (isLoading: boolean) => {
-      setAuthState(prev => ({ ...prev, isLoading }));
-    },
   };
 
   return (
@@ -321,29 +220,4 @@ export function useAuth(): AuthContextType {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
-
-// Hook for server action integration
-export function useAuthActions() {
-  const { setUser, setError, setLoading } = useAuth();
-
-  return {
-    handleLoginSuccess: (user: User, tokens: any) => {
-      // Store tokens in localStorage
-      ClientAuthManager.setTokens(tokens.access_token, tokens.refresh_token);
-      setUser(user);
-      setError(null);
-      setLoading(false);
-    },
-    handleAuthError: (error: string) => {
-      setError(error);
-      setLoading(false);
-    },
-    handleLogoutSuccess: () => {
-      ClientAuthManager.clearTokens();
-      setUser(null);
-      setError(null);
-      setLoading(false);
-    },
-  };
 }

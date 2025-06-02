@@ -1,9 +1,8 @@
 import { GetUserReservationsResponse } from '@/features/reservations/list/application/GetUserReservationsUseCase';
-import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/UserAccessPolicy';
+import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/user-access.policy';
 import { ReservationsPage } from '@/templates/reservations/ui/ReservationsPage';
-import { createUserReservationsContainer } from '@/features/reservations/di';
+import { createUserReservationsContainer } from '@/features/reservations/di/ReservationsContainer.server';
 import { redirect } from 'next/navigation';
-import { use } from 'react';
 
 interface PageProps {
   params: Promise<{ userId: string }>;

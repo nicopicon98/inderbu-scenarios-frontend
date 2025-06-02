@@ -1,4 +1,4 @@
-import { DomainEvent, EventBus } from '@/entities/reservation/domain/ReservationDomain';
+import { DomainEvent, EventBus } from '@/entities/reservation/domain/reservation.domain';
 
 // DDD: Simple in-memory event bus implementation
 export class InMemoryEventBus implements EventBus {
@@ -48,4 +48,4 @@ export function createInMemoryEventBus(): EventBus {
 }
 
 // Re-export EventBus for convenience
-export type { EventBus } from '@/entities/reservation/domain/ReservationDomain';
+export type { EventBus } from '@/entities/reservation/domain/reservation.domain';

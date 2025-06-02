@@ -1,4 +1,4 @@
-import { UserAccessPolicy } from '@/entities/user/domain/UserAccessPolicy';
+import { UserAccessPolicy } from '@/entities/user/domain/user-access.policy';
 import { 
   GetUserReservationsUseCase, 
   GetUserReservationsRequest,

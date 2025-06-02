@@ -1,41 +1,61 @@
 'use server';
 
-import { createUserRepository } from '@/entities/user/api/userRepository';
-import {
-  LoginCredentials,
-  LoginSchema,
-  RegisterData,
-  RegisterSchema,
-  ResetPasswordSchema,
-  extractUserFromToken
-} from '@/entities/user/model/types';
-import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
-import { createServerAuthContext } from '@/shared/api/server-auth';
-import { createFormDataValidator } from '@/shared/lib/validation';
+import { createUserRepository } from '@/entities/user/infrastructure/user-repository.adapter';
+import { extractUserFromToken } from '@/entities/user/model/types';
+import { 
+  loginSchema, 
+  registerSchema, 
+  resetSchema,
+  TLoginData,
+  TRegisterData,
+  TResetData 
+} from '@/features/auth/schemas/auth-schemas';
+import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
 
+// ARREGLADO: fieldErrors puede ser null o Record limpio
 export interface AuthResult {
   success: boolean;
   data?: any;
   error?: string;
-  fieldErrors?: Record<string, string[]>;
+  fieldErrors?: Record<string, string[]> | null;
 }
 
-// Form data validators
-const validateLogin = createFormDataValidator(LoginSchema);
-const validateRegister = createFormDataValidator(RegisterSchema);
-const validateResetPassword = createFormDataValidator(ResetPasswordSchema);
+// HELPER: Convertir Zod errors a formato limpio
+const getFieldErrors = (error: z.ZodError): Record<string, string[]> => {
+  const flattened = error.flatten().fieldErrors;
+  const cleaned: Record<string, string[]> = {};
+  
+  for (const [key, value] of Object.entries(flattened)) {
+    if (value && Array.isArray(value)) {
+      cleaned[key] = value;
+    }
+  }
+  
+  return cleaned;
+};
+
+// =====================================
+// SERVER ACTIONS (para formularios)
+// =====================================
 
 export async function loginAction(
-  prevState: AuthResult | null,
+  _prevState: AuthResult | null,
   formData: FormData
 ): Promise<AuthResult> {
   try {
-    // Validate input
-    const credentials = validateLogin(formData);
+    // VALIDACIÓN: Usar loginSchema de auth-schemas
+    const rawData = {
+      email: formData.get('email'),
+      password: formData.get('password'),
+    };
+    
+    const credentials = loginSchema.parse(rawData);
 
-    // Create repository (no auth needed for login)
-    const httpClient = await ServerHttpClientFactory.createServerSync();
+    // CORRECTO: ClientHttpClientFactory como pide UserRepository
+    const httpClient = ClientHttpClientFactory.createClient();
     const repository = createUserRepository(httpClient);
 
     // Execute login
@@ -47,12 +67,12 @@ export async function loginAction(
       throw new Error('Invalid token received from server');
     }
 
-    // Set server-side cookies
+    // COOKIES: httpOnly + secure + strict
     const cookieStore = await cookies();
     cookieStore.set('auth_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -60,61 +80,71 @@ export async function loginAction(
       cookieStore.set('refresh_token', tokens.refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
     }
 
     console.log(`User logged in successfully: ${user.email}`);
 
+    // REVALIDATE: Auto-actualizar UI
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+
     return {
       success: true,
-      data: {
-        user,
-        tokens,
-      },
+      data: { user }, // Solo user, no tokens
     };
   } catch (error) {
     console.error('Error in login action:', error);
 
-    if (error instanceof Error) {
-      if (error.name === 'ValidationError') {
-        return {
-          success: false,
-          error: 'Datos de entrada inválidos',
-          fieldErrors: { general: [error.message] },
-        };
-      }
-
+    if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.message || 'Error de autenticación',
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error), // LIMPIO: sin undefined
       };
     }
 
     return {
       success: false,
-      error: 'Error inesperado al iniciar sesión',
+      error: error instanceof Error ? error.message : 'Error de autenticación',
     };
   }
 }
 
 export async function registerAction(
-  prevState: AuthResult | null,
+  _prevState: AuthResult | null,
   formData: FormData
 ): Promise<AuthResult> {
   try {
-    // Validate input
-    const registerData = validateRegister(formData);
+    // VALIDACIÓN: Usar registerSchema de auth-schemas
+    const rawData = {
+      dni: Number(formData.get('dni')),
+      firstName: formData.get('firstName'),
+      lastName: formData.get('lastName'),
+      phone: formData.get('phone'),
+      address: formData.get('address'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      confirmPassword: formData.get('confirmPassword'),
+      roleId: Number(formData.get('roleId')),
+      neighborhoodId: Number(formData.get('neighborhoodId')),
+    };
 
-    // Create repository
-    const httpClient = await ServerHttpClientFactory.createServerSync();
+    const registerData = registerSchema.parse(rawData);
+
+    // CORRECTO: ClientHttpClientFactory
+    const httpClient = ClientHttpClientFactory.createClient();
     const repository = createUserRepository(httpClient);
 
-    // Execute registration
+    // Execute registration - TIPOS COINCIDEN: TRegisterData
     await repository.register(registerData);
 
     console.log(`User registered successfully: ${registerData.email}`);
+
+    // REVALIDATE
+    revalidatePath('/auth');
 
     return {
       success: true,
@@ -123,41 +153,38 @@ export async function registerAction(
   } catch (error) {
     console.error('Error in register action:', error);
 
-    if (error instanceof Error) {
-      if (error.name === 'ValidationError') {
-        return {
-          success: false,
-          error: 'Datos de entrada inválidos',
-          fieldErrors: { general: [error.message] },
-        };
-      }
-
+    if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.message || 'Error de registro',
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error),
       };
     }
 
     return {
       success: false,
-      error: 'Error inesperado al registrar usuario',
+      error: error instanceof Error ? error.message : 'Error de registro',
     };
   }
 }
 
 export async function resetPasswordAction(
-  prevState: AuthResult | null,
+  _prevState: AuthResult | null,
   formData: FormData
 ): Promise<AuthResult> {
   try {
-    // Validate input
-    const resetData = validateResetPassword(formData);
+    // VALIDACIÓN: Usar resetSchema
+    const rawData = {
+      email: formData.get('email'),
+    };
 
-    // Create repository
-    const httpClient = await ServerHttpClientFactory.createServer();
+    const resetData = resetSchema.parse(rawData);
+
+    // CORRECTO: ClientHttpClientFactory
+    const httpClient = ClientHttpClientFactory.createClient();
     const repository = createUserRepository(httpClient);
 
-    // Execute reset password
+    // Execute reset password - TIPOS COINCIDEN: TResetData
     await repository.resetPassword(resetData);
 
     console.log(`Password reset sent for: ${resetData.email}`);
@@ -168,6 +195,14 @@ export async function resetPasswordAction(
     };
   } catch (error) {
     console.error('Error in reset password action:', error);
+
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error),
+      };
+    }
 
     return {
       success: false,
@@ -180,8 +215,7 @@ export async function logoutAction(): Promise<AuthResult> {
   try {
     // Try to call logout endpoint
     try {
-      const authContext = createServerAuthContext();
-      const httpClient = ServerHttpClientFactory.createServer(authContext);
+      const httpClient = ClientHttpClientFactory.createClient();
       const repository = createUserRepository(httpClient);
 
       await repository.logout();
@@ -197,6 +231,10 @@ export async function logoutAction(): Promise<AuthResult> {
 
     console.log('User logged out successfully');
 
+    // REVALIDATE
+    revalidatePath('/');
+    revalidatePath('/auth');
+
     return {
       success: true,
       data: { message: 'Sesión cerrada correctamente' },
@@ -211,12 +249,16 @@ export async function logoutAction(): Promise<AuthResult> {
   }
 }
 
-// Direct function calls (non-form based)
-export async function login(credentials: LoginCredentials): Promise<AuthResult> {
-  try {
-    const validatedCredentials = LoginSchema.parse(credentials);
+// =====================================
+// FUNCIONES DIRECTAS (para useAuth)
+// =====================================
 
-    const httpClient = await ServerHttpClientFactory.createServer();
+// FUNCIÓN DIRECTA: Sin FormData, para uso programático
+export async function login(credentials: TLoginData): Promise<AuthResult> {
+  try {
+    const validatedCredentials = loginSchema.parse(credentials);
+
+    const httpClient = ClientHttpClientFactory.createClient();
     const repository = createUserRepository(httpClient);
 
     const tokens = await repository.login(validatedCredentials);
@@ -231,7 +273,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResult> 
     cookieStore.set('auth_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7,
     });
 
@@ -239,17 +281,29 @@ export async function login(credentials: LoginCredentials): Promise<AuthResult> 
       cookieStore.set('refresh_token', tokens.refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: 60 * 60 * 24 * 30,
       });
     }
 
+    // REVALIDATE
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+
     return {
       success: true,
-      data: { user, tokens },
+      data: { user },
     };
   } catch (error) {
     console.error('Error in direct login:', error);
+
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error),
+      };
+    }
 
     return {
       success: false,
@@ -258,25 +312,77 @@ export async function login(credentials: LoginCredentials): Promise<AuthResult> 
   }
 }
 
-export async function register(data: RegisterData): Promise<AuthResult> {
+// FUNCIÓN DIRECTA: Register sin FormData
+export async function register(data: TRegisterData): Promise<AuthResult> {
   try {
-    const validatedData = RegisterSchema.parse(data);
+    const validatedData = registerSchema.parse(data);
 
-    const httpClient = await ServerHttpClientFactory.createServer();
+    const httpClient = ClientHttpClientFactory.createClient();
     const repository = createUserRepository(httpClient);
 
     await repository.register(validatedData);
 
+    console.log(`User registered successfully: ${validatedData.email}`);
+
+    revalidatePath('/auth');
+
     return {
       success: true,
-      data: { message: 'Usuario registrado correctamente' },
+      data: { message: 'Registrado correctamente. Revisa tu correo para confirmar tu cuenta.' },
     };
   } catch (error) {
     console.error('Error in direct register:', error);
+
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error),
+      };
+    }
 
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error de registro',
     };
   }
+}
+
+// FUNCIÓN DIRECTA: Reset password sin FormData
+export async function resetPassword(data: TResetData): Promise<AuthResult> {
+  try {
+    const validatedData = resetSchema.parse(data);
+
+    const httpClient = ClientHttpClientFactory.createClient();
+    const repository = createUserRepository(httpClient);
+
+    await repository.resetPassword(validatedData);
+
+    console.log(`Password reset sent for: ${validatedData.email}`);
+
+    return {
+      success: true,
+      data: { message: 'Correo enviado. Revisa tu bandeja para restablecer tu contraseña.' },
+    };
+  } catch (error) {
+    console.error('Error in direct reset password:', error);
+
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Datos de entrada inválidos',
+        fieldErrors: getFieldErrors(error),
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error al enviar correo de restablecimiento',
+    };
+  }
+}
+
+// FUNCIÓN DIRECTA: Logout
+export async function logout(): Promise<AuthResult> {
+  return logoutAction(); // Reutilizar la action ya que no necesita FormData
 }

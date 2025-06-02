@@ -5,9 +5,9 @@ import { HomeService, createHomeService } from '@/features/home/data/infrastruct
 import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Import repository adapters
-import { createSubScenarioRepositoryAdapter } from '@/entities/sub-scenario/infrastructure/SubScenarioRepositoryAdapter';
-import { createActivityAreaRepositoryAdapter } from '@/entities/activity-area/infrastructure/ActivityAreaRepositoryAdapter';
-import { createNeighborhoodRepositoryAdapter } from '@/entities/neighborhood/infrastructure/NeighborhoodRepositoryAdapter';
+import { createSubScenarioRepositoryAdapter } from '@/entities/sub-scenario/infrastructure/sub-scenario-repository.adapter';
+import { createActivityAreaRepositoryAdapter } from '@/entities/activity-area/infrastructure/acitivity-area-repositoy.adapter';
+import { createNeighborhoodRepositoryAdapter } from '@/entities/neighborhood/infrastructure/neighborhood-repository.adapter';
 
 // Import existing API services (temporary bridge)
 import { 

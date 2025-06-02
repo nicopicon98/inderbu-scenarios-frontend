@@ -1,27 +1,24 @@
 import {
   AuthTokens,
-  LoginCredentials,
-  RegisterData,
-  ResetPasswordData,
   User
 } from '../model/types';
-import { TRegisterData } from '@/features/auth/schemas/auth-schemas';
+import { TLoginData, TRegisterData, TResetData } from '@/features/auth/schemas/auth-schemas';
 import { ClientHttpClient } from '@/shared/api/http-client-client';
 import { SimpleApiResponse } from '@/shared/api/types';
 
 export interface UserRepository {
-  login(credentials: LoginCredentials): Promise<AuthTokens>;
+  login(credentials: TLoginData): Promise<AuthTokens>;
   register(data: TRegisterData): Promise<void>;
   getCurrentUser(): Promise<User>;
   refreshToken(refreshToken: string): Promise<AuthTokens>;
-  resetPassword(data: ResetPasswordData): Promise<void>;
+  resetPassword(data: TResetData): Promise<void>;
   logout(): Promise<void>;
 }
 
 export class ApiUserRepository implements UserRepository {
   constructor(private httpClient: ClientHttpClient) { }
 
-  async login(credentials: LoginCredentials): Promise<AuthTokens> {
+  async login(credentials: TLoginData): Promise<AuthTokens> {
     const response = await this.httpClient.post<SimpleApiResponse<AuthTokens>>(
       '/auth/login',
       credentials
@@ -51,7 +48,7 @@ export class ApiUserRepository implements UserRepository {
     return response.data;
   }
 
-  async resetPassword(data: ResetPasswordData): Promise<void> {
+  async resetPassword(data: TResetData): Promise<void> {
     await this.httpClient.post<SimpleApiResponse<void>>(
       '/auth/reset-password',
       data

@@ -1,8 +1,8 @@
 import { User } from '@/entities/user/model/types';
-import { UserAccessPolicy, AccessDeniedError } from '@/entities/user/domain/UserAccessPolicy';
-import { UserRepository } from '@/entities/user/api/userRepository'; // Use existing
-import { ReservationRepository } from '@/entities/reservation/api/reservationRepository'; // Use existing  
-import { EventBus, ReservationsAccessedEvent } from '@/entities/reservation/domain/ReservationDomain';
+import { UserAccessPolicy, AccessDeniedError } from '@/entities/user/domain/user-access.policy';
+import { UserRepository } from '@/entities/user/infrastructure/user-repository.adapter'; // Use existing
+import { ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter'; // Use existing  
+import { EventBus, ReservationsAccessedEvent } from '@/entities/reservation/domain/reservation.domain';
 import { PaginatedReservations, GetReservationsQuery } from '@/entities/reservation/model/types';
 
 // DDD: Use Case Input DTOs
@@ -55,7 +55,7 @@ export class GetUserReservationsUseCase {
       }
     }
 
-    // 🔒 Business rule: Access control validation
+    // Business rule: Access control validation
     if (!UserAccessPolicy.canAccessReservations(currentUser, targetUserId)) {
       throw new AccessDeniedError(
         `No tienes permisos para ver las reservas del usuario ${targetUserId}`

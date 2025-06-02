@@ -1,4 +1,4 @@
-import { DomainEvent } from "@/entities/reservation/domain/ReservationDomain";
+import { DomainEvent } from "@/entities/reservation/domain/reservation.domain";
 
 // DDD: Sub-Scenario Domain Logic & Repository Interface
 export interface SubScenario {

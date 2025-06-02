@@ -1,8 +1,8 @@
-import { AuthMode } from "../types/auth-mode.type";
+import { ResetPasswordForm } from "../components/organisms/reset-password-form";
+import { RegisterForm } from "../components/organisms/register-form";
 import { IFormConfig } from "../interfaces/form-config.interface";
 import { LoginForm } from "../components/organisms/login-form";
-import { RegisterForm } from "../components/organisms/register-form";
-import { ResetPasswordForm } from "../components/organisms/reset-password-form";
+import { AuthMode } from "../types/auth-mode.type";
 
 export class AuthFormFactory {
   private static configs: Record<AuthMode, IFormConfig> = {
@@ -31,9 +31,7 @@ export class AuthFormFactory {
 
   static createForm(mode: AuthMode): IFormConfig {
     const config = this.configs[mode];
-    if (!config) {
-      throw new Error(`Form mode '${mode}' not supported`);
-    }
+    if (!config) throw new Error(`Form mode '${mode}' not supported`);
     return config;
   }
 

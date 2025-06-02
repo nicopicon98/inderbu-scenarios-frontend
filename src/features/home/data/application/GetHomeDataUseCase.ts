@@ -4,15 +4,15 @@ import {
   PaginatedSubScenarios,
   HomeDataAccessedEvent,
   HomeFiltersAppliedEvent,
-} from "@/entities/sub-scenario/domain/SubScenarioDomain";
+} from "@/entities/sub-scenario/domain/sub-scenario.domain";
 import {
   ActivityAreaRepository,
   ActivityAreasLoadedEvent,
-} from "@/entities/activity-area/domain/ActivityAreaDomain";
+} from "@/entities/activity-area/domain/activity-area.domain";
 import {
   NeighborhoodRepository,
   NeighborhoodsLoadedEvent,
-} from "@/entities/neighborhood/domain/NeighborhoodDomain";
+} from "@/entities/neighborhood/domain/neighborhood.domain";
 import { IActivityArea, INeighborhood } from "../../types/filters.types";
 import { EventBus } from "@/shared/infrastructure/InMemoryEventBus";
 

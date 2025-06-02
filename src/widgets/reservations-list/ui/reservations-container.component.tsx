@@ -34,7 +34,6 @@ interface ReservationsContainerProps {
 
 export function ReservationsContainer({ userId, initialData }: ReservationsContainerProps) {
   const router = useRouter();
-  const { user } = useAuth();
 
   // Local UI state
   const [selectedReservation, setSelectedReservation] = useState<ReservationDto | null>(null);
@@ -69,6 +68,11 @@ export function ReservationsContainer({ userId, initialData }: ReservationsConta
   };
 
   const handleReservationUpdated = () => {
+    invalidateAndRefetch();
+  };
+
+  const handleReservationCancelled = (reservationId: number) => {
+    // Update data immediately
     invalidateAndRefetch();
   };
 
@@ -215,6 +219,7 @@ export function ReservationsContainer({ userId, initialData }: ReservationsConta
             activeReservations={activeReservations}
             pastReservations={pastReservations}
             onEdit={handleModifyReservation}
+            onCancelled={handleReservationCancelled}
             pagination={{
               currentPage: meta.page,
               totalPages: meta.totalPages,
@@ -363,12 +368,14 @@ function ReservationsContent({
   activeReservations,
   pastReservations,
   onEdit,
+  onCancelled,
   pagination,
   onPageChange,
 }: {
   activeReservations: ReservationDto[];
   pastReservations: ReservationDto[];
   onEdit: (reservation: ReservationDto) => void;
+  onCancelled: (reservationId: number) => void;
   pagination: { currentPage: number; totalPages: number };
   onPageChange: (page: number) => void;
 }) {
@@ -408,8 +415,8 @@ function ReservationsContent({
                   reservation={reservation}
                   isActive={true}
                   onModify={() => onEdit(reservation)}
-                  onCancelled={() => { }} // Handled by widget
-                  highlightManageButton={index < 2 && activeReservations.length <= 3}
+                  onCancelled={onCancelled}
+                  highlightManageButton={index === 0 && activeReservations.length <= 3}
                 />
               </div>
             ))}
@@ -444,7 +451,7 @@ function ReservationsContent({
                 reservation={reservation}
                 isActive={false}
                 onModify={() => onEdit(reservation)}
-                onCancelled={() => { }} // Handled by widget
+                onCancelled={onCancelled}
               />
             ))}
           </div>

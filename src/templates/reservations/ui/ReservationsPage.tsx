@@ -1,4 +1,4 @@
-'use client';
+// 'use client';
 
 import { PaginatedReservations } from '@/entities/reservation/model/types';
 import { UserReservationsGuard } from '@/features/auth';
@@ -28,13 +28,12 @@ export function ReservationsPage({
     <main className="min-h-screen flex flex-col">
       <MainHeader />
 
-      {/* 🔒 Feature: Auth guard handles client-side protection */}
+      {/* Feature: Auth guard handles client-side protection */}
       <UserReservationsGuard userId={userId}>
         {/* Widget: Complex orchestration component */}
         <ReservationsContainer
           userId={userId}
           initialData={initialData}
-          accessMetadata={accessMetadata}
         />
       </UserReservationsGuard>
     </main>

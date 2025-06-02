@@ -1,8 +1,8 @@
 'use server';
 
-import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
-import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
-import { createServerAuthContext } from '@/shared/api/server-auth';
+import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
+import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-client-client';
+import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
 
@@ -18,9 +18,9 @@ export async function cancelReservationAction(
 ): Promise<CancelReservationResult> {
   try {
     // Create repository
-    const authContext = createServerAuthContext();
-    const httpClient = ServerHttpClientFactory.createServerSync(authContext);
-    const repository = createReservationRepository(httpClient);
+    const authContext: ServerAuthContext = createServerAuthContext();
+    const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
+    const repository: ReservationRepository = createReservationRepository(httpClient);
 
     // Update reservation state to CANCELLED (assuming ID 3 is CANCELADA)
     // Note: The current service shows stateId: 3 for cancel operations
@@ -55,7 +55,7 @@ export async function cancelMultipleReservationsAction(
 ): Promise<CancelReservationResult> {
   try {
     const authContext = createServerAuthContext();
-    const httpClient = ServerHttpClientFactory.createServerSync(authContext);
+    const httpClient = ClientHttpClientFactory.createClient(authContext);
     const repository = createReservationRepository(httpClient);
 
     // Cancel all reservations in parallel

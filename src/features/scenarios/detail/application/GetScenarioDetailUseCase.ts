@@ -9,7 +9,7 @@ import {
   ScenarioDetailNotFoundEvent,
   ScenarioDetailLoadedEvent,
   ScenarioNotFoundError
-} from '@/entities/scenario/domain/ScenarioDetailDomain';
+} from '@/entities/scenario/domain/scenario-detail.domain';
 import { EventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Application DTOs

@@ -1,6 +1,6 @@
 // Infrastructure: Activity Area Repository Adapter (bridges existing API to domain interface)
 
-import { ActivityAreaRepository, ActivityArea } from '@/entities/activity-area/domain/ActivityAreaDomain';
+import { ActivityAreaRepository, ActivityArea } from '@/entities/activity-area/domain/activity-area.domain';
 
 // Existing API interface (what currently exists)
 interface ActivityAreaApiService {
