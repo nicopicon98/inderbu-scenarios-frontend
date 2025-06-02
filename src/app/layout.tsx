@@ -1,4 +1,4 @@
-import { AuthProvider } from "@/shared/contexts/auth-context";
+import { Providers } from "@/shared/providers/Providers";
 import { Toaster } from "@/shared/ui/sonner";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next/types";
@@ -21,17 +21,10 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        > */}
-        <AuthProvider>
+        <Providers>
           {children}
           <Toaster />
-        </AuthProvider>
-        {/* </ThemeProvider> */}
+        </Providers>
       </body>
     </html>
   );

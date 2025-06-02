@@ -1,28 +1,33 @@
-// Componentes
-export * from "./components";
+// Export auth model
+export { useAuth, useAuthActions, AuthProvider } from './model/useAuth';
 
-// Hooks
-export * from "./hooks/use-auth";
-export * from "./hooks/use-neighborhoods";
-export * from "./hooks/use-roles";
+// Export auth actions
+export { 
+  loginAction, 
+  registerAction, 
+  resetPasswordAction, 
+  logoutAction,
+  login,
+  register
+} from './api/authActions';
 
-// Servicios
-export * from "./services/auth.service";
+// Export auth UI components
+export { AuthGuard, UserReservationsGuard } from './ui/AuthGuard';
 
-// Interfaces
-export * from "./interfaces/auth-strategy.interface";
-export * from "./interfaces/form-config.interface";
-export * from "./interfaces/form-handler.interface";
-export * from "./interfaces/form-navigation.interface";
-export * from "./interfaces/modal-controller.interface";
+// Export auth types from entities
+export type { 
+  User, 
+  AuthTokens, 
+  LoginCredentials, 
+  RegisterData, 
+  ResetPasswordData,
+  AuthState,
+  UserRole
+} from '@/entities/user/model/types';
 
-// Types y Schemas
-export * from "./schemas/auth-schemas";
-export * from "./types/auth-mode.type";
-
-// Utils (Factories y Strategies)
-export * from "./utils/auth-form-factory";
-export * from "./utils/auth-strategies";
-
-// Controllers
-export * from "./controllers/auth-modal-controller";
+export { 
+  canViewUserReservations, 
+  isAdmin, 
+  getUserFullName,
+  getUserRoleName
+} from '@/entities/user/model/types';
