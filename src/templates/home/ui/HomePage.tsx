@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeDataResponse } from '@/features/home/data/application/GetHomeDataUseCase';
+import { HomeDataResponse } from '@/features/home/data/application/get-home-data-use-case';
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { Pagination } from "@/shared/components/organisms/pagination";
 import { LoadingIndicator } from "@/features/home/components/molecules/loading-indicator";

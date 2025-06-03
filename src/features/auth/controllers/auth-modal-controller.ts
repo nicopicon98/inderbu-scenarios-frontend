@@ -1,13 +1,13 @@
-import { toast } from "sonner";
-import { AuthMode } from "../types/auth-mode.type";
-import { IAuthStrategy } from "../interfaces/auth-strategy.interface";
-import { IModalController } from "../interfaces/modal-controller.interface";
 import {
   LoginStrategy,
   RegisterStrategy,
   ResetPasswordStrategy,
 } from "../utils/auth-strategies";
+import { IModalController } from "../interfaces/modal-controller.interface";
+import { IAuthStrategy } from "../interfaces/auth-strategy.interface";
+import { AuthMode } from "../types/auth-mode.type";
 import { useAuth } from "../model/use-auth";
+import { toast } from "sonner";
 
 export class AuthModalController {
   private strategies = new Map<AuthMode, IAuthStrategy<any>>();

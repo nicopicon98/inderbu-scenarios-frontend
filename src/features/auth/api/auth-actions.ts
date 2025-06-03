@@ -252,7 +252,7 @@ export async function logoutAction(): Promise<AuthResult> {
 }
 
 // =====================================
-// FUNCIONES DIRECTAS (para useAuth)
+// FUNCIONES DIRECTAS (para uso programático como: hooks, servicios, etc.)
 // =====================================
 
 // FUNCIÓN DIRECTA: Sin FormData, para uso programático

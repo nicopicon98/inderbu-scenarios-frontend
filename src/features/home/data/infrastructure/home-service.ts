@@ -1,6 +1,6 @@
 // Infrastructure: Home Service (Application Service Layer)
 
-import { GetHomeDataUseCase, HomeFiltersInput, HomeDataResponse } from '@/features/home/data/application/GetHomeDataUseCase';
+import { GetHomeDataUseCase, HomeFiltersInput, HomeDataResponse } from '@/features/home/data/application/get-home-data-use-case';
 
 // Infrastructure: Service wrapper for Use Cases
 export interface HomeService {

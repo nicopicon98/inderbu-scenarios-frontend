@@ -28,7 +28,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ClickableStatusBadge } from "../molecules/clickable-statud-badge";
-import { cancelReservationAction } from "../../cancel/api/cancelReservationAction";
+import { cancelReservationAction } from "../../cancel/actions/cancel-reservation.action";
 
 
 interface ModifyReservationModalProps {

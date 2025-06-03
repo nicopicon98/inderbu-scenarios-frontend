@@ -29,7 +29,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { StatusBadge } from "../atoms/status-badge";
-import { cancelReservationAction, CancelReservationResult } from "../../cancel/api/cancelReservationAction";
+import { cancelReservationAction, CancelReservationResult } from "../../cancel/actions/cancel-reservation.action";
 
 
 interface ReservationItemProps {

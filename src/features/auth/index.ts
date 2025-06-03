@@ -1,5 +1,5 @@
 // Export auth model
-export { useAuth, useAuthActions, AuthProvider } from './model/use-auth';
+export { useAuth, AuthProvider } from './model/use-auth';
 
 // Export auth actions
 export { 
@@ -12,7 +12,7 @@ export {
 } from './api/auth-actions';
 
 // Export auth UI components
-export { AuthGuard, UserReservationsGuard } from './ui/AuthGuard';
+export { AuthGuard, UserReservationsGuard } from './ui/auth-guard';
 export { AuthModal } from './components'; // NEW: Export AuthModal
 
 // Export auth types from entities

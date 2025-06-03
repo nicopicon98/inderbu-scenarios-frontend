@@ -1,7 +1,7 @@
 // DDD: Dependency Injection Container for Home Feature
 
-import { GetHomeDataUseCase, createGetHomeDataUseCase } from '@/features/home/data/application/GetHomeDataUseCase';
-import { HomeService, createHomeService } from '@/features/home/data/infrastructure/HomeService';
+import { GetHomeDataUseCase, createGetHomeDataUseCase } from '@/features/home/data/application/get-home-data-use-case';
+import { HomeService, createHomeService } from '@/features/home/data/infrastructure/home-service';
 import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 
 // Import repository adapters
