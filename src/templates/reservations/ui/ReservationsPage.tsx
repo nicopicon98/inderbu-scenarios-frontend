@@ -9,12 +9,6 @@ import { ReservationsContainer } from '@/widgets/reservations-list';
 interface ReservationsPageProps {
   userId: number;
   initialData?: PaginatedReservations | null;
-  accessMetadata?: {
-    userId: number;
-    accessedAt: Date;
-    accessedBy: string;
-    accessLevel: string;
-  };
 }
 
 // Atomic: Page-level component (template with real data)
@@ -22,7 +16,6 @@ interface ReservationsPageProps {
 export function ReservationsPage({ 
   userId, 
   initialData, 
-  accessMetadata 
 }: ReservationsPageProps) {
   return (
     <main className="min-h-screen flex flex-col">

@@ -1,7 +1,7 @@
-// ✅ Utilidades de seguridad para autenticación
+// Utilidades de seguridad para autenticación
 
 /**
- * ✅ TIMING ATTACK PROTECTION
+ * TIMING ATTACK PROTECTION
  * Normaliza el tiempo de respuesta para evitar que atacantes enumeren emails válidos
  */
 export const timingProtection = async (minDelay: number = 500): Promise<void> => {
@@ -9,7 +9,7 @@ export const timingProtection = async (minDelay: number = 500): Promise<void> =>
 };
 
 /**
- * ✅ RATE LIMITING HELPER
+ * RATE LIMITING HELPER
  * Para usar con middleware o en server actions
  */
 export const createRateLimiter = (windowMs: number, maxAttempts: number) => {
@@ -37,7 +37,7 @@ export const createRateLimiter = (windowMs: number, maxAttempts: number) => {
 };
 
 /**
- * ✅ SECURE RANDOM DELAY
+ * SECURE RANDOM DELAY
  * Añade variabilidad adicional al timing protection
  */
 export const secureRandomDelay = async (baseMs: number = 500, varianceMs: number = 200): Promise<void> => {

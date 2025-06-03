@@ -1,6 +1,6 @@
 // ❌ ARCHIVO TEMPORAL - NUEVA ARQUITECTURA DDD NO USA ESTE PATRÓN
 // 
-// 🔄 EN NUEVA ARQUITECTURA:
+// EN NUEVA ARQUITECTURA:
 // - HTTP Clients: @/shared/api/http-client-client.ts y @/shared/api/http-client-server.ts
 // - Auth Context: @/shared/api/auth.ts y @/shared/api/server-auth.ts
 // - Repository Pattern: @/entities/[entity]/api/[entity]Repository.ts
@@ -18,7 +18,7 @@ export const authApiClient = {
     throw new Error(`
       ❌ API CLIENT OBSOLETO: authApiClient
       
-      🔄 MIGRADO A: Nueva arquitectura DDD
+      MIGRADO A: Nueva arquitectura DDD
       
       USO CORRECTO:
       import { ClientHttpClient } from '@/shared/api/http-client-client';

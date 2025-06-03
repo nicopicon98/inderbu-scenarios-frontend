@@ -12,6 +12,11 @@ export interface RequestConfig {
   headers?: Record<string, string>;
   timeout?: number;
   signal?: AbortSignal;
+  // NUEVO: Soporte para Next.js cache
+  next?: {
+    tags?: string[];
+    revalidate?: number | false;
+  };
 }
 
 // CLIENT-ONLY HTTP Client (no server dependencies)
@@ -34,13 +39,23 @@ export class ClientHttpClient {
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const headers: Record<string, string> = {};
 
+    console.log('🔍 HTTP CLIENT: Getting auth headers...');
+    
     if (this.authContext) {
+      console.log('HTTP CLIENT: Auth context found, getting token...');
       const token = await this.authContext.getToken();
+      
       if (token) {
+        console.log(`HTTP CLIENT: Token obtained (length: ${token.length}), adding Authorization header`);
         headers.Authorization = `Bearer ${token}`;
+      } else {
+        console.log('❌ HTTP CLIENT: No token returned from auth context');
       }
+    } else {
+      console.log('❌ HTTP CLIENT: No auth context provided');
     }
 
+    console.log('📄 HTTP CLIENT: Final auth headers:', Object.keys(headers));
     return headers;
   }
 
@@ -67,6 +82,14 @@ export class ClientHttpClient {
     const url = `${this.baseURL}${endpoint}`;
     const headers = await this.buildHeaders(config.headers);
 
+    console.log(`HTTP CLIENT: Making ${method} request to ${url}`);
+    console.log('📄 HTTP CLIENT: Request headers:', Object.keys(headers as Record<string, string>));
+    console.log('📎 HTTP CLIENT: Has Authorization header:', 'Authorization' in headers);
+    
+    if (body) {
+      console.log('📋 HTTP CLIENT: Request body:', typeof body === 'string' ? 'JSON string' : typeof body);
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.timeout || this.timeout);
 
@@ -77,21 +100,32 @@ export class ClientHttpClient {
         signal: config.signal || controller.signal,
       };
 
+      // NUEVO: Soporte para Next.js cache tags
+      if (config.next) {
+        (fetchOptions as any).next = config.next;
+      }
+
       if (body && method !== 'GET') {
         fetchOptions.body = body instanceof FormData ? body : JSON.stringify(body);
       }
 
       const response = await fetch(url, fetchOptions);
 
+      console.log(`📦 HTTP CLIENT: Response status: ${response.status} ${response.statusText}`);
+      
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        console.log('❌ HTTP CLIENT: Request failed, parsing error response...');
+        
         const errorData = await response.json().catch(() => ({
           statusCode: response.status,
           message: 'Network error',
           timestamp: new Date().toISOString(),
           path: endpoint,
         }));
+
+        console.log('❌ HTTP CLIENT: Error response data:', errorData);
 
         // Backend error structure: { statusCode, message, timestamp, path }
         const apiError: ApiError = {
@@ -101,18 +135,23 @@ export class ClientHttpClient {
           path: errorData.path || endpoint,
         };
 
+        console.log('❌ HTTP CLIENT: Throwing API error:', apiError);
         throw apiError;
       }
 
+      console.log('HTTP CLIENT: Request successful, parsing response...');
       const data = await response.json();
+      console.log('HTTP CLIENT: Response data parsed successfully');
       return data;
     } catch (error) {
       clearTimeout(timeoutId);
 
       if (typeof error === 'object' && error !== null && 'name' in error && (error as any).name === 'AbortError') {
+        console.log('❌ HTTP CLIENT: Request timeout');
         throw new Error('Request timeout');
       }
 
+      console.log('❌ HTTP CLIENT: Request failed with error:', error);
       throw error;
     }
   }

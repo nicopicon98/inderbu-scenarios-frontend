@@ -38,7 +38,7 @@ export {
 export { createUserReservationsContainer as createReservationsContainer } from './ReservationsContainer.server';
 */
 
-// 🔄 FOR CLIENT-SIDE USAGE:
+// FOR CLIENT-SIDE USAGE:
 // import { useReservationsWidget } from '@/widgets/reservations-list';
 // import { createReservationRepository } from '@/entities/reservation/api/reservationRepository';
 // import { ClientHttpClientFactory } from '@/shared/api/http-client-client';

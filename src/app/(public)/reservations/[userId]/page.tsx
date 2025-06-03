@@ -1,7 +1,7 @@
 import { GetUserReservationsResponse } from '@/features/reservations/list/application/GetUserReservationsUseCase';
+import { createUserReservationsContainer } from '@/features/reservations/di/ReservationsContainer.server';
 import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/user-access.policy';
 import { ReservationsPage } from '@/templates/reservations/ui/ReservationsPage';
-import { createUserReservationsContainer } from '@/features/reservations/di/ReservationsContainer.server';
 import { redirect } from 'next/navigation';
 
 interface PageProps {
@@ -27,7 +27,6 @@ export default async function UserReservationsRoute({ params }: PageProps) {
       <ReservationsPage
         userId={result.metadata.userId}
         initialData={result.reservations}
-        accessMetadata={result.metadata}
       />
     );
 

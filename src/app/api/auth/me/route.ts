@@ -2,8 +2,12 @@ import { extractUserFromToken } from '@/entities/user/model/types';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-// ✅ Route Handler: GET /api/auth/me
-// Obtener usuario actual desde httpOnly cookies
+/**
+ * Ruta para obtener el usuario autenticado.
+ * Utiliza cookies httpOnly para manejar la autenticación.
+ * 
+ * @returns {NextResponse} Respuesta con los datos del usuario o error.
+ */
 export async function GET() {
   try {
     const cookieStore = await cookies();

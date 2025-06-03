@@ -28,7 +28,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   
   const authService = useAuth();
   
-  // ✅ FIX: Memorizar modalController con deps estables
+  // FIX: Memorizar modalController con deps estables
   const modalController: IModalController = useMemo(
     () => ({
       isOpen,
@@ -38,13 +38,13 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     [isOpen, onClose, onLoginSuccess]
   );
 
-  // ✅ FIX: Controller estable
+  // FIX: Controller estable
   const controller: AuthModalController = useMemo(
     () => new AuthModalController(authService, modalController),
     [authService, modalController]
   );
 
-  // ✅ FIX: Navigation estable
+  // FIX: Navigation estable
   const navigation: IFormNavigation = useMemo(
     () => ({
       currentMode,
@@ -53,7 +53,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     [currentMode]
   );
 
-  // ✅ FIX: createFormHandler con useCallback y deps reales
+  // FIX: createFormHandler con useCallback y deps reales
   const createFormHandler = useCallback(
     <TData,>(mode: AuthMode): IFormHandler<TData> => ({
       async onSubmit(data: TData) {

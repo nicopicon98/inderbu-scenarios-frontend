@@ -95,12 +95,12 @@ export async function createReservation(command: CreateReservationDto): Promise<
     const repository = createReservationRepository(httpClient);
 
     // Execute command
-    console.log('🚀 Executing repository.create...');
+    console.log('Executing repository.create...');
     const reservation = await repository.create(validatedCommand);
     console.log('Repository result:', reservation);
 
     // Invalidate cache
-    console.log('🔄 Invalidating cache...');
+    console.log('Invalidating cache...');
     revalidateTag('reservations');
     revalidateTag(`reservations-user-${reservation.userId}`);
     console.log('Cache invalidated');

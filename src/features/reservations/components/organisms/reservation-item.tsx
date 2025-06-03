@@ -53,14 +53,22 @@ export function ReservationItem({
   const handleCancelReservation = async () => {
     setIsCancelling(true);
     try {
-      const success: CancelReservationResult = await cancelReservationAction(reservation.id);
-      if (success) {
-        toast.success("La reserva ha sido cancelada exitosamente");
+      // CORRECTO: Obtener resultado del server action
+      const result: CancelReservationResult = await cancelReservationAction(reservation.id);
+      
+      console.log('Cancel reservation result:', result); // ← Debug
+      
+      // CORRECTO: Verificar result.success en lugar del objeto completo
+      if (result.success) {
+        toast.success(result.message || "La reserva ha sido cancelada exitosamente");
         onCancelled(reservation.id);
       } else {
-        toast.error("No se pudo cancelar la reserva");
+        // MOSTRAR ERROR ESPECÍFICO del server action
+        toast.error(result.error || "No se pudo cancelar la reserva");
+        console.error('Cancel reservation failed:', result.error);
       }
     } catch (error) {
+      console.error('Cancel reservation exception:', error);
       toast.error("Ocurrió un error al cancelar la reserva");
     } finally {
       setIsCancelling(false);

@@ -1,7 +1,7 @@
 // COMPONENTES ACTIVOS EN NUEVA ARQUITECTURA DDD
 // (Componentes que SÍ están siendo usados)
 
-// 🔄 AuthModal - MIGRADO A NUEVA ARQUITECTURA DDD ✅
+// AuthModal - MIGRADO A NUEVA ARQUITECTURA DDD ✅
 export { AuthModal } from "./organisms/auth-modal";
 
 // FORMS MIGRADOS A NUEVA ARQUITECTURA DDD

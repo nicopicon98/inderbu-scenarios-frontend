@@ -5,7 +5,6 @@ import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-cli
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
 
-
 export interface CancelReservationResult {
   success: boolean;
   message?: string;
@@ -17,22 +16,37 @@ export async function cancelReservationAction(
   reason?: string
 ): Promise<CancelReservationResult> {
   try {
+    console.log(`SERVER ACTION: Cancelling reservation ${reservationId}`);
+    
     // Create repository
     const authContext: ServerAuthContext = createServerAuthContext();
     const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
     const repository: ReservationRepository = createReservationRepository(httpClient);
 
-    // Update reservation state to CANCELLED (assuming ID 3 is CANCELADA)
-    // Note: The current service shows stateId: 3 for cancel operations
-    await repository.updateState(reservationId, {
+    // Update state (ya devuelve ReservationDto completo)
+    const cancelledReservation = await repository.updateState(reservationId, {
       stateId: 3, // CANCELADA
     });
+  
 
-    // Invalidate cache
-    revalidateTag('reservations');
+    // CACHE INVALIDATION usando los datos de la respuesta
     revalidateTag(`reservation-${reservationId}`);
-
-    console.log(`Reservation ${reservationId} cancelled successfully`);
+    revalidateTag('reservations');
+    
+    // GRANULAR INVALIDATION con datos de la respuesta
+    if (cancelledReservation.userId) {
+      revalidateTag(`user-${cancelledReservation.userId}-reservations`);
+    }
+    
+    if (cancelledReservation.subScenarioId) {
+      revalidateTag(`scenario-${cancelledReservation.subScenarioId}-reservations`);
+      
+      // Liberar timeslots (cancelación libera espacios)
+      const reservationDate = new Date(cancelledReservation.reservationDate).toISOString().split('T')[0];
+      revalidateTag(`timeslots-${cancelledReservation.subScenarioId}-${reservationDate}`);
+      revalidateTag(`timeslots-${cancelledReservation.subScenarioId}`);
+      revalidateTag('timeslots');
+    }
 
     return {
       success: true,
@@ -48,7 +62,7 @@ export async function cancelReservationAction(
   }
 }
 
-// Batch cancel reservations
+// BATCH CANCEL con invalidación eficiente
 export async function cancelMultipleReservationsAction(
   reservationIds: number[],
   reason?: string
@@ -57,6 +71,11 @@ export async function cancelMultipleReservationsAction(
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
     const repository = createReservationRepository(httpClient);
+
+    // OBTENER TODAS LAS RESERVAS PARA INVALIDACIÓN INTELIGENTE
+    const reservations = await Promise.all(
+      reservationIds.map(id => repository.getById(id))
+    );
 
     // Cancel all reservations in parallel
     await Promise.all(
@@ -67,9 +86,40 @@ export async function cancelMultipleReservationsAction(
       )
     );
 
-    // Invalidate cache
-    revalidateTag('reservations');
+    // INVALIDACIÓN BATCH OPTIMIZADA
+    // Invalidar reservas específicas
     reservationIds.forEach(id => revalidateTag(`reservation-${id}`));
+    
+    // Invalidar listas generales
+    revalidateTag('reservations');
+    
+    // Collectar contextos únicos para invalidación eficiente
+    const uniqueUserIds = [...new Set(reservations.map(r => r.userId).filter(Boolean))];
+    const uniqueScenarioIds = [...new Set(reservations.map(r => r.subScenarioId).filter(Boolean))];
+    const uniqueDates = [...new Set(reservations.map(r => 
+      new Date(r.reservationDate).toISOString().split('T')[0]
+    ))];
+
+    // Invalidar por usuarios únicos
+    uniqueUserIds.forEach(userId => {
+      if (userId) revalidateTag(`user-${userId}-reservations`);
+    });
+
+    // Invalidar por scenarios únicos y sus timeslots
+    uniqueScenarioIds.forEach(scenarioId => {
+      if (scenarioId) {
+        revalidateTag(`scenario-${scenarioId}-reservations`);
+        revalidateTag(`timeslots-${scenarioId}`);
+        
+        // Invalidar timeslots por fecha específica
+        uniqueDates.forEach(date => {
+          revalidateTag(`timeslots-${scenarioId}-${date}`);
+        });
+      }
+    });
+
+    // Invalidar timeslots globales
+    revalidateTag('timeslots');
 
     console.log(`${reservationIds.length} reservations cancelled successfully`);
 

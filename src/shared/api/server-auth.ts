@@ -16,7 +16,7 @@ export async function getToken(): Promise<string | null> {
     console.log('🍪 Available cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
     
     const tokenCookie = cookieStore.get(TOKEN_KEY);
-    console.log(`🔑 Token cookie (${TOKEN_KEY}):`, tokenCookie ? { name: tokenCookie.name, hasValue: !!tokenCookie.value, length: tokenCookie.value?.length } : 'Not found');
+    console.log(`Token cookie (${TOKEN_KEY}):`, tokenCookie ? { name: tokenCookie.name, hasValue: !!tokenCookie.value, length: tokenCookie.value?.length } : 'Not found');
     
     const token = tokenCookie?.value || null;
     

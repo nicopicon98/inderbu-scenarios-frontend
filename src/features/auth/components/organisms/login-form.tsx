@@ -24,8 +24,8 @@ export function LoginForm({ onSubmit, isLoading, navigation }: LoginFormProps) {
     defaultValues: { email: "", password: "" },
   });
 
-  // ✅ FIX: Usar form.handleSubmit directo para mejor manejo de errores
-  // ✅ FIX: Usar isSubmitting local para evitar re-renders innecesarios
+  // FIX: Usar form.handleSubmit directo para mejor manejo de errores
+  // FIX: Usar isSubmitting local para evitar re-renders innecesarios
   const { isSubmitting } = form.formState;
   const loading = isLoading || isSubmitting;
 

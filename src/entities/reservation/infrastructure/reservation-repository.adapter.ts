@@ -38,9 +38,22 @@ export class ApiReservationRepository implements ReservationRepository {
     if (query.dateFrom) searchParams.set('dateFrom', query.dateFrom);
     if (query.dateTo) searchParams.set('dateTo', query.dateTo);
 
+    // CACHE TAGS: Etiquetas granulares para invalidación
+    const cacheConfig = {
+      next: {
+        tags: [
+          'reservations',                    // Lista general
+          `user-${userId}-reservations`,     // Reservas del usuario específico
+          ...(query.scenarioId ? [`scenario-${query.scenarioId}-reservations`] : []),
+          ...(query.activityAreaId ? [`activity-${query.activityAreaId}-reservations`] : []),
+        ]
+      }
+    };
+
     // Backend returns: { statusCode, message, data: ReservationDto[], meta: PageMetaDto }
     const response = await this.httpClient.get<PaginatedApiResponse<ReservationDto>>(
-      `/reservations?${searchParams.toString()}`
+      `/reservations?${searchParams.toString()}`,
+      cacheConfig
     );
 
     // Map data to ensure backward compatibility fields exist
@@ -60,9 +73,20 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 
   async getById(id: number): Promise<ReservationDto> {
+    // CACHE TAGS: Reserva específica + lista general
+    const cacheConfig = {
+      next: {
+        tags: [
+          `reservation-${id}`,    // Reserva específica
+          'reservations',         // Lista general (para consistency)
+        ]
+      }
+    };
+
     // Backend returns: { statusCode, message, data: ReservationDto }
     const response = await this.httpClient.get<SimpleApiResponse<ReservationDto>>(
-      `/reservations/${id}`
+      `/reservations/${id}`,
+      cacheConfig
     );
 
     return {
@@ -86,12 +110,28 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 
   async updateState(id: number, command: UpdateReservationStateCommand): Promise<ReservationDto> {
+    // CONFIG para httpOnly cookies
+    const requestConfig = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // CRÍTICO: Incluir cookies para autenticación
+      next: {
+        tags: [`reservation-${id}`, 'reservations'] // Cache tags para invalidación
+      }
+    };
+
+    console.log(`Repository: Updating reservation ${id} state to ${command.stateId}`);
+    
     // Backend expects: { stateId: number }
     // Backend returns: { statusCode, message, data: ReservationDto }
     const response = await this.httpClient.patch<SimpleApiResponse<ReservationDto>>(
       `/reservations/${id}/state`,
-      command
+      command,
+      requestConfig // ← ¡INCLUIR CONFIG!
     );
+
+    console.log(`Repository: Reservation ${id} state updated successfully`);
 
     return {
       ...response.data,
@@ -108,18 +148,40 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 
   async getStates(): Promise<ReservationStateDto[]> {
+    // CACHE TAGS: Estados raramente cambian
+    const cacheConfig = {
+      next: {
+        tags: ['reservation-states'],
+        revalidate: 3600  // 1 hora - los estados cambian raramente
+      }
+    };
+
     // Backend returns: { statusCode, message, data: { id: number, state: string }[] }
     const response = await this.httpClient.get<SimpleApiResponse<ReservationStateDto[]>>(
-      '/reservations/states'
+      '/reservations/states',
+      cacheConfig
     );
 
     return response.data;
   }
 
   async getAvailableTimeSlots(subScenarioId: number, date: string): Promise<TimeslotResponseDto[]> {
+    // CACHE TAGS: Timeslots por scenario y fecha
+    const cacheConfig = {
+      next: {
+        tags: [
+          `timeslots-${subScenarioId}-${date}`, // Específico por scenario y fecha
+          `timeslots-${subScenarioId}`,         // Por scenario general
+          'timeslots',                          // Global
+        ],
+        revalidate: 300  // 5 minutos - los timeslots pueden cambiar relativamente rápido
+      }
+    };
+
     // Backend returns: { statusCode, message, data: TimeslotResponseDto[] }
     const response = await this.httpClient.get<SimpleApiResponse<TimeslotResponseDto[]>>(
-      `/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`
+      `/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
+      cacheConfig
     );
 
     return response.data;

@@ -121,17 +121,14 @@ const ReservationService = {
   createReservation: async (
     reservationData: CreateReservationDto,
   ): Promise<CreateReservationResponseDto> => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      throw new Error("No se encontró un token de autenticación");
-    }
     console.log({ reservationData });
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/reservations`, {
         method: "POST",
+        credentials: 'include', // ← Incluye httpOnly cookies
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(reservationData),
       });
@@ -154,9 +151,11 @@ const ReservationService = {
   // Obtener reservas de usuario
   getUserReservations: async (userId: number): Promise<ReservationDto[]> => {
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/users/${userId}/reservations`, {
+        credentials: 'include', // ← Incluye httpOnly cookies
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -226,9 +225,11 @@ const ReservationService = {
 
     console.log("Fetching reservations with URL:", url.toString());
 
+    // NUEVO: Usar credentials include para httpOnly cookies
     const response = await fetch(url.toString(), {
+      credentials: 'include', // ← Incluye httpOnly cookies
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        'Content-Type': 'application/json',
       },
     });
 
@@ -319,9 +320,11 @@ const ReservationService = {
 
     console.log("Fetching reservations with pagination, URL:", url.toString());
 
+    // NUEVO: Usar credentials include para httpOnly cookies
     const response = await fetch(url.toString(), {
+      credentials: 'include', // ← Incluye httpOnly cookies
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        'Content-Type': 'application/json',
       },
     });
 
@@ -357,14 +360,11 @@ const ReservationService = {
   // Obtener todos los estados de reserva disponibles
   getAllReservationStates: async (): Promise<ReservationStateDto[]> => {
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        throw new Error("No se encontró un token de autenticación");
-      }
-
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/reservations/states`, {
+        credentials: 'include', // ← Incluye httpOnly cookies automáticamente
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -387,23 +387,34 @@ const ReservationService = {
     // Let's print both reservationId and stateId
     console.log({ reservationId, stateId });
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(
         `${API_URL}/reservations/${reservationId}/state`,
         {
           method: "PATCH",
+          credentials: 'include', // ← Incluye httpOnly cookies
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },
           body: JSON.stringify({ stateId }),
         },
       );
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => null);
+        console.error('Update reservation state error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        throw new Error(
+          errorData?.message || `Error ${response.status}: ${response.statusText}`
+        );
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log('Update reservation state success:', result);
+      return result;
     } catch (error) {
       console.error("Error updating reservation state:", error);
       throw error;
@@ -413,9 +424,11 @@ const ReservationService = {
   // Obtener escenarios para filtros
   getAllScenarios: async (): Promise<{ id: number; name: string }[]> => {
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/scenarios`, {
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -433,9 +446,11 @@ const ReservationService = {
   // Obtener áreas de actividad para filtros
   getAllActivityAreas: async (): Promise<{ id: number; name: string }[]> => {
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/activity-areas`, {
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -453,9 +468,11 @@ const ReservationService = {
   // Obtener barrios para filtros
   getAllNeighborhoods: async (): Promise<{ id: number; name: string }[]> => {
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/neighborhoods`, {
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -475,9 +492,11 @@ const ReservationService = {
     { id: number; firstName: string; lastName: string; email: string }[]
   > => {
     try {
+      // NUEVO: Usar credentials include para httpOnly cookies
       const response = await fetch(`${API_URL}/users`, {
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          'Content-Type': 'application/json',
         },
       });
 

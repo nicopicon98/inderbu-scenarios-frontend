@@ -33,6 +33,8 @@ export interface UserReservationsContainer {
  * - Wiring application use cases (business logic)
  * - Exposing services for external API consumption
  * 
+ * @returns {UserReservationsContainer} - Fully initialized DI container for user reservations
+ * 
  */
 export function createUserReservationsContainer(): UserReservationsContainer {
   console.log('Building UserReservations DI Container...');

@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const queryClient = useQueryClient();
 
-  // ✅ FIX: Initialize auth state from /api/auth/me para evitar flicker
+  // FIX: Initialize auth state from /api/auth/me para evitar flicker
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data?.user) {
-            // ✅ FIX: Versión funcional para evitar stale closures
+            // FIX: Versión funcional para evitar stale closures
             setAuthState(() => ({
               user: result.data.user,
               isAuthenticated: true,
@@ -79,17 +79,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, []);
 
-  // ✅ OPTIMIZADO: Login con useCallback y función directa
+  // OPTIMIZADO: Login con useCallback y función directa
   const handleLogin = useCallback(async (credentials: TLoginData): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // ✅ CORRECTO: Usar función directa (sin FormData)
+      // CORRECTO: Usar función directa (sin FormData)
       const result = await login(credentials);
       
       if (result.success && result.data) {
         // Server action ya configuró httpOnly cookies + revalidatePath
-        // ✅ FIX: Versión funcional para evitar stale closures
+        // FIX: Versión funcional para evitar stale closures
         setAuthState(() => ({
           user: result.data.user,
           isAuthenticated: true,
@@ -105,19 +105,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error de autenticación';
-      // ✅ FIX: Versión funcional 
+      // FIX: Versión funcional 
       setAuthState(prev => ({ ...prev, error: errorMessage, isLoading: false }));
       toast.error(errorMessage);
       throw error;
     }
   }, []);
   
-  // ✅ OPTIMIZADO: Register con useCallback y función directa
+  // OPTIMIZADO: Register con useCallback y función directa
   const handleRegister = useCallback(async (data: TRegisterData): Promise<void> => {
     setAuthState(prev => ({ ...prev, error: null }));
     
     try {
-      // ✅ CORRECTO: Usar función directa (sin FormData)
+      // CORRECTO: Usar función directa (sin FormData)
       const result = await register(data);
       
       if (result.success) {
@@ -127,19 +127,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error de registro';
-      // ✅ FIX: Versión funcional
+      // FIX: Versión funcional
       setAuthState(prev => ({ ...prev, error: errorMessage }));
       toast.error(errorMessage);
       throw error;
     }
   }, []);
   
-  // ✅ OPTIMIZADO: Reset password con useCallback y función directa
+  // OPTIMIZADO: Reset password con useCallback y función directa
   const handleResetPassword = useCallback(async (data: TResetData): Promise<void> => {
     setAuthState(prev => ({ ...prev, error: null }));
     
     try {
-      // ✅ CORRECTO: Usar función directa (sin FormData)
+      // CORRECTO: Usar función directa (sin FormData)
       const result = await resetPassword(data);
       
       if (result.success) {
@@ -149,14 +149,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al enviar correo';
-      // ✅ FIX: Versión funcional
+      // FIX: Versión funcional
       setAuthState(prev => ({ ...prev, error: errorMessage }));
       toast.error(errorMessage);
       throw error;
     }
   }, []);
   
-  // ✅ OPTIMIZADO: Logout con useCallback y función directa
+  // OPTIMIZADO: Logout con useCallback y función directa
   const handleLogout = useCallback(async (): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (result.success) {
         // Server action ya limpió cookies httpOnly + revalidatePath
-        // ✅ FIX: Versión funcional para evitar stale closures
+        // FIX: Versión funcional para evitar stale closures
         setAuthState(() => ({
           user: null,
           isAuthenticated: false,
@@ -173,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: null,
         }));
         
-        // ✅ INVALIDACIÓN ESPECÍFICA: Solo queries relevantes por userId
+        // INVALIDACIÓN ESPECÍFICA: Solo queries relevantes por userId
         queryClient.invalidateQueries({ queryKey: ['current-user'] });
         queryClient.invalidateQueries({ queryKey: ['reservations'] });
         
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       // Incluso si hay error, limpiar estado local
-      // ✅ FIX: Versión funcional
+      // FIX: Versión funcional
       setAuthState(() => ({
         user: null,
         isAuthenticated: false,
@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return authState.isAuthenticated;
   }, [authState.isAuthenticated]);
 
-  // ✅ OPTIMIZADO: Context value con callbacks memoizados
+  // OPTIMIZADO: Context value con callbacks memoizados
   const contextValue: AuthContextType = {
     ...authState,
     // Usar server actions optimizados

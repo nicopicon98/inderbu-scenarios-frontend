@@ -9,7 +9,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 
 ## 📋 Tabla de Contenidos
 
-- [🚀 Inicio Rápido](#-inicio-rápido)
+- [Inicio Rápido](#-inicio-rápido)
 - [🏗️ Arquitectura](#-arquitectura)
   - [Estructura de Carpetas](#estructura-de-carpetas)
   - [Patrones Arquitectónicos](#patrones-arquitectónicos)
@@ -22,7 +22,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 - [📄 Licencia](#-licencia)
 - [📞 Contacto](#-contacto)
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ```bash
 # Clonar el repositorio
@@ -197,7 +197,7 @@ El proyecto sigue una arquitectura moderna que combina los principios de Feature
       httpService.ts             # Servicio HTTP base
 
   /lib                           # Utilities y configuraciones
-    /api                         # Config de API 
+    /api                         # Config de API
     /auth                        # Config de Auth
     /db                          # Conexión a DB
     /cache                       # Estrategias de caché
@@ -237,9 +237,9 @@ El proyecto sigue una arquitectura moderna que combina los principios de Feature
     api.ts                       # Tipos para APIs
 
   /public                        # Archivos estáticos
-  
+
   /mock-data                     # Datos de prueba
-  
+
   # Archivos de configuración
   next.config.mjs
   tailwind.config.ts
@@ -292,6 +292,7 @@ export class ScenarioService {
 #### API Layer
 
 Capas separadas para API:
+
 - Core API Client: Configuración base
 - Feature-specific APIs: Endpoints por funcionalidad
 - Servicios: Lógica de negocio usando APIs
@@ -397,13 +398,13 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch, placeholder = 'Buscar...' }: SearchBarProps) {
   const [query, setQuery] = useState('');
-  
+
   return (
     <div className="flex gap-2">
-      <Input 
-        value={query} 
-        onChange={(e) => setQuery(e.target.value)} 
-        placeholder={placeholder} 
+      <Input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={placeholder}
       />
       <Button onClick={() => onSearch(query)}>Buscar</Button>
     </div>
