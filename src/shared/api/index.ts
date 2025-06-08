@@ -1,4 +1,4 @@
-// ❌ ARCHIVO TEMPORAL - NUEVA ARQUITECTURA DDD NO USA ESTE PATRÓN
+// ARCHIVO TEMPORAL - NUEVA ARQUITECTURA DDD NO USA ESTE PATRÓN
 // 
 // EN NUEVA ARQUITECTURA:
 // - HTTP Clients: @/shared/api/http-client-client.ts y @/shared/api/http-client-server.ts
@@ -16,7 +16,7 @@
 export const authApiClient = {
   get: () => {
     throw new Error(`
-      ❌ API CLIENT OBSOLETO: authApiClient
+      API CLIENT OBSOLETO: authApiClient
       
       MIGRADO A: Nueva arquitectura DDD
       
@@ -54,10 +54,10 @@ export const authApiClient = {
 export { ClientAuthManager, createClientAuthContext } from './auth';
 export { CacheStrategies } from './cache-strategies';
 export { ClientHttpClient, ClientHttpClientFactory } from './http-client-client';
-// ❌ REMOVED SERVER-ONLY EXPORTS TO PREVENT CLIENT CONTAMINATION:
+// REMOVED SERVER-ONLY EXPORTS TO PREVENT CLIENT CONTAMINATION:
 // export { createServerHttpClient } from './http-client-server';
 // export { createServerAuthContext, ServerAuthManager } from './server-auth';
-// ❌ REMOVED: export { ApiClient } from './api-client'; // File doesn't exist
+// REMOVED: export { ApiClient } from './api-client'; // File doesn't exist
 
 // Default export for apiClient (for existing usage)
 export const apiClient = authApiClient;

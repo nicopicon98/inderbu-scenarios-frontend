@@ -1,10 +1,10 @@
-import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
-import { ScenarioDetailPage } from '@/templates/scenario-detail/ui';
 import { 
   InvalidScenarioIdError, 
   ScenarioNotFoundError,
   ScenarioAccessDeniedError 
 } from '@/entities/scenario/domain/scenario-detail.domain';
+import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
+import { ScenarioDetailPage } from '@/templates/scenario-detail/ui';
 import { redirect, notFound } from 'next/navigation';
 interface PageProps {
   params: { id: string };
@@ -22,12 +22,6 @@ export default async function ScenarioDetailRoute({ params }: PageProps) {
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
     const result = await scenarioDetailService.getScenarioDetail(id);
-
-    console.log(`SSR: Scenario detail loaded successfully`);
-    console.log(`Scenario: "${result.scenario.name}" (ID: ${result.scenario.id})`);
-    console.log(`🎯 Category: ${result.metadata.category}`);
-    console.log(`⏱️ Load time: ${result.metadata.loadTime}ms`);
-    console.log(`🔐 Requires reservation: ${result.metadata.requiresReservation}`);
 
     // Atomic Design: Render page template with clean separation
     // PASS SERVER ACTION AS PROP

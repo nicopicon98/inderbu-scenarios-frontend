@@ -75,8 +75,8 @@ export async function createReservationAction(
 // Simplified version for direct calls (not form-based)
 export async function createReservation(command: CreateReservationDto): Promise<CreateReservationResult> {
   try {
-    console.log('🎯 Server Action createReservation: Starting execution');
-    console.log('📦 Input command:', command);
+    console.log('Server Action createReservation: Starting execution');
+    console.log('Input command:', command);
     
     // Validate input
     console.log('🔍 Validating input with schema...');
@@ -117,10 +117,10 @@ export async function createReservation(command: CreateReservationDto): Promise<
     return result;
     
   } catch (error) {
-    console.error('❌ Server Action createReservation: Error occurred:', error);
-    console.error('❌ Error name:', error instanceof Error ? error.name : 'Unknown');
-    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown');
-    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'Unknown');
+    console.error('Server Action createReservation: Error occurred:', error);
+    console.error('Error name:', error instanceof Error ? error.name : 'Unknown');
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown');
+    console.error('Error stack:', error instanceof Error ? error.stack : 'Unknown');
 
     return {
       success: false,

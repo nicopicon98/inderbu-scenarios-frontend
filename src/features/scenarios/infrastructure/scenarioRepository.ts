@@ -65,7 +65,7 @@ export async function getScenarioById(scenarioId: string): Promise<ScenarioApiDa
     return scenario;
 
   } catch (error) {
-    console.error('❌ Error fetching scenario:', error);
+    console.error('Error fetching scenario:', error);
     throw error;
   }
 }
@@ -81,7 +81,7 @@ export class CleanScenarioRepositoryAdapter {
       console.log(`CleanScenarioRepositoryAdapter: Found scenario "${data.name}"`);
       return data;
     } catch (error) {
-      console.error('❌ CleanScenarioRepositoryAdapter: Error:', error);
+      console.error('CleanScenarioRepositoryAdapter: Error:', error);
       
       // Handle 404 as null (not found)
       if (error instanceof Error && error.message.includes('not found')) {
@@ -103,7 +103,7 @@ export class CleanScenarioRepositoryAdapter {
       console.log(`Scenario ${scenarioId} exists: ${exists}`);
       return exists;
     } catch (error) {
-      console.error('❌ CleanScenarioRepositoryAdapter: Error checking existence:', error);
+      console.error('CleanScenarioRepositoryAdapter: Error checking existence:', error);
       return false;
     }
   }

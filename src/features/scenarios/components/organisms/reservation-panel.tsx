@@ -37,7 +37,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
     setIsSubmitting(true);
     try {
       // USE SERVER ACTION DIRECTLY
-      console.log('🎯 ReservationPanel: Using Server Action directly');
+      console.log('ReservationPanel: Using Server Action directly');
       
       const command = {
         subScenarioId,
@@ -45,7 +45,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
         reservationDate: date,
       };
       
-      console.log('📦 ReservationPanel: Sending command to server action:', command);
+      console.log('ReservationPanel: Sending command to server action:', command);
       console.log('🔍 Command details:');
       console.log('  - subScenarioId:', subScenarioId, typeof subScenarioId);
       console.log('  - timeSlotId:', selectedTimeSlotId, typeof selectedTimeSlotId);
@@ -60,12 +60,12 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
         setSelectedTimeSlotId(null);
         setRefreshTrigger((r) => r + 1);
       } else {
-        console.error('❌ Server action failed:', result.error);
+        console.error('Server action failed:', result.error);
         toast.error(result.error || "No se pudo completar la reserva");
       }
       
     } catch (err) {
-      console.error('❌ Server Action error (caught in try/catch):', err);
+      console.error('Server Action error (caught in try/catch):', err);
       toast.error("No se pudo completar la reserva, inténtalo de nuevo");
     } finally {
       setIsSubmitting(false);

@@ -1,6 +1,6 @@
 // FSD: Barrel exports for Reservations DI Containers
 
-// ❌ TEMPORARILY DISABLED: Server-only containers moved to .server.ts files
+// TEMPORARILY DISABLED: Server-only containers moved to .server.ts files
 // These containers contain server-only dependencies and caused ModuleBuildError
 // when included in client-side code.
 //

@@ -47,7 +47,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
   async execute(input: GetScenarioDetailInput): Promise<GetScenarioDetailResponse> {
     const startTime = Date.now();
     
-    console.log('🎯 GetScenarioDetailUseCase: Starting execution with input:', input);
+    console.log('GetScenarioDetailUseCase: Starting execution with input:', input);
 
     try {
       // Domain: Validate and create ScenarioId value object

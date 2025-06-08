@@ -30,7 +30,7 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
       // Call existing API service
       const rawData = await this.apiService.getById(apiRequest);
 
-      console.log('📦 Raw data received from API:', rawData);
+      console.log('Raw data received from API:', rawData);
 
       // Transform API response to domain entity using domain mapper
       const scenario = ScenarioDetailMapper.toDomainWithDefaults(rawData);

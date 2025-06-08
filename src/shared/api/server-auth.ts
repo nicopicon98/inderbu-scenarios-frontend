@@ -27,16 +27,16 @@ export async function getToken(): Promise<string | null> {
       console.log('⏰ Token expired:', isExpired);
       
       if (isExpired) {
-        console.log('❌ Server Auth: Token is expired');
+        console.log('Server Auth: Token is expired');
         return null;
       }
     } else {
-      console.log('❌ Server Auth: No token found in cookies');
+      console.log('Server Auth: No token found in cookies');
     }
     
     return token;
   } catch (error) {
-    console.error('❌ Server Auth: Error getting token:', error);
+    console.error('Server Auth: Error getting token:', error);
     return null;
   }
 }

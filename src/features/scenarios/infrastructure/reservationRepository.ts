@@ -43,7 +43,7 @@ export async function createReservationApi(payload: CreateReservationPayload): P
     return data;
 
   } catch (error) {
-    console.error('❌ Error creating reservation:', error);
+    console.error('Error creating reservation:', error);
     throw error;
   }
 }
@@ -59,7 +59,7 @@ export class ReservationRepositoryAdapter {
       console.log('ReservationRepositoryAdapter: Reservation created successfully');
       return data;
     } catch (error) {
-      console.error('❌ ReservationRepositoryAdapter: Error:', error);
+      console.error('ReservationRepositoryAdapter: Error:', error);
       throw error;
     }
   }

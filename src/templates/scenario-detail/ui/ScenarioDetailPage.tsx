@@ -17,14 +17,6 @@ export interface ScenarioDetailPageProps {
 // Atomic Design: Scenario Detail Page Template
 export function ScenarioDetailPage({ initialData }: ScenarioDetailPageProps) {
   const { scenario, metadata } = initialData;
-  
-  console.log('🎨 ScenarioDetailPage Template: Rendering with data:', {
-    scenarioId: scenario.id,
-    scenarioName: scenario.name,
-    category: metadata.category,
-    loadTime: metadata.loadTime,
-    metadata
-  });
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
@@ -98,7 +90,6 @@ export function ScenarioDetailPage({ initialData }: ScenarioDetailPageProps) {
         </div>
 
         {/* Main Content - Existing ScenarioDetail Component */}
-        {/* PASS SERVER ACTION TO ScenarioDetail */}
         <ScenarioDetail 
           subScenario={scenario} 
         />

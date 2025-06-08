@@ -16,7 +16,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 - [⚙️ Tecnologías](#-tecnologías)
 - [🧩 Features](#-features)
 - [🔧 Desarrollo](#-desarrollo)
-- [📦 Despliegue](#-despliegue)
+- [Despliegue](#-despliegue)
 - [📝 Guías de Desarrollo](#-guías-de-desarrollo)
 - [👥 Contribución](#-contribución)
 - [📄 Licencia](#-licencia)
@@ -351,7 +351,7 @@ NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
 NEXT_PUBLIC_ENVIRONMENT=development
 ```
 
-## 📦 Despliegue
+## Despliegue
 
 ### Despliegue en Vercel
 

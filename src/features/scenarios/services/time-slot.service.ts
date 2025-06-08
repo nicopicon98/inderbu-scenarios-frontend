@@ -10,7 +10,7 @@ export class TimeSlotService {
     date,
   }: IGetAllTimeSlotRequest): Promise<IGetAllTimeSlotResponse[]> {
     
-    console.log('🎯 TimeSlotService: Using NEW DDD Architecture');
+    console.log('TimeSlotService: Using NEW DDD Architecture');
     
     try {
       // Convert subScenarioId to number if it's string
@@ -43,7 +43,7 @@ export class TimeSlotService {
       return transformedSlots;
 
     } catch (error) {
-      console.error('❌ TimeSlotService: Error getting time slots:', error);
+      console.error('TimeSlotService: Error getting time slots:', error);
       throw error;
     }
   }

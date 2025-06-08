@@ -9,7 +9,7 @@ export async function createReservation(payload: {
   reservationDate: string;
   comments?: string;
 }) {
-  console.log('🎯 ReservationService: Using NEW DDD Architecture with Authenticated HTTP Client');
+  console.log('ReservationService: Using NEW DDD Architecture with Authenticated HTTP Client');
   
   try {
     // NEW: Use authenticated HTTP client (handles auth headers automatically)
@@ -28,7 +28,7 @@ export async function createReservation(payload: {
     return reservation;
 
   } catch (error) {
-    console.error("❌ ReservationService: Error creating reservation:", error);
+    console.error("ReservationService: Error creating reservation:", error);
     throw error;
   }
 }

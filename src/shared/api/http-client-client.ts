@@ -49,10 +49,10 @@ export class ClientHttpClient {
         console.log(`HTTP CLIENT: Token obtained (length: ${token.length}), adding Authorization header`);
         headers.Authorization = `Bearer ${token}`;
       } else {
-        console.log('❌ HTTP CLIENT: No token returned from auth context');
+        console.log('HTTP CLIENT: No token returned from auth context');
       }
     } else {
-      console.log('❌ HTTP CLIENT: No auth context provided');
+      console.log('HTTP CLIENT: No auth context provided');
     }
 
     console.log('📄 HTTP CLIENT: Final auth headers:', Object.keys(headers));
@@ -111,12 +111,12 @@ export class ClientHttpClient {
 
       const response = await fetch(url, fetchOptions);
 
-      console.log(`📦 HTTP CLIENT: Response status: ${response.status} ${response.statusText}`);
+      console.log(`HTTP CLIENT: Response status: ${response.status} ${response.statusText}`);
       
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        console.log('❌ HTTP CLIENT: Request failed, parsing error response...');
+        console.log('HTTP CLIENT: Request failed, parsing error response...');
         
         const errorData = await response.json().catch(() => ({
           statusCode: response.status,
@@ -125,7 +125,7 @@ export class ClientHttpClient {
           path: endpoint,
         }));
 
-        console.log('❌ HTTP CLIENT: Error response data:', errorData);
+        console.log('HTTP CLIENT: Error response data:', errorData);
 
         // Backend error structure: { statusCode, message, timestamp, path }
         const apiError: ApiError = {
@@ -135,7 +135,7 @@ export class ClientHttpClient {
           path: errorData.path || endpoint,
         };
 
-        console.log('❌ HTTP CLIENT: Throwing API error:', apiError);
+        console.log('HTTP CLIENT: Throwing API error:', apiError);
         throw apiError;
       }
 
@@ -147,11 +147,11 @@ export class ClientHttpClient {
       clearTimeout(timeoutId);
 
       if (typeof error === 'object' && error !== null && 'name' in error && (error as any).name === 'AbortError') {
-        console.log('❌ HTTP CLIENT: Request timeout');
+        console.log('HTTP CLIENT: Request timeout');
         throw new Error('Request timeout');
       }
 
-      console.log('❌ HTTP CLIENT: Request failed with error:', error);
+      console.log('HTTP CLIENT: Request failed with error:', error);
       throw error;
     }
   }

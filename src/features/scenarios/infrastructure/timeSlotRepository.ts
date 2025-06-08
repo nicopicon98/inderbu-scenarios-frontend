@@ -43,13 +43,13 @@ export async function getTimeSlots(params: GetTimeSlotParams): Promise<TimeSlotA
     if (data && Array.isArray(data.data)) {
       // API returns: {statusCode: 200, message: "Success", data: [...]}
       timeSlots = data.data;
-      console.log('📦 Using data.data array:', timeSlots.length, 'slots');
+      console.log('Using data.data array:', timeSlots.length, 'slots');
     } else if (Array.isArray(data)) {
       // Direct array response (fallback)
       timeSlots = data;
-      console.log('📦 Using direct array:', timeSlots.length, 'slots');
+      console.log('Using direct array:', timeSlots.length, 'slots');
     } else {
-      console.warn('❌ Unexpected API response format:', data);
+      console.warn('Unexpected API response format:', data);
       timeSlots = [];
     }
     
@@ -57,7 +57,7 @@ export async function getTimeSlots(params: GetTimeSlotParams): Promise<TimeSlotA
     return timeSlots;
 
   } catch (error) {
-    console.error('❌ Error fetching time slots:', error);
+    console.error('Error fetching time slots:', error);
     throw error;
   }
 }
@@ -73,7 +73,7 @@ export class TimeSlotRepositoryAdapter {
       console.log(`TimeSlotRepositoryAdapter: Found ${data.length} available time slots`);
       return data;
     } catch (error) {
-      console.error('❌ TimeSlotRepositoryAdapter: Error:', error);
+      console.error('TimeSlotRepositoryAdapter: Error:', error);
       throw error;
     }
   }

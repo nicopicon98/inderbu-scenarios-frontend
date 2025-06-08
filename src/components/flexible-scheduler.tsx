@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { createReservation } from '@/features/reservations/create/api/createReservationAction';
+import { createReservation } from "@/features/reservations/create/api/createReservationAction";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { CalendarIcon, Check, Clock } from "lucide-react";
 import { useAuth } from "@/features/auth/model/use-auth";
@@ -20,8 +20,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Label } from "@/shared/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
-
-
+import { CreateReservationDto } from "@/entities/reservation/model/types";
 
 // Imports para lógica de reservas
 
@@ -35,7 +34,7 @@ interface ScheduleConfig {
   // Fechas - ahora como strings ISO
   startDate?: string;
   endDate?: string;
-  
+
   // Configuración de recurrencia
   hasDateRange: boolean;
   hasWeekdaySelection: boolean;
@@ -72,25 +71,29 @@ interface FlexibleSchedulerProps {
   subScenarioId: number;
 }
 
-export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerProps) {
+interface IFromTo {
+  from: string | undefined;
+  to: string | undefined;
+}
+
+export default function FlexibleScheduler({
+  subScenarioId,
+}: FlexibleSchedulerProps) {
   // Helper para obtener fecha de hoy en formato ISO
-  const getTodayISO = () => new Date().toISOString().split('T')[0];
-  
+  const getTodayISO = () => new Date().toISOString().split("T")[0];
+
   const [config, setConfig] = useState<ScheduleConfig>({
     weekdays: [],
     timeSlots: [],
     hasDateRange: false,
     hasWeekdaySelection: false,
-    startDate: new Date().toISOString().split('T')[0], // Inicializar con fecha de hoy
+    startDate: new Date().toISOString().split("T")[0], // Inicializar con fecha de hoy
   });
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots());
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
-  const [dateRange, setDateRange] = useState<{
-    from: string | undefined;
-    to: string | undefined;
-  }>(() => ({
-    from: new Date().toISOString().split('T')[0], // Inicializar con fecha de hoy
+  const [dateRange, setDateRange] = useState<IFromTo>(() => ({
+    from: new Date().toISOString().split("T")[0], // Inicializar con fecha de hoy
     to: undefined,
   }));
 
@@ -105,17 +108,17 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
       const newTimeSlots = prev.map((slot) =>
         slot.hour === hour ? { ...slot, selected: !slot.selected } : slot
       );
-      
+
       // Actualizar config con los nuevos timeSlots
       const selectedHours = newTimeSlots
         .filter((slot) => slot.selected)
         .map((slot) => slot.hour);
-      
+
       setConfig((prevConfig) => ({
         ...prevConfig,
         timeSlots: selectedHours,
       }));
-      
+
       return newTimeSlots;
     });
   };
@@ -161,7 +164,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
 
   // Helper para formatear fechas de forma segura
   const formatDateSafe = (dateStr: string | undefined) => {
-    if (!dateStr) return '';
+    if (!dateStr) return "";
     try {
       return format(parseISO(dateStr), "dd/MM/yyyy");
     } catch {
@@ -175,7 +178,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
       toast.error("Por favor selecciona al menos un horario para reservar");
       return;
     }
-    
+
     const reservationDate = dateRange.from;
     if (!reservationDate) {
       toast.error("Por favor selecciona una fecha");
@@ -184,37 +187,48 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
 
     setIsSubmitting(true);
     try {
-      console.log('🎯 FlexibleScheduler: Creando reservas múltiples');
-      
+      console.log("FlexibleScheduler: Creando reservas múltiples");
+
       // Crear reservas para cada horario seleccionado
-      const selectedHours = timeSlots.filter(slot => slot.selected).map(slot => slot.hour);
+      const selectedHours: number[] = timeSlots
+        .filter((slot) => slot.selected)
+        .map((slot) => slot.hour);
+
       
-      for (const hour of selectedHours) {
-        const command = {
-          subScenarioId,
-          timeSlotId: hour + 1, // Asumiendo que timeSlotId es hour + 1
-          reservationDate,
-        };
-        
-        console.log('📦 FlexibleScheduler: Enviando comando:', command);
-        
-        const result = await createReservation(command);
-        
-        if (!result.success) {
-          console.error('❌ Server action failed for hour', hour, ':', result.error);
-          toast.error(`Error en horario ${hour.toString().padStart(2, '0')}:00 - ${result.error}`);
-          return;
-        }
+      const command: CreateReservationDto = {
+        subScenarioId,
+        timeSlotIds: selectedHours,
+        reservationRange: {
+          initialDate: reservationDate,
+          finalDate: dateRange.to,
+        },
+      };
+
+      // add week days to command as long as there's at least 1 selected
+      if (selectedWeekdays.length > 0) {
+        command.weekdays = selectedWeekdays;
       }
-      
-      toast.success(`¡${selectedHours.length} reserva${selectedHours.length > 1 ? 's' : ''} realizada${selectedHours.length > 1 ? 's' : ''} con éxito!`);
+
+      console.log("FlexibleScheduler: Enviando comando:", command);
+
+      const result = await createReservation(command);
+
+      if (!result.success) {
+        console.error("Server action failed:", result.error);
+        return;
+      }
+
+      toast.success(
+        `¡${selectedHours.length} reserva${selectedHours.length > 1 ? "s" : ""} realizada${selectedHours.length > 1 ? "s" : ""} con éxito!`
+      );
       setRefreshTrigger((r) => r + 1);
       // Limpiar selecciones
-      setTimeSlots(prev => prev.map(slot => ({ ...slot, selected: false })));
-      setConfig(prev => ({ ...prev, timeSlots: [] }));
-      
+      setTimeSlots((prev) =>
+        prev.map((slot) => ({ ...slot, selected: false }))
+      );
+      setConfig((prev) => ({ ...prev, timeSlots: [] }));
     } catch (err) {
-      console.error('❌ Server Action error:', err);
+      console.error("Server Action error:", err);
       toast.error("No se pudo completar la reserva, inténtalo de nuevo");
     } finally {
       setIsSubmitting(false);
@@ -240,12 +254,12 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
   const clearAllTimeSlots = () => {
     setTimeSlots((prev) => {
       const newTimeSlots = prev.map((slot) => ({ ...slot, selected: false }));
-      
+
       setConfig((prevConfig) => ({
         ...prevConfig,
         timeSlots: [],
       }));
-      
+
       return newTimeSlots;
     });
   };
@@ -256,16 +270,16 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
         ...slot,
         selected: slot.hour >= 9 && slot.hour <= 17,
       }));
-      
+
       const selectedHours = newTimeSlots
         .filter((slot) => slot.selected)
         .map((slot) => slot.hour);
-      
+
       setConfig((prevConfig) => ({
         ...prevConfig,
         timeSlots: selectedHours,
       }));
-      
+
       return newTimeSlots;
     });
   };
@@ -279,7 +293,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
             Configurador de Reservas
           </CardTitle>
           <CardDescription>
-            Configura tu reserva para un día específico o un rango de fechas con horarios personalizados
+            Configura tu reserva para un día específico o un rango de fechas con
+            horarios personalizados
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -290,10 +305,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
               checked={config.hasDateRange}
               onCheckedChange={handleDateRangeToggle}
             />
-            <Label
-              htmlFor="date-range-mode"
-              className="text-base font-medium"
-            >
+            <Label htmlFor="date-range-mode" className="text-base font-medium">
               Rango de fechas
             </Label>
           </div>
@@ -328,9 +340,9 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                     >
                       Horario comercial (9-17h)
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="text-muted-foreground hover:bg-muted"
                       onClick={clearAllTimeSlots}
                     >
@@ -346,8 +358,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                       key={slot.hour}
                       variant={slot.selected ? "secondary" : "outline"}
                       className={`h-12 text-sm justify-start transition-all ${
-                        slot.selected 
-                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20" 
+                        slot.selected
+                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20"
                           : "hover:bg-accent"
                       }`}
                       onClick={() => toggleTimeSlot(slot.hour)}
@@ -367,20 +379,26 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                 {/* Resumen de reserva - justo después de horarios */}
                 {dateRange.from && getSelectedTimeSlotsCount() > 0 && (
                   <div className="mt-4 p-4 border-2 border-ring/20 rounded-lg bg-gradient-to-br from-ring/5 to-ring/10">
-                    <Label className="font-medium">Resumen de la reserva:</Label>
+                    <Label className="font-medium">
+                      Resumen de la reserva:
+                    </Label>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Reserva para el {formatDateSafe(dateRange.from)} en las siguientes franjas:
+                      Reserva para el {formatDateSafe(dateRange.from)} en las
+                      siguientes franjas:
                     </p>
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-3">
-                      {timeSlots.filter(slot => slot.selected).map((slot) => (
-                        <Badge 
-                          key={slot.hour} 
-                          variant="secondary" 
-                          className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
-                        >
-                          {slot.hour.toString().padStart(2, "0")}:00-{slot.hour.toString().padStart(2, "0")}:59
-                        </Badge>
-                      ))}
+                      {timeSlots
+                        .filter((slot) => slot.selected)
+                        .map((slot) => (
+                          <Badge
+                            key={slot.hour}
+                            variant="secondary"
+                            className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
+                          >
+                            {slot.hour.toString().padStart(2, "0")}:00-
+                            {slot.hour.toString().padStart(2, "0")}:59
+                          </Badge>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -392,7 +410,9 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
               {/* Calendarios de rango - más anchos */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <Label className="text-base font-medium">Fecha de inicio</Label>
+                  <Label className="text-base font-medium">
+                    Fecha de inicio
+                  </Label>
                   <div className="mt-2">
                     <SimpleCalendar
                       selectedDate={dateRange.from || getTodayISO()}
@@ -401,7 +421,9 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                   </div>
                 </div>
                 <div>
-                  <Label className="text-base font-medium">Fecha de finalización</Label>
+                  <Label className="text-base font-medium">
+                    Fecha de finalización
+                  </Label>
                   <div className="mt-2">
                     <SimpleCalendar
                       selectedDate={dateRange.to || getTodayISO()}
@@ -462,8 +484,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                       <Label>Días seleccionados:</Label>
                       <div className="flex flex-wrap gap-2">
                         {selectedWeekdays.map((weekday) => (
-                          <Badge 
-                            key={weekday} 
+                          <Badge
+                            key={weekday}
                             variant="secondary"
                             className="bg-complementary/20 text-complementary border-complementary/40"
                           >
@@ -494,9 +516,9 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                     >
                       Horario comercial (9-17h)
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="text-muted-foreground hover:bg-muted"
                       onClick={clearAllTimeSlots}
                     >
@@ -512,8 +534,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                       key={slot.hour}
                       variant={slot.selected ? "secondary" : "outline"}
                       className={`h-12 text-sm justify-start transition-all ${
-                        slot.selected 
-                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20" 
+                        slot.selected
+                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20"
                           : "hover:bg-accent"
                       }`}
                       onClick={() => toggleTimeSlot(slot.hour)}
@@ -533,29 +555,33 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                 {/* Resumen de reserva - justo después de horarios */}
                 {dateRange.from && getSelectedTimeSlotsCount() > 0 && (
                   <div className="mt-4 p-4 border-2 border-ring/20 rounded-lg bg-gradient-to-br from-ring/5 to-ring/10">
-                    <Label className="font-medium">Resumen de la reserva:</Label>
+                    <Label className="font-medium">
+                      Resumen de la reserva:
+                    </Label>
                     <p className="text-sm text-muted-foreground mt-2">
-                      {!config.hasDateRange ? (
-                        // Día específico
-                        `Reserva para el ${formatDateSafe(dateRange.from)} en las siguientes franjas:`
-                      ) : config.hasWeekdaySelection && selectedWeekdays.length > 0 ? (
-                        // Rango con días específicos
-                        `Reserva desde el ${formatDateSafe(dateRange.from)}${dateRange.to ? ` hasta el ${formatDateSafe(dateRange.to)}` : ''}, ${selectedWeekdays.map(w => WEEKDAYS.find(wd => wd.value === w)?.label).join(', ')} en las siguientes franjas:`
-                      ) : (
-                        // Rango completo
-                        `Reserva desde el ${formatDateSafe(dateRange.from)}${dateRange.to ? ` hasta el ${formatDateSafe(dateRange.to)}` : ''} en las siguientes franjas:`
-                      )}
+                      {!config.hasDateRange
+                        ? // Día específico
+                          `Reserva para el ${formatDateSafe(dateRange.from)} en las siguientes franjas:`
+                        : config.hasWeekdaySelection &&
+                            selectedWeekdays.length > 0
+                          ? // Rango con días específicos
+                            `Reserva desde el ${formatDateSafe(dateRange.from)}${dateRange.to ? ` hasta el ${formatDateSafe(dateRange.to)}` : ""}, ${selectedWeekdays.map((w) => WEEKDAYS.find((wd) => wd.value === w)?.label).join(", ")} en las siguientes franjas:`
+                          : // Rango completo
+                            `Reserva desde el ${formatDateSafe(dateRange.from)}${dateRange.to ? ` hasta el ${formatDateSafe(dateRange.to)}` : ""} en las siguientes franjas:`}
                     </p>
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-3">
-                      {timeSlots.filter(slot => slot.selected).map((slot) => (
-                        <Badge 
-                          key={slot.hour} 
-                          variant="secondary" 
-                          className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
-                        >
-                          {slot.hour.toString().padStart(2, "0")}:00-{slot.hour.toString().padStart(2, "0")}:59
-                        </Badge>
-                      ))}
+                      {timeSlots
+                        .filter((slot) => slot.selected)
+                        .map((slot) => (
+                          <Badge
+                            key={slot.hour}
+                            variant="secondary"
+                            className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
+                          >
+                            {slot.hour.toString().padStart(2, "0")}:00-
+                            {slot.hour.toString().padStart(2, "0")}:59
+                          </Badge>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -563,8 +589,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
             </div>
           )}
 
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             size="lg"
             onClick={onSubmit}
             disabled={getSelectedTimeSlotsCount() === 0 || isSubmitting}

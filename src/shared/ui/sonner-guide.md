@@ -8,7 +8,7 @@ Los toasts ahora aparecen con los colores correctos gracias a:
 2. **Componente Sonner customizado** con colores específicos
 3. **RichColors habilitado** para mejor UX
 
-## 🎯 Tipos de Toast Disponibles
+## Tipos de Toast Disponibles
 
 ### **Success (Verde)**
 

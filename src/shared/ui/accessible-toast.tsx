@@ -61,7 +61,7 @@ export function AccessibleToastProvider({ children }: AccessibleToastProviderPro
       >
         {toasts.map(toast => (
           <div key={toast.id}>
-            {toast.type === 'error' && '❌ '} 
+            {toast.type === 'error' && ''} 
             {toast.type === 'success' && ''}
             {toast.type === 'info' && 'ℹ️ '}
             {toast.message}
