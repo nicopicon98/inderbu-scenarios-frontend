@@ -133,7 +133,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
         loadTime
       ));
 
-      console.log('📢 Domain events published successfully');
+      console.log('Domain events published successfully');
     } catch (error) {
       console.warn('⚠️ Failed to publish success events:', error);
       // Don't fail the main operation if events fail
@@ -143,7 +143,7 @@ export class GetScenarioDetailUseCaseImpl implements GetScenarioDetailUseCase {
   private async publishNotFoundEvent(attemptedId: string): Promise<void> {
     try {
       await this.eventBus.publish(new ScenarioDetailNotFoundEvent(attemptedId));
-      console.log('📢 Not found event published');
+      console.log('Not found event published');
     } catch (error) {
       console.warn('⚠️ Failed to publish not found event:', error);
       // Don't fail the main operation if events fail

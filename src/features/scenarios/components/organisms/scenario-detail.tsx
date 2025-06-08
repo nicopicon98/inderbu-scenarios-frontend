@@ -1,10 +1,9 @@
 "use client";
 
 import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-res.interface";
-import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { ScenarioImageCarousel } from "./scenario-image-carousel";
 import { ScenarioInfoCard } from "./scenario-info-card";
-import { ReservationPanel } from "./reservation-panel";
+import FlexibleScheduler from "@/components/flexible-scheduler";
 
 
 interface Props {
@@ -13,17 +12,19 @@ interface Props {
 
 export function ScenarioDetail({ subScenario }: Props) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-      {/* Left side ----------------------------------------------------------- */}
-      <div className="lg:col-span-2 space-y-6">
-        <ScenarioImageCarousel />
-        <ScenarioInfoCard subScenario={subScenario} />
+    <div className="space-y-8">
+      {/* Main content - Imagen e información del escenario */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left side - Imagen e información */}
+        <div className="lg:col-span-3 space-y-6">
+          <ScenarioImageCarousel />
+          <ScenarioInfoCard subScenario={subScenario} />
+        </div>
       </div>
 
-      {/* Right side ---------------------------------------------------------- */}
-      <div className="lg:col-span-1 space-y-6">
-        {/* PASS SERVER ACTION TO ReservationPanel */}
-        <ReservationPanel 
+      {/* Configurador de reservas - Full width abajo */}
+      <div className="w-full">
+        <FlexibleScheduler 
           subScenarioId={subScenario.id} 
         />
       </div>

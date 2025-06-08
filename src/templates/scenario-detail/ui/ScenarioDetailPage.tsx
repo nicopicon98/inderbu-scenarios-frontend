@@ -3,7 +3,6 @@
 "use client";
 
 import { GetScenarioDetailResponse } from '@/features/scenarios/detail/application/GetScenarioDetailUseCase';
-import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { MainHeader } from "@/shared/components/organisms/main-header";
 import { ScenarioDetail } from "@/features/scenarios/components/organisms/scenario-detail";
 import { Badge } from "@/shared/ui/badge";
