@@ -170,7 +170,7 @@ export async function searchActivityAreas(search: string = ""): Promise<Activity
     params.append('limit', '20');
 
     const url = `${API_BASE_URL}/activity-areas?${params.toString()}`;
-    console.log('🔍 Searching activity areas:', url);
+    console.log('Searching activity areas:', url);
 
     const response = await fetch(url, {
       cache: 'no-store',
@@ -202,7 +202,7 @@ export async function searchNeighborhoods(search: string = ""): Promise<Neighbor
     params.append('limit', '20');
 
     const url = `${API_BASE_URL}/neighborhoods?${params.toString()}`;
-    console.log('🔍 Searching neighborhoods:', url);
+    console.log('Searching neighborhoods:', url);
 
     const response = await fetch(url, {
       cache: 'no-store',

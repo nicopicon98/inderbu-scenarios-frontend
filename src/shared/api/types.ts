@@ -48,3 +48,23 @@ export interface ReservationQueryParams extends PaginationParams, SearchParams {
   dateTo?: string;   // YYYY-MM-DD format
   searchQuery?: string; // Note: current service uses searchQuery, not search
 }
+
+// Request configuration interface
+export interface RequestConfig {
+  headers?: Record<string, string>;
+  timeout?: number;
+  signal?: AbortSignal;
+  next?: {
+    tags?: string[];
+    revalidate?: number | false;
+  };
+}
+
+// Common HTTP Client interface (compatible with both Client and Server implementations)
+export interface HttpClient {
+  get<T>(endpoint: string, config?: RequestConfig): Promise<T>;
+  post<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;
+  put<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;
+  patch<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<T>;
+  delete<T>(endpoint: string, config?: RequestConfig): Promise<T>;
+}

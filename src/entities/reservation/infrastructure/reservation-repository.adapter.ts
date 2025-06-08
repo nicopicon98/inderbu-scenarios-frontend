@@ -1,4 +1,4 @@
-import { ClientHttpClient } from '@/shared/api/http-client-client';
+import { HttpClient } from '@/shared/api/types';
 import { PaginatedApiResponse, SimpleApiResponse } from '@/shared/api/types';
 import {
   CreateReservationDto,
@@ -22,7 +22,7 @@ export interface ReservationRepository {
 }
 
 export class ApiReservationRepository implements ReservationRepository {
-  constructor(private httpClient: ClientHttpClient) { }
+  constructor(private httpClient: HttpClient) { }
 
   async getByUserId(userId: number, query: GetReservationsQuery = {}): Promise<PaginatedReservations> {
     const searchParams = new URLSearchParams();
@@ -100,12 +100,15 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 
   async create(command: CreateReservationDto): Promise<CreateReservationResponseDto> {
+    console.log('🚀 Repository: Creating reservation with command:', command);
+    
     // Backend returns: { statusCode, message, data: CreateReservationResponseDto }
     const response = await this.httpClient.post<SimpleApiResponse<CreateReservationResponseDto>>(
       '/reservations',
       command
     );
 
+    console.log('✅ Repository: Reservation created successfully:', response.data);
     return response.data;
   }
 
@@ -166,6 +169,7 @@ export class ApiReservationRepository implements ReservationRepository {
   }
 
   async getAvailableTimeSlots(subScenarioId: number, date: string): Promise<TimeslotResponseDto[]> {
+    // 🎯 FIXED: Corregido endpoint para coincidir con backend
     // CACHE TAGS: Timeslots por scenario y fecha
     const cacheConfig = {
       next: {
@@ -178,17 +182,58 @@ export class ApiReservationRepository implements ReservationRepository {
       }
     };
 
-    // Backend returns: { statusCode, message, data: TimeslotResponseDto[] }
-    const response = await this.httpClient.get<SimpleApiResponse<TimeslotResponseDto[]>>(
-      `/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
-      cacheConfig
-    );
+    try {
+      console.log(`Calling availability endpoint: /reservations/availability?subScenarioId=${subScenarioId}&date=${date}`);
+      
+      // 🎯 FIXED: El backend devuelve AvailabilityResponseDto, no TimeslotResponseDto[]
+      interface AvailabilityResponseDto {
+        subScenarioId: number;
+        date: string;
+        timeslots: TimeslotResponseDto[];  // ← Array está aquí
+        totalAvailable: number;
+        totalTimeslots: number;
+        queriedAt?: string;
+      }
+      
+      const response = await this.httpClient.get<SimpleApiResponse<AvailabilityResponseDto>>(
+        `/reservations/availability?subScenarioId=${subScenarioId}&date=${date}`,
+        cacheConfig
+      );
 
-    return response.data;
+      // DEBUG: Loggear la respuesta completa del backend
+      console.log(`🔎 Full response from backend:`, response);
+      console.log(`🔎 Response.data:`, response.data);
+      console.log(`🔎 Response.data.timeslots:`, response.data.timeslots);
+      console.log(`🔎 Type of response.data.timeslots:`, typeof response.data.timeslots);
+      console.log(`🔎 Is response.data.timeslots an array?`, Array.isArray(response.data.timeslots));
+      
+      if (response.data && response.data.timeslots && Array.isArray(response.data.timeslots)) {
+        console.log(`✅ Successfully parsed ${response.data.timeslots.length} timeslots`);
+        return response.data.timeslots; // 🎯 FIXED: Extraer el array de timeslots
+      } else {
+        console.error(`❌ Invalid response.data.timeslots format:`, response.data);
+        throw new Error(`Invalid response format: expected timeslots array in data property`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error fetching availability:`, error);
+      
+      // DEBUG: Si es un error de HTTP, mostrar más detalles
+      if (error instanceof Error && 'response' in error) {
+        const httpError = error as any;
+        console.error(`🔎 HTTP Error details:`, {
+          status: httpError.response?.status,
+          statusText: httpError.response?.statusText,
+          data: httpError.response?.data
+        });
+      }
+      
+      throw error;
+    }
   }
 }
 
-// Factory function for creating repository instances
-export const createReservationRepository = (httpClient: ClientHttpClient): ReservationRepository => {
+// Factory function for creating repository instances - now accepts both Client and Server HTTP clients
+export const createReservationRepository = (httpClient: HttpClient): ReservationRepository => {
   return new ApiReservationRepository(httpClient);
 };

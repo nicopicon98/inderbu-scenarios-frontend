@@ -12,7 +12,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
   constructor(private readonly apiService: NeighborhoodApiService) {}
 
   async findAll(): Promise<Neighborhood[]> {
-    console.log('🔌 NeighborhoodRepositoryAdapter: Executing findAll');
+    console.log('NeighborhoodRepositoryAdapter: Executing findAll');
 
     try {
       // Call existing API service
@@ -28,7 +28,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
   }
 
   async findById(id: number): Promise<Neighborhood | null> {
-    console.log(`🔌 NeighborhoodRepositoryAdapter: Executing findById with id: ${id}`);
+    console.log(`NeighborhoodRepositoryAdapter: Executing findById with id: ${id}`);
 
     try {
       const allNeighborhoods = await this.findAll();
@@ -44,7 +44,7 @@ export class NeighborhoodRepositoryAdapter implements NeighborhoodRepository {
   }
 
   async findByName(name: string): Promise<Neighborhood[]> {
-    console.log(`🔌 NeighborhoodRepositoryAdapter: Executing findByName with name: ${name}`);
+    console.log(`NeighborhoodRepositoryAdapter: Executing findByName with name: ${name}`);
 
     try {
       const allNeighborhoods = await this.findAll();

@@ -19,7 +19,7 @@ export class SubScenarioRepositoryAdapter implements SubScenarioRepository {
   constructor(private readonly apiService: SubScenarioApiService) {}
 
   async findFiltered(filters: SubScenarioFilters): Promise<PaginatedSubScenarios> {
-    console.log('🔌 SubScenarioRepositoryAdapter: Executing findFiltered with:', filters);
+    console.log('SubScenarioRepositoryAdapter: Executing findFiltered with:', filters);
 
     try {
       // Transform domain filters to API parameters

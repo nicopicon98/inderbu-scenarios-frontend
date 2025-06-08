@@ -46,7 +46,7 @@ export function ReservationPanel({ subScenarioId }: IReservationPanelProps) {
       };
       
       console.log('ReservationPanel: Sending command to server action:', command);
-      console.log('🔍 Command details:');
+      console.log('Command details:');
       console.log('  - subScenarioId:', subScenarioId, typeof subScenarioId);
       console.log('  - timeSlotId:', selectedTimeSlotId, typeof selectedTimeSlotId);
       console.log('  - reservationDate:', date, typeof date);

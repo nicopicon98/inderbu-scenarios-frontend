@@ -21,7 +21,7 @@ export interface ScenarioDetailContainer {
  * Following DDD layered architecture with proper dependency injection
  */
 export function createScenarioDetailContainer(): ScenarioDetailContainer {
-  console.log('🏗️ Building ScenarioDetail DI Container...');
+  console.log('Building ScenarioDetail DI Container...');
 
   // Infrastructure: Event Bus
   const eventBus = createInMemoryEventBus();
@@ -32,7 +32,7 @@ export function createScenarioDetailContainer(): ScenarioDetailContainer {
   // Create bridge wrapper to match expected interface
   const apiServiceBridge = {
     async getById(request: { id: string }) {
-      console.log('🌉 ApiServiceBridge: Converting findById call for ID:', request.id);
+      console.log('ApiServiceBridge: Converting findById call for ID:', request.id);
       return await cleanRepository.findById(request.id);
     }
   };

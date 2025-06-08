@@ -27,7 +27,7 @@ export interface HomeContainer {
  * Following DDD layered architecture with proper dependency injection
  */
 export function createHomeContainer(): HomeContainer {
-  console.log('🏗️ Building Home DI Container...');
+  console.log('Building Home DI Container...');
 
   // Infrastructure: Event Bus
   const eventBus = createInMemoryEventBus();

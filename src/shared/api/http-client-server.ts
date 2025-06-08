@@ -1,5 +1,5 @@
 import { createServerAuthContext, ServerAuthContext } from './server-auth';
-import { ApiError } from './types';
+import { ApiError, HttpClient, RequestConfig } from './types';
 
 export interface ServerHttpClientConfig {
   baseURL: string;
@@ -8,14 +8,8 @@ export interface ServerHttpClientConfig {
   headers?: Record<string, string>;
 }
 
-export interface RequestConfig {
-  headers?: Record<string, string>;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
 // SERVER-ONLY HTTP Client (can use server dependencies)
-export class ServerHttpClient {
+export class ServerHttpClient implements HttpClient {
   private baseURL: string;
   private timeout: number;
   private authContext?: ServerAuthContext;
@@ -36,7 +30,7 @@ export class ServerHttpClient {
     const headers: Record<string, string> = {};
 
     if (this.authContext) {
-      console.log('📞 HTTP Client: Getting token from auth context...');
+      console.log('HTTP Client: Getting token from auth context...');
       const token = await this.authContext.getToken();
       
       if (token) {
@@ -172,6 +166,3 @@ export class ServerHttpClientFactory {
 
 // Re-export server auth context creator
 export { createServerAuthContext };
-
-// Type alias for backward compatibility
-export type HttpClient = ServerHttpClient;

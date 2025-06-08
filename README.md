@@ -10,7 +10,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 ## 📋 Tabla de Contenidos
 
 - [Inicio Rápido](#-inicio-rápido)
-- [🏗️ Arquitectura](#-arquitectura)
+- [Arquitectura](#-arquitectura)
   - [Estructura de Carpetas](#estructura-de-carpetas)
   - [Patrones Arquitectónicos](#patrones-arquitectónicos)
 - [⚙️ Tecnologías](#-tecnologías)
@@ -20,7 +20,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 - [📝 Guías de Desarrollo](#-guías-de-desarrollo)
 - [👥 Contribución](#-contribución)
 - [📄 Licencia](#-licencia)
-- [📞 Contacto](#-contacto)
+- [Contacto](#-contacto)
 
 ## Inicio Rápido
 
@@ -42,7 +42,7 @@ pnpm test
 pnpm build
 ```
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 El proyecto sigue una arquitectura moderna que combina los principios de Feature-First y Atomic Design, optimizada para Next.js 14 con el App Router.
 
@@ -433,7 +433,7 @@ Para implementar una nueva feature:
 
 Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
 
-## 📞 Contacto
+## Contacto
 
 Nombre del Proyecto - [@inderbu](https://twitter.com/inderbu) - info@inderbu.gov.co
 

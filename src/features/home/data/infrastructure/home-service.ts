@@ -13,7 +13,7 @@ export class HomeServiceImpl implements HomeService {
   ) {}
 
   async getHomeData(searchParams: any): Promise<HomeDataResponse> {
-    console.log('🏗️ HomeService: Processing getHomeData request with searchParams:', searchParams);
+    console.log('HomeService: Processing getHomeData request with searchParams:', searchParams);
 
     try {
       // Transform raw search params to use case input

@@ -69,7 +69,7 @@ export class GetUserReservationsUseCase {
     };
     const reservations = await this.reservationRepo.getByUserId(targetUserId, query);
 
-    // 📡 Domain event: Record access for audit trail
+    // Domain event: Record access for audit trail
     await this.eventBus.publish(new ReservationsAccessedEvent(
       targetUserId,
       currentUser?.id || 0,

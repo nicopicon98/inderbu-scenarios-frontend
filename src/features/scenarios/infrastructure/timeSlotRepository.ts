@@ -65,7 +65,7 @@ export async function getTimeSlots(params: GetTimeSlotParams): Promise<TimeSlotA
 // Repository Adapter Pattern (bridges domain to API)
 export class TimeSlotRepositoryAdapter {
   async findAvailableTimeSlots(params: GetTimeSlotParams): Promise<TimeSlotApiData[]> {
-    console.log('🔌 TimeSlotRepositoryAdapter: Executing findAvailableTimeSlots with:', params);
+    console.log('TimeSlotRepositoryAdapter: Executing findAvailableTimeSlots with:', params);
     
     try {
       const data = await getTimeSlots(params);

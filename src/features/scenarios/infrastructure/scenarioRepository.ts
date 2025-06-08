@@ -42,7 +42,7 @@ export async function getScenarioById(scenarioId: string): Promise<ScenarioApiDa
     const data = await response.json();
     
     // DEBUG: Log actual API response structure
-    console.log('🔍 RAW API Response:', JSON.stringify(data, null, 2));
+    console.log('RAW API Response:', JSON.stringify(data, null, 2));
     
     // HANDLE DIFFERENT API RESPONSE FORMATS
     let scenario: ScenarioApiData;
@@ -73,7 +73,7 @@ export async function getScenarioById(scenarioId: string): Promise<ScenarioApiDa
 // Repository Adapter Pattern (bridges domain to API) - CLEAN VERSION
 export class CleanScenarioRepositoryAdapter {
   async findById(scenarioId: string): Promise<ScenarioApiData | null> {
-    console.log('🔌 CleanScenarioRepositoryAdapter: Executing findById with ID:', scenarioId);
+    console.log('CleanScenarioRepositoryAdapter: Executing findById with ID:', scenarioId);
     
     try {
       const data = await getScenarioById(scenarioId);
@@ -94,7 +94,7 @@ export class CleanScenarioRepositoryAdapter {
   }
 
   async exists(scenarioId: string): Promise<boolean> {
-    console.log('🔌 CleanScenarioRepositoryAdapter: Checking existence of ID:', scenarioId);
+    console.log('CleanScenarioRepositoryAdapter: Checking existence of ID:', scenarioId);
     
     try {
       const scenario = await this.findById(scenarioId);

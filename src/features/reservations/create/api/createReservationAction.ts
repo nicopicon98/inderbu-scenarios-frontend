@@ -2,9 +2,7 @@
 
 import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
 import { CreateReservationDto, CreateReservationSchema } from '@/entities/reservation/model/types';
-// import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
-import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
-import { createServerAuthContext } from '@/shared/api/server-auth';
+import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
 import { createFormDataValidator } from '@/shared/lib/validation';
 import { revalidateTag } from 'next/cache';
 
@@ -25,10 +23,8 @@ export async function createReservationAction(
     // Validate input
     const command = validateCreateReservation(formData);
 
-    // Create repository
-    const authContext = createServerAuthContext();
-    // FIXED: Use ClientHttpClientFactory
-    const httpClient = ClientHttpClientFactory.createClient(authContext);
+    // FIXED: Use ServerHttpClientFactory for server actions
+    const httpClient = ServerHttpClientFactory.createServerWithAuth();
     const repository = createReservationRepository(httpClient);
 
     // Execute command
@@ -79,19 +75,15 @@ export async function createReservation(command: CreateReservationDto): Promise<
     console.log('Input command:', command);
     
     // Validate input
-    console.log('🔍 Validating input with schema...');
+    console.log('Validating input with schema...');
     const validatedCommand = CreateReservationSchema.parse(command);
     console.log('Validation successful:', validatedCommand);
 
-    // Create repository
-    console.log('🏗️ Creating auth context...');
-    const authContext = createServerAuthContext();
+    // FIXED: Create server HTTP client with auth context
+    console.log('Creating server HTTP client with auth...');
+    const httpClient = ServerHttpClientFactory.createServerWithAuth();
     
-    console.log('🏗️ Creating HTTP client...');
-    // FIXED: Use ServerHttpClientFactory
-    const httpClient = ClientHttpClientFactory.createClient(authContext);
-    
-    console.log('🏗️ Creating reservation repository...');
+    console.log('Creating reservation repository...');
     const repository = createReservationRepository(httpClient);
 
     // Execute command

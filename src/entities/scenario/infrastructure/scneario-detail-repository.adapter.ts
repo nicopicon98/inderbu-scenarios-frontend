@@ -17,7 +17,7 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
   constructor(private readonly apiService: ScenarioApiService) {}
 
   async findById(scenarioId: ScenarioId): Promise<ScenarioDetail | null> {
-    console.log(`🔌 ScenarioDetailRepositoryAdapter: Executing findById with ID: ${scenarioId.value}`);
+    console.log(`ScenarioDetailRepositoryAdapter: Executing findById with ID: ${scenarioId.value}`);
 
     try {
       // Transform domain ScenarioId to API request format
@@ -55,7 +55,7 @@ export class ScenarioDetailRepositoryAdapter implements ScenarioDetailRepository
   }
 
   async exists(scenarioId: ScenarioId): Promise<boolean> {
-    console.log(`🔌 ScenarioDetailRepositoryAdapter: Checking existence of ID: ${scenarioId.value}`);
+    console.log(`ScenarioDetailRepositoryAdapter: Checking existence of ID: ${scenarioId.value}`);
 
     try {
       const scenario = await this.findById(scenarioId);

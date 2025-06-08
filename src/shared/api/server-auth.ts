@@ -8,12 +8,12 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 // Server-side token management
 export async function getToken(): Promise<string | null> {
   try {
-    console.log('🔍 Server Auth: Getting token from cookies...');
+    console.log('Server Auth: Getting token from cookies...');
     const cookieStore: ReadonlyRequestCookies = await cookies();
     
     // Debug: List all available cookies
     const allCookies = cookieStore.getAll();
-    console.log('🍪 Available cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
+    console.log('Available cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
     
     const tokenCookie = cookieStore.get(TOKEN_KEY);
     console.log(`Token cookie (${TOKEN_KEY}):`, tokenCookie ? { name: tokenCookie.name, hasValue: !!tokenCookie.value, length: tokenCookie.value?.length } : 'Not found');
@@ -24,7 +24,7 @@ export async function getToken(): Promise<string | null> {
       console.log('Server Auth: Token found, length:', token.length);
       // Check if token is expired
       const isExpired = isTokenExpired(token);
-      console.log('⏰ Token expired:', isExpired);
+      console.log('Token expired:', isExpired);
       
       if (isExpired) {
         console.log('Server Auth: Token is expired');

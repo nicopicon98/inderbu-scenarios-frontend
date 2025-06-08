@@ -17,7 +17,7 @@ export class ScenarioDetailServiceImpl implements ScenarioDetailService {
   ) {}
 
   async getScenarioDetail(id: string): Promise<GetScenarioDetailResponse> {
-    console.log('🏗️ ScenarioDetailService: Processing getScenarioDetail request with ID:', id);
+    console.log('ScenarioDetailService: Processing getScenarioDetail request with ID:', id);
 
     try {
       // Transform raw ID to use case input

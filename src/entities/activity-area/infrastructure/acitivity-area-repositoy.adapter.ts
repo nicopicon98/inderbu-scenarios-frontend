@@ -12,7 +12,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
   constructor(private readonly apiService: ActivityAreaApiService) {}
 
   async findAll(): Promise<ActivityArea[]> {
-    console.log('🔌 ActivityAreaRepositoryAdapter: Executing findAll');
+    console.log('ActivityAreaRepositoryAdapter: Executing findAll');
 
     try {
       // Call existing API service
@@ -28,7 +28,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
   }
 
   async findById(id: number): Promise<ActivityArea | null> {
-    console.log(`🔌 ActivityAreaRepositoryAdapter: Executing findById with id: ${id}`);
+    console.log(`ActivityAreaRepositoryAdapter: Executing findById with id: ${id}`);
 
     try {
       const allActivityAreas = await this.findAll();
@@ -44,7 +44,7 @@ export class ActivityAreaRepositoryAdapter implements ActivityAreaRepository {
   }
 
   async findByName(name: string): Promise<ActivityArea[]> {
-    console.log(`🔌 ActivityAreaRepositoryAdapter: Executing findByName with name: ${name}`);
+    console.log(`ActivityAreaRepositoryAdapter: Executing findByName with name: ${name}`);
 
     try {
       const allActivityAreas = await this.findAll();

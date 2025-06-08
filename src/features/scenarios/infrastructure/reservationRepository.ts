@@ -51,7 +51,7 @@ export async function createReservationApi(payload: CreateReservationPayload): P
 // Repository Adapter Pattern (bridges domain to API)
 export class ReservationRepositoryAdapter {
   async createReservation(payload: CreateReservationPayload): Promise<ReservationApiResponse> {
-    console.log('🔌 ReservationRepositoryAdapter: Executing createReservation with:', payload);
+    console.log('ReservationRepositoryAdapter: Executing createReservation with:', payload);
     
     try {
       const data = await createReservationApi(payload);

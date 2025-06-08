@@ -1,5 +1,5 @@
 import { AuthContext, createClientAuthContext } from './auth';
-import { ApiError } from './types';
+import { ApiError, HttpClient, RequestConfig } from './types';
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -8,19 +8,8 @@ export interface HttpClientConfig {
   headers?: Record<string, string>;
 }
 
-export interface RequestConfig {
-  headers?: Record<string, string>;
-  timeout?: number;
-  signal?: AbortSignal;
-  // NUEVO: Soporte para Next.js cache
-  next?: {
-    tags?: string[];
-    revalidate?: number | false;
-  };
-}
-
 // CLIENT-ONLY HTTP Client (no server dependencies)
-export class ClientHttpClient {
+export class ClientHttpClient implements HttpClient {
   private baseURL: string;
   private timeout: number;
   private authContext?: AuthContext;
@@ -39,7 +28,7 @@ export class ClientHttpClient {
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const headers: Record<string, string> = {};
 
-    console.log('🔍 HTTP CLIENT: Getting auth headers...');
+    console.log('HTTP CLIENT: Getting auth headers...');
     
     if (this.authContext) {
       console.log('HTTP CLIENT: Auth context found, getting token...');
@@ -196,6 +185,3 @@ export class ClientHttpClientFactory {
 
 // Re-export client auth context creator
 export { createClientAuthContext };
-
-// Type alias for backward compatibility
-export type HttpClient = ClientHttpClient;

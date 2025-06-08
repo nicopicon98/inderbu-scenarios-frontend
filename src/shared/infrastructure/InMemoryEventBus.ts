@@ -18,7 +18,7 @@ export class InMemoryEventBus implements EventBus {
     await Promise.all(promises);
 
     // Simple logging for development
-    console.log(`📡 Domain Event: ${eventType}`, {
+    console.log(`Domain Event: ${eventType}`, {
       ...event
     });
   }
