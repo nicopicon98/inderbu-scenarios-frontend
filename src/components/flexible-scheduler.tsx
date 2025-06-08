@@ -7,22 +7,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-
-import { format, parseISO } from "date-fns";
-import { CalendarIcon, Check, Clock } from "lucide-react";
+import { createReservation } from '@/features/reservations/create/api/createReservationAction';
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
+import { CalendarIcon, Check, Clock } from "lucide-react";
+import { useAuth } from "@/features/auth/model/use-auth";
+import { FiCheck, FiLoader } from "react-icons/fi";
+import { format, parseISO } from "date-fns";
 import { Button } from "@/shared/ui/button";
 import { Switch } from "@/shared/ui/switch";
+import { AuthModal } from "@/features/auth";
 import { Badge } from "@/shared/ui/badge";
 import { Label } from "@/shared/ui/label";
 import { useState } from "react";
+import { toast } from "sonner";
+
+
 
 // Imports para lógica de reservas
-import { AuthModal } from "@/features/auth";
-import { useAuth } from "@/features/auth/model/use-auth";
-import { createReservation } from '@/features/reservations/create/api/createReservationAction';
-import { toast } from "sonner";
-import { FiCheck, FiLoader } from "react-icons/fi";
 
 interface TimeSlot {
   hour: number;
@@ -270,8 +271,8 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <Card>
+    <div className="w-full px-4 lg:px-8 space-y-6">
+      <Card className="border-2 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
@@ -322,11 +323,17 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                     <Button
                       variant="outline"
                       size="sm"
+                      className="text-complementary border-complementary/40 hover:bg-complementary/10"
                       onClick={selectBusinessHours}
                     >
                       Horario comercial (9-17h)
                     </Button>
-                    <Button variant="outline" size="sm" onClick={clearAllTimeSlots}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-muted-foreground hover:bg-muted"
+                      onClick={clearAllTimeSlots}
+                    >
                       Limpiar todo
                     </Button>
                   </div>
@@ -337,8 +344,12 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                   {timeSlots.map((slot) => (
                     <Button
                       key={slot.hour}
-                      variant={slot.selected ? "default" : "outline"}
-                      className="h-12 text-sm justify-start"
+                      variant={slot.selected ? "secondary" : "outline"}
+                      className={`h-12 text-sm justify-start transition-all ${
+                        slot.selected 
+                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20" 
+                          : "hover:bg-accent"
+                      }`}
                       onClick={() => toggleTimeSlot(slot.hour)}
                     >
                       {slot.selected && <Check className="h-4 w-4 mr-2" />}
@@ -355,14 +366,18 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
 
                 {/* Resumen de reserva - justo después de horarios */}
                 {dateRange.from && getSelectedTimeSlotsCount() > 0 && (
-                  <div className="mt-4 p-4 border rounded-lg bg-muted/50">
+                  <div className="mt-4 p-4 border-2 border-ring/20 rounded-lg bg-gradient-to-br from-ring/5 to-ring/10">
                     <Label className="font-medium">Resumen de la reserva:</Label>
                     <p className="text-sm text-muted-foreground mt-2">
                       Reserva para el {formatDateSafe(dateRange.from)} en las siguientes franjas:
                     </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-3">
                       {timeSlots.filter(slot => slot.selected).map((slot) => (
-                        <Badge key={slot.hour} variant="outline" className="text-xs">
+                        <Badge 
+                          key={slot.hour} 
+                          variant="secondary" 
+                          className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
+                        >
                           {slot.hour.toString().padStart(2, "0")}:00-{slot.hour.toString().padStart(2, "0")}:59
                         </Badge>
                       ))}
@@ -423,11 +438,15 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                         key={weekday.value}
                         variant={
                           selectedWeekdays.includes(weekday.value)
-                            ? "default"
+                            ? "secondary"
                             : "outline"
                         }
                         size="sm"
-                        className="h-12 flex flex-col"
+                        className={`h-12 flex flex-col transition-all ${
+                          selectedWeekdays.includes(weekday.value)
+                            ? "bg-complementary/20 text-complementary border-complementary/40 hover:bg-complementary/30"
+                            : "hover:bg-muted"
+                        }`}
                         onClick={() => handleWeekdayToggle(weekday.value)}
                       >
                         <span className="text-xs">{weekday.short}</span>
@@ -443,7 +462,11 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                       <Label>Días seleccionados:</Label>
                       <div className="flex flex-wrap gap-2">
                         {selectedWeekdays.map((weekday) => (
-                          <Badge key={weekday} variant="secondary">
+                          <Badge 
+                            key={weekday} 
+                            variant="secondary"
+                            className="bg-complementary/20 text-complementary border-complementary/40"
+                          >
                             {WEEKDAYS.find((w) => w.value === weekday)?.label}
                           </Badge>
                         ))}
@@ -466,11 +489,17 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                     <Button
                       variant="outline"
                       size="sm"
+                      className="text-complementary border-complementary/40 hover:bg-complementary/10"
                       onClick={selectBusinessHours}
                     >
                       Horario comercial (9-17h)
                     </Button>
-                    <Button variant="outline" size="sm" onClick={clearAllTimeSlots}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-muted-foreground hover:bg-muted"
+                      onClick={clearAllTimeSlots}
+                    >
                       Limpiar todo
                     </Button>
                   </div>
@@ -481,8 +510,12 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                   {timeSlots.map((slot) => (
                     <Button
                       key={slot.hour}
-                      variant={slot.selected ? "default" : "outline"}
-                      className="h-12 text-sm justify-start"
+                      variant={slot.selected ? "secondary" : "outline"}
+                      className={`h-12 text-sm justify-start transition-all ${
+                        slot.selected 
+                          ? "bg-ring/10 text-ring border-ring/30 hover:bg-ring/20" 
+                          : "hover:bg-accent"
+                      }`}
                       onClick={() => toggleTimeSlot(slot.hour)}
                     >
                       {slot.selected && <Check className="h-4 w-4 mr-2" />}
@@ -499,7 +532,7 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
 
                 {/* Resumen de reserva - justo después de horarios */}
                 {dateRange.from && getSelectedTimeSlotsCount() > 0 && (
-                  <div className="mt-4 p-4 border rounded-lg bg-muted/50">
+                  <div className="mt-4 p-4 border-2 border-ring/20 rounded-lg bg-gradient-to-br from-ring/5 to-ring/10">
                     <Label className="font-medium">Resumen de la reserva:</Label>
                     <p className="text-sm text-muted-foreground mt-2">
                       {!config.hasDateRange ? (
@@ -513,9 +546,13 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
                         `Reserva desde el ${formatDateSafe(dateRange.from)}${dateRange.to ? ` hasta el ${formatDateSafe(dateRange.to)}` : ''} en las siguientes franjas:`
                       )}
                     </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-3">
                       {timeSlots.filter(slot => slot.selected).map((slot) => (
-                        <Badge key={slot.hour} variant="outline" className="text-xs">
+                        <Badge 
+                          key={slot.hour} 
+                          variant="secondary" 
+                          className="text-xs bg-ring/10 text-ring border-ring/30 justify-center py-1 font-medium"
+                        >
                           {slot.hour.toString().padStart(2, "0")}:00-{slot.hour.toString().padStart(2, "0")}:59
                         </Badge>
                       ))}

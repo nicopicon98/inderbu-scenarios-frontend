@@ -4,7 +4,6 @@ import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-re
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { FiGrid, FiMapPin, FiTag, FiUser, FiUsers } from "react-icons/fi";
 import { scenarioInfoCardItem } from "./scenario-info-card-item";
-import { Recommendations } from "./recommendations";
 
 
 type Props = { subScenario: IGetScenarioByIdResponse };
@@ -54,8 +53,6 @@ export function ScenarioInfoCard({ subScenario }: Props) {
             subScenario.hasCost ? "$pago" : "Gratuito",
           )}
         </div>
-
-        <Recommendations />
       </CardContent>
     </Card>
   );

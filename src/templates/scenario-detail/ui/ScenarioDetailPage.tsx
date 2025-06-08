@@ -102,18 +102,6 @@ export function ScenarioDetailPage({ initialData }: ScenarioDetailPageProps) {
         <ScenarioDetail 
           subScenario={scenario} 
         />
-
-        {/* Additional metadata section */}
-        {metadata.hasValidRecommendations && (
-          <div className="mt-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              💡 Recomendaciones del Establecimiento
-            </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {scenario.recommendations}
-            </p>
-          </div>
-        )}
       </div>
     </main>
   );
