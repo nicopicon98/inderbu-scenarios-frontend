@@ -8,13 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { formatDate, reservationStateById } from "@/utils/reservation.utils";
-import { ClickableStatusBadge } from "../molecules/clickable-statud-badge";
 import type { ReservationDto } from "@/services/reservation.service";
 import { FileEdit, MoreHorizontal } from "lucide-react";
 import { DataTable } from "@/shared/ui/data-table";
 import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
+import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 
 
 interface ReservationsTableProps {
@@ -53,7 +53,7 @@ export const ReservationsTable = ({
         <div>
           <div className="font-medium">
             {row.user
-              ? `${row.user.first_name} ${row.user.last_name}`
+              ? `${row.user.firstName} ${row.user.lastName}`
               : "Cliente sin nombre"}
           </div>
           <div className="text-xs text-gray-500">
@@ -101,7 +101,7 @@ export const ReservationsTable = ({
       id: "date",
       header: "Fecha de reserva",
       cell: (row: ReservationDto) => (
-        <span>{formatDate(row.reservationDate)}</span>
+        <span>{formatDate(row.initialDate)}</span>
       ),
     },
     {
@@ -127,7 +127,7 @@ export const ReservationsTable = ({
             reservationId={row.id}
             reservationInfo={{
               userEmail: row.user?.email,
-              date: formatDate(row.reservationDate),
+              date: formatDate(row.initialDate),
             }}
             onStatusChange={(newStatusId) => {
               // Actualizar localmente el estado sin necesidad de recargar toda la tabla

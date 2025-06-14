@@ -15,11 +15,15 @@ import { useEffect, useState } from "react";
 export interface SimpleCalendarProps {
   selectedDate: string;
   onDateChange: (newDate: string) => void;
+  minDate?: string; // Nueva prop para fecha mínima
+  maxDate?: string; // Nueva prop para fecha máxima (opcional)
 }
 
 export function SimpleCalendar({
   selectedDate,
   onDateChange,
+  minDate,
+  maxDate,
 }: SimpleCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -64,15 +68,33 @@ export function SimpleCalendar({
   for (let i = 0; i < firstWeekday; i++) calendarDays.push(null);
   for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
 
-  // Determinar días habilitados: hoy o en el futuro
+  // Determinar días habilitados: considerando fecha mínima, máxima y fecha actual
   const isFutureMonth =
     currentYear > today.getFullYear() ||
     (currentYear === today.getFullYear() && currentMonth > today.getMonth());
   const isCurrentMonth =
     currentYear === today.getFullYear() && currentMonth === today.getMonth();
 
+  // Parsear fechas mínima y máxima si están definidas
+  const minDateObj = minDate ? new Date(minDate + 'T00:00:00') : null;
+  const maxDateObj = maxDate ? new Date(maxDate + 'T00:00:00') : null;
+
   const availableDays = calendarDays.filter((day) => {
     if (day === null) return false;
+    
+    const dayDate = new Date(currentYear, currentMonth, day);
+    
+    // Verificar fecha mínima
+    if (minDateObj && dayDate <= minDateObj) {
+      return false;
+    }
+    
+    // Verificar fecha máxima
+    if (maxDateObj && dayDate > maxDateObj) {
+      return false;
+    }
+    
+    // Lógica original: hoy o en el futuro
     if (isFutureMonth) return true;
     if (isCurrentMonth && day >= today.getDate()) return true;
     return false;

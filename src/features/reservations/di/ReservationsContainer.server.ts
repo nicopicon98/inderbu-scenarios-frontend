@@ -4,14 +4,8 @@ import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus
 import { EventBus } from '@/entities/reservation/domain/reservation.domain';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
-import {
-  createGetUserReservationsUseCase,
-  GetUserReservationsUseCase
-} from '../list/application/GetUserReservationsUseCase';
-import {
-  createServerReservationService,
-  ServerReservationService
-} from '../list/infrastructure/ServerReservationService';
+import { createServerReservationService, ServerReservationService } from '../use-cases/list/infrastructure/ServerReservationService';
+import { createGetUserReservationsUseCase, GetUserReservationsUseCase } from '../use-cases/list/application/GetUserReservationsUseCase';
 
 // DDD: Dependency Injection Containers for Reservations Feature
 

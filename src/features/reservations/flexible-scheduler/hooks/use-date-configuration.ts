@@ -1,6 +1,7 @@
 import { IFromTo, ScheduleConfig } from "../types/scheduler.types";
 import { validateDateRange } from "../utils/date-helpers";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const useDateConfiguration = (
   config: ScheduleConfig,
@@ -38,7 +39,24 @@ export const useDateConfiguration = (
   };
 
   const handleStartDateChange = (dateStr: string) => {
-    setDateRange((prev) => ({ ...prev, from: dateStr }));
+    setDateRange((prev) => {
+      const newRange = { ...prev, from: dateStr };
+      
+      // Si hay fecha final y ahora es inválida, limpiarla
+      if (prev.to && !validateDateRange(dateStr, prev.to)) {
+        newRange.to = undefined;
+        // También limpiar del config
+        setConfig((prevConfig) => ({ ...prevConfig, endDate: undefined }));
+        
+        // Notificar al usuario sobre el cambio
+        toast.info("Fecha final actualizada", {
+          description: "La fecha final fue ajustada automáticamente",
+          duration: 3000,
+        });
+      }
+      
+      return newRange;
+    });
     setConfig((prev) => ({ ...prev, startDate: dateStr }));
   };
 

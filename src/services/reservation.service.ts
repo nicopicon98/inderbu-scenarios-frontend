@@ -1,40 +1,18 @@
+import { Scenario } from "@/entities/reservation/model/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-export interface City {
-  id: number;
-  name: string;
-}
-
-export interface Commune {
-  id: number;
-  name: string;
-  city: City;
-}
-
-export interface Neighborhood {
-  id: number;
-  name: string;
-  commune: Commune;
-}
-
-/* ---------- Escenario y sub-escenario ---------- */
-export interface Scenario {
-  id: number;
-  name: string;
-  address: string;
-  neighborhood: Neighborhood;
-}
-
+/* ---------- Creación de reserva ---------- */
 export interface CreateReservationDto {
   subScenarioId: number;
   timeSlotId: number;
-  reservationDate: string;
+  reservationDate: string;           // YYYY-MM-DD
   comments?: string;
 }
 
 export interface CreateReservationResponseDto {
   id: number;
-  reservationDate: string;
+  reservationDate: string;           // alias de initialDate
   subScenarioId: number;
   userId: number;
   timeSlotId: number;
@@ -42,481 +20,239 @@ export interface CreateReservationResponseDto {
   comments?: string;
 }
 
+/* ---------- Catálogo de estados ---------- */
 export interface ReservationStateDto {
   id: number;
-  state: string;
+  state: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";
+  description?: string;
 }
 
-export interface ReservationDto {
+/* ---------- Timeslot simplificado ---------- */
+export interface TimeSlotDto {
   id: number;
-  reservationDate: string;
-  createdAt: string;
-  comments?: string;
-  subScenario: {
-    id: number;
-    name: string;
-    hasCost: boolean;
-    numberOfSpectators: number | null;
-    numberOfPlayers: number | null;
-    recommendations: string | null;
-    scenarioId: number;
-    scenarioName: string;
-    scenario: Scenario;
-  };
-  user: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-  };
-  timeSlot: {
-    id: number;
-    startTime: string;
-    endTime: string;
-  };
-  reservationState: {
-    id: number;
-    state: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";
-  };
-
-  // Campos adicionales para compatibilidad con código existente
-  subScenarioId?: number;
-  userId?: number;
-  timeSlotId?: number;
-  reservationStateId?: number;
+  startTime: string;                 // HH:mm
+  endTime: string;                   // HH:mm
 }
 
-export interface TimeslotResponseDto {
-  id: number;
-  startTime: string;
-  endTime: string;
+export interface TimeslotResponseDto extends TimeSlotDto {
   available: boolean;
 }
 
-// Servicio de reservas
+/* ---------- Reserva (contrato 2025-06-14) ---------- */
+export interface ReservationDto {
+  /* Campos nativos del backend */
+  id: number;
+  type: "SINGLE" | "RANGE";
+  subScenarioId: number;
+  userId: number;
+  initialDate: string;               // YYYY-MM-DD
+  finalDate: string | null;          // YYYY-MM-DD | null
+  weekDays: number[] | null;         // 0-6 (lun-dom) | null
+  comments?: string | null;
+  reservationStateId: number;
+  totalInstances: number;
+  createdAt: string;                 // ISO
+  updatedAt: string;                 // ISO
+
+  /* Asociaciones */
+  subScenario: {
+    id: number;
+    name: string;
+
+    /* props legacy opcionales (evitan refactor masivo) */
+    hasCost?: boolean;
+    numberOfSpectators?: number | null;
+    numberOfPlayers?: number | null;
+    recommendations?: string | null;
+    scenarioId?: number;
+    scenarioName?: string;
+    scenario?: Scenario;
+  };
+
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string | null;
+  };
+
+  reservationState: ReservationStateDto;
+
+  timeslots: TimeSlotDto[];
+
+  /* ---- SHIMS DE COMPATIBILIDAD ---- */
+  reservationDate?: string;          // = initialDate
+  timeSlot?: TimeSlotDto;            // primer slot
+  timeSlotId?: number;               // id del primer slot
+}
+
+/* ───────────────────────────────  HELPERS PRIVADOS  ─────────────────────────────────────── */
+
+/** Convierte la respuesta cruda a nuestro DTO con compatibilidad legacy. */
+function normalizeReservation(api: any): ReservationDto {
+  const firstSlot: TimeSlotDto | undefined = (api.timeslots ?? [])[0];
+
+  return {
+    ...api,
+    reservationDate: api.initialDate,   // alias para UI actual
+    timeSlot: firstSlot,
+    timeSlotId: firstSlot?.id,
+    subScenario: {
+      /* relleno de campos legacy para que no fallen lecturas previas */
+      hasCost: false,
+      numberOfSpectators: null,
+      numberOfPlayers: null,
+      recommendations: null,
+      scenarioId: api.subScenario?.scenarioId ?? 0,
+      scenarioName: api.subScenario?.scenarioName ?? "",
+      scenario: api.subScenario?.scenario,
+      ...api.subScenario,
+    },
+  } as ReservationDto;
+}
+
+/** Construye la URL con filtros opcionales. */
+function buildFilterURL(base: string, filters: Record<string, any>) {
+  const url = new URL(base);
+  Object.entries(filters).forEach(([key, val]) => {
+    if (val !== undefined && val !== null && `${val}`.trim() !== "") {
+      url.searchParams.set(key, `${val}`);
+    }
+  });
+  return url.toString();
+}
+
+/** Fetch genérico para catálogos (escenarios, áreas, etc.). */
+async function genericListFetch<T = any>(
+  endpoint: string,
+  mapper: (raw: any) => T = (x) => x,
+): Promise<T[]> {
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+  const { data } = await res.json();
+  return (data ?? []).map(mapper);
+}
+
+/* ───────────────────────────────  SERVICIO PÚBLICO  ─────────────────────────────────────── */
 const ReservationService = {
-  // Obtener slots disponibles
-  getAvailableTimeSlots: async (
+  /* ---------- Disponibilidad de slots ---------- */
+  async getAvailableTimeSlots(
     subScenarioId: number,
     date: string,
-  ): Promise<TimeslotResponseDto[]> => {
-    try {
-      const response = await fetch(
-        `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const responseToJson = await response.json();
-      return responseToJson.data;
-    } catch (error) {
-      console.error("Error getting available timeslots:", error);
-      throw error;
-    }
+  ): Promise<TimeslotResponseDto[]> {
+    const res = await fetch(
+      `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
+      { credentials: "include" },
+    );
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const { data } = await res.json();
+    return data;
   },
 
-  // Crear una reserva
-  createReservation: async (
+  /* ---------- Crear reserva ---------- */
+  async createReservation(
     reservationData: CreateReservationDto,
-  ): Promise<CreateReservationResponseDto> => {
-    console.log({ reservationData });
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/reservations`, {
-        method: "POST",
-        credentials: 'include', // ← Incluye httpOnly cookies
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message ||
-            `Error ${response.status}: ${response.statusText}`,
-        );
-      }
-
-      return response.json();
-    } catch (error: any) {
-      console.error("Error creating reservation:", error);
-      throw error;
-    }
-  },
-
-  // Obtener reservas de usuario
-  getUserReservations: async (userId: number): Promise<ReservationDto[]> => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/users/${userId}/reservations`, {
-        credentials: 'include', // ← Incluye httpOnly cookies
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      return response.json();
-    } catch (error) {
-      console.error("Error getting user reservations:", error);
-      throw error;
-    }
-  },
-
-  // Obtener todas las reservas (admin) con filtros opcionales
-  getAllReservations: async (filters?: {
-    scenarioId?: number;
-    activityAreaId?: number;
-    neighborhoodId?: number;
-    userId?: number;
-    page?: number;
-    limit?: number;
-    searchQuery?: string;
-    // ⭐ NUEVOS FILTROS DE FECHA
-    dateFrom?: string; // YYYY-MM-DD
-    dateTo?: string; // YYYY-MM-DD
-  }): Promise<ReservationDto[]> => {
-    const url = new URL(`${API_URL}/reservations`);
-
-    // Añadir parámetros de filtros si existen
-    if (filters) {
-      if (filters.scenarioId && filters.scenarioId > 0) {
-        url.searchParams.set("scenarioId", filters.scenarioId.toString());
-      }
-      if (filters.activityAreaId && filters.activityAreaId > 0) {
-        url.searchParams.set(
-          "activityAreaId",
-          filters.activityAreaId.toString(),
-        );
-      }
-      if (filters.neighborhoodId && filters.neighborhoodId > 0) {
-        url.searchParams.set(
-          "neighborhoodId",
-          filters.neighborhoodId.toString(),
-        );
-      }
-      if (filters.userId && filters.userId > 0) {
-        url.searchParams.set("userId", filters.userId.toString());
-      }
-      if (filters.page && filters.page > 0) {
-        url.searchParams.set("page", filters.page.toString());
-      }
-      if (filters.limit && filters.limit > 0) {
-        url.searchParams.set("limit", filters.limit.toString());
-      }
-      if (filters.searchQuery && filters.searchQuery.trim()) {
-        url.searchParams.set("search", filters.searchQuery.trim());
-      }
-      // ⭐ NUEVOS FILTROS DE FECHA
-      if (filters.dateFrom && filters.dateFrom.trim()) {
-        url.searchParams.set("dateFrom", filters.dateFrom.trim());
-      }
-      if (filters.dateTo && filters.dateTo.trim()) {
-        url.searchParams.set("dateTo", filters.dateTo.trim());
-      }
-    }
-
-    console.log("Fetching reservations with URL:", url.toString());
-
-    // NUEVO: Usar credentials include para httpOnly cookies
-    const response = await fetch(url.toString(), {
-      credentials: 'include', // ← Incluye httpOnly cookies
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  ): Promise<CreateReservationResponseDto> {
+    const res = await fetch(`${API_URL}/reservations`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reservationData),
     });
-
-    console.log({ responseFromBackend: response });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message ?? `Error ${res.status}`);
     }
-    const responseData = await response.json();
-
-    console.log({ responseData });
-
-    // Mapeamos los datos para ser compatibles con el código existente
-    const reservations = responseData.data.map((item: ReservationDto) => {
-      return {
-        ...item,
-        // Añadimos campos derivados para mantener compatibilidad
-        subScenarioId: item.subScenario?.id,
-        userId: item.user?.id,
-        timeSlotId: item.timeSlot?.id,
-        reservationStateId: item.reservationState?.id,
-      };
-    });
-
-    return reservations;
+    return res.json();
   },
 
-  // Nueva función para obtener reservas con paginación y metadatos
-  getAllReservationsWithPagination: async (filters?: {
-    scenarioId?: number;
-    activityAreaId?: number;
-    neighborhoodId?: number;
-    userId?: number;
-    page?: number;
-    limit?: number;
-    searchQuery?: string;
-    // ⭐ NUEVOS FILTROS DE FECHA
-    dateFrom?: string; // YYYY-MM-DD
-    dateTo?: string; // YYYY-MM-DD
-  }): Promise<{
+  /* ---------- Reservas de un usuario ---------- */
+  async getUserReservations(userId: number): Promise<ReservationDto[]> {
+    const res = await fetch(`${API_URL}/users/${userId}/reservations`, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const { data } = await res.json();
+    return data.map(normalizeReservation);
+  },
+
+  /* ---------- Todas las reservas (admin) ---------- */
+  async getAllReservations(filters: Record<string, any> = {}): Promise<ReservationDto[]> {
+    const url = buildFilterURL(`${API_URL}/reservations`, filters);
+    const res = await fetch(url, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const { data } = await res.json();
+    return data.map(normalizeReservation);
+  },
+
+  /* ---------- Con paginación ---------- */
+  async getAllReservationsWithPagination(filters: Record<string, any> = {}): Promise<{
     data: ReservationDto[];
-    meta: {
-      page: number;
-      limit: number;
-      totalItems: number;
-      totalPages: number;
-    };
-  }> => {
-    const url = new URL(`${API_URL}/reservations`);
-
-    // Añadir parámetros de filtros si existen
-    if (filters) {
-      if (filters.scenarioId && filters.scenarioId > 0) {
-        url.searchParams.set("scenarioId", filters.scenarioId.toString());
-      }
-      if (filters.activityAreaId && filters.activityAreaId > 0) {
-        url.searchParams.set(
-          "activityAreaId",
-          filters.activityAreaId.toString(),
-        );
-      }
-      if (filters.neighborhoodId && filters.neighborhoodId > 0) {
-        url.searchParams.set(
-          "neighborhoodId",
-          filters.neighborhoodId.toString(),
-        );
-      }
-      if (filters.userId && filters.userId > 0) {
-        url.searchParams.set("userId", filters.userId.toString());
-      }
-      if (filters.page && filters.page > 0) {
-        url.searchParams.set("page", filters.page.toString());
-      }
-      if (filters.limit && filters.limit > 0) {
-        url.searchParams.set("limit", filters.limit.toString());
-      }
-      if (filters.searchQuery && filters.searchQuery.trim()) {
-        url.searchParams.set("search", filters.searchQuery.trim());
-      }
-      // ⭐ NUEVOS FILTROS DE FECHA
-      if (filters.dateFrom && filters.dateFrom.trim()) {
-        url.searchParams.set("dateFrom", filters.dateFrom.trim());
-      }
-      if (filters.dateTo && filters.dateTo.trim()) {
-        url.searchParams.set("dateTo", filters.dateTo.trim());
-      }
-    }
-
-    console.log("Fetching reservations with pagination, URL:", url.toString());
-
-    // NUEVO: Usar credentials include para httpOnly cookies
-    const response = await fetch(url.toString(), {
-      credentials: 'include', // ← Incluye httpOnly cookies
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    meta: { page: number; limit: number; totalItems: number; totalPages: number };
+  }> {
+    const url = buildFilterURL(`${API_URL}/reservations`, filters);
+    const res = await fetch(url, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
     });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-    const responseData = await response.json();
-
-    console.log("Paginated reservations response:", responseData);
-
-    // Mapeamos los datos para ser compatibles con el código existente
-    const reservations = responseData.data.map((item: ReservationDto) => {
-      return {
-        ...item,
-        // Añadimos campos derivados para mantener compatibilidad
-        subScenarioId: item.subScenario?.id,
-        userId: item.user?.id,
-        timeSlotId: item.timeSlot?.id,
-        reservationStateId: item.reservationState?.id,
-      };
-    });
-
-    return {
-      data: reservations,
-      meta: responseData.meta || {
-        page: filters?.page || 1,
-        limit: filters?.limit || 10,
-        totalItems: reservations.length,
-        totalPages: 1,
-      },
-    };
-  },
-  // Obtener todos los estados de reserva disponibles
-  getAllReservationStates: async (): Promise<ReservationStateDto[]> => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/reservations/states`, {
-        credentials: 'include', // ← Incluye httpOnly cookies automáticamente
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const states = await response.json();
-      return states.data;
-    } catch (error) {
-      console.error("Error fetching reservation states:", error);
-      throw error;
-    }
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const { data, meta } = await res.json();
+    return { data: data.map(normalizeReservation), meta };
   },
 
-  // Método legacy para compatibilidad con código existente
-  updateReservationState: async (
+  /* ---------- Catálogo de estados ---------- */
+  async getAllReservationStates(): Promise<ReservationStateDto[]> {
+    const res = await fetch(`${API_URL}/reservations/states`, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const { data } = await res.json();
+    return data;
+  },
+
+  /* ---------- Actualizar estado (legacy) ---------- */
+  async updateReservationState(
     reservationId: number,
     stateId: number,
-  ): Promise<ReservationDto> => {
-    // Let's print both reservationId and stateId
-    console.log({ reservationId, stateId });
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(
-        `${API_URL}/reservations/${reservationId}/state`,
-        {
-          method: "PATCH",
-          credentials: 'include', // ← Incluye httpOnly cookies
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ stateId }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Update reservation state error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData
-        });
-        throw new Error(
-          errorData?.message || `Error ${response.status}: ${response.statusText}`
-        );
-      }
-
-      const result = await response.json();
-      console.log('Update reservation state success:', result);
-      return result;
-    } catch (error) {
-      console.error("Error updating reservation state:", error);
-      throw error;
+  ): Promise<ReservationDto> {
+    const res = await fetch(
+      `${API_URL}/reservations/${reservationId}/state`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stateId }),
+      },
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message ?? `Error ${res.status}`);
     }
+    const result = await res.json();
+    return normalizeReservation(result);
   },
 
-  // Obtener escenarios para filtros
-  getAllScenarios: async (): Promise<{ id: number; name: string }[]> => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/scenarios`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.data || data;
-    } catch (error) {
-      console.error("Error fetching scenarios:", error);
-      return [];
-    }
-  },
-
-  // Obtener áreas de actividad para filtros
-  getAllActivityAreas: async (): Promise<{ id: number; name: string }[]> => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/activity-areas`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.data || data;
-    } catch (error) {
-      console.error("Error fetching activity areas:", error);
-      return [];
-    }
-  },
-
-  // Obtener barrios para filtros
-  getAllNeighborhoods: async (): Promise<{ id: number; name: string }[]> => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/neighborhoods`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.data || data;
-    } catch (error) {
-      console.error("Error fetching neighborhoods:", error);
-      return [];
-    }
-  },
-
-  // Obtener usuarios para filtros (solo admins)
-  getAllUsers: async (): Promise<
-    { id: number; firstName: string; lastName: string; email: string }[]
-  > => {
-    try {
-      // NUEVO: Usar credentials include para httpOnly cookies
-      const response = await fetch(`${API_URL}/users`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      // Mapear a formato consistente
-      return (data.data || data).map((user: any) => ({
-        id: user.id,
-        firstName: user.firstName || user.first_name || "",
-        lastName: user.lastName || user.last_name || "",
-        email: user.email || "",
-      }));
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      return [];
-    }
-  },
+  /* ---------- Filtros generales ---------- */
+  getAllScenarios:     () => genericListFetch<{ id: number; name: string }>("/scenarios"),
+  getAllActivityAreas: () => genericListFetch<{ id: number; name: string }>("/activity-areas"),
+  getAllNeighborhoods: () => genericListFetch<{ id: number; name: string }>("/neighborhoods"),
+  getAllUsers:         () => genericListFetch<
+                              { id: number; firstName: string; lastName: string; email: string }
+                            >("/users", (u) => ({
+                              id: u.id,
+                              firstName: u.firstName ?? u.first_name ?? "",
+                              lastName:  u.lastName  ?? u.last_name  ?? "",
+                              email:     u.email     ?? "",
+                            })),
 };
 
 export default ReservationService;

@@ -59,24 +59,62 @@ export interface ReservationState {
   // Note: No 'description' field in backend
 }
 
+export interface TimeSlotDto {
+  id: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface ReservationStateDto {
+  id: number;
+  state: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";
+  description?: string;
+}
+
 // Main reservation entity (matching the current working ReservationDto)
 export interface ReservationDto {
+  /* ─── valores crudos del backend ─── */
   id: number;
-  reservationDate: string; // YYYY-MM-DD format
-  createdAt: string; // Note: no updatedAt in backend
-  comments?: string; // Note: backend uses comments, not observations
+  type: "SINGLE" | "RANGE";
+  subScenarioId: number;
+  userId: number;
+  initialDate: string;
+  finalDate: string | null;
+  weekDays: number[] | null;
+  comments?: string | null;
+  reservationStateId: number;
+  totalInstances: number;
+  createdAt: string;
+  updatedAt: string;
 
-  // Relations (always included in API responses)
-  subScenario: SubScenario;
-  user: User;
-  timeSlot: TimeSlot;
-  reservationState: ReservationState;
+  /* ─── objetos anidados ─── */
+  subScenario: {
+    id: number;
+    name: string;
 
-  // Backward compatibility fields (added by the current service)
-  subScenarioId?: number;
-  userId?: number;
-  timeSlotId?: number;
-  reservationStateId?: number;
+    /* props antiguas opcionales → evita romper UI */
+    hasCost?: boolean;
+    numberOfSpectators?: number | null;
+    numberOfPlayers?: number | null;
+    recommendations?: string | null;
+    scenarioId?: number;
+    scenarioName?: string;
+    scenario?: Scenario;
+  };
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string | null;
+  };
+  reservationState: ReservationStateDto;
+  timeslots: TimeSlotDto[];
+
+  /* ─── shims legacy ─── */
+  reservationDate?: string;  // alias de initialDate
+  timeSlot?: TimeSlotDto;    // primer slot
+  timeSlotId?: number;       // id del primer slot
 }
 
 export interface PaginatedReservations {
@@ -117,7 +155,7 @@ export interface UpdateReservationStateCommand {
 
 export interface ReservationStateDto {
   id: number;
-  state: string;
+  state: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";
 }
 
 export interface TimeslotResponseDto {
@@ -180,7 +218,7 @@ export const GetReservationsQuerySchema = z.object({
 // Type guards
 export const isActiveReservation = (reservation: ReservationDto): boolean => {
   const now = new Date();
-  const reservationDate = new Date(reservation.reservationDate);
+  const reservationDate = new Date(reservation.reservationDate || reservation.initialDate);
 
   return (
     reservationDate >= now &&

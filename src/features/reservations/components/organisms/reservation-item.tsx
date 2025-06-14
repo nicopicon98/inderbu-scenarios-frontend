@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ReservationItem.tsx  ·  Compatible con contrato 2025-06-14
+ * ────────────────────────────────────────────────────────────────────────────*/
+
 "use client";
 
 import { ReservationDto } from "@/services/reservation.service";
@@ -23,23 +27,27 @@ import {
   Settings,
   Tag,
   Users,
-  X
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { StatusBadge } from "../atoms/status-badge";
-import { cancelReservationAction, CancelReservationResult } from "../../cancel/actions/cancel-reservation.action";
+import {
+  cancelReservationAction,
+  CancelReservationResult,
+} from "../../use-cases/cancel/actions/cancel-reservation.action";
 
-
+/* ───────────────────────────────────  Props  ─────────────────────────────── */
 interface ReservationItemProps {
   reservation: ReservationDto;
   isActive: boolean;
   onCancelled: (id: number) => void;
   onModify?: (reservation: ReservationDto) => void;
-  highlightManageButton?: boolean; // Nueva prop para destacar el botón
+  highlightManageButton?: boolean;
 }
 
+/* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ReservationItem({
   reservation,
   isActive,
@@ -47,28 +55,43 @@ export function ReservationItem({
   onModify,
   highlightManageButton = false,
 }: ReservationItemProps) {
+  /* ---------- Estado local ---------- */
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
+  /* ---------- Helpers ---------- */
+  const timeSlot =
+    reservation.timeSlot ?? reservation.timeslots?.[0] ?? undefined;
+
+  const formattedDate = format(
+    new Date(reservation.initialDate),
+    "EEEE d 'de' MMMM",
+    { locale: es },
+  );
+
+  const formattedShortDate = format(
+    new Date(reservation.initialDate),
+    "dd MMM",
+    { locale: es },
+  );
+
+  /* ---------- Cancelación ---------- */
   const handleCancelReservation = async () => {
     setIsCancelling(true);
     try {
-      // CORRECTO: Obtener resultado del server action
-      const result: CancelReservationResult = await cancelReservationAction(reservation.id);
-      
-      console.log('Cancel reservation result:', result); // ← Debug
-      
-      // CORRECTO: Verificar result.success en lugar del objeto completo
+      const result: CancelReservationResult = await cancelReservationAction(
+        reservation.id,
+      );
       if (result.success) {
-        toast.success(result.message || "La reserva ha sido cancelada exitosamente");
+        toast.success(
+          result.message || "La reserva ha sido cancelada exitosamente",
+        );
         onCancelled(reservation.id);
       } else {
-        // MOSTRAR ERROR ESPECÍFICO del server action
         toast.error(result.error || "No se pudo cancelar la reserva");
-        console.error('Cancel reservation failed:', result.error);
       }
-    } catch (error) {
-      console.error('Cancel reservation exception:', error);
+    } catch (err) {
+      console.error("Cancel reservation exception:", err);
       toast.error("Ocurrió un error al cancelar la reserva");
     } finally {
       setIsCancelling(false);
@@ -76,28 +99,15 @@ export function ReservationItem({
     }
   };
 
-  // Format the date for display
-  const formattedDate = format(
-    new Date(reservation.reservationDate),
-    "EEEE d 'de' MMMM",
-    { locale: es },
-  );
-  const formattedShortDate = format(
-    new Date(reservation.reservationDate),
-    "dd MMM",
-    { locale: es },
-  );
-
-  console.log("Reservation", reservation);
-
+  /* ---------- Render ---------- */
   return (
     <>
       <Card
-        className={`h-full overflow-hidden border-0 shadow-sm hover:shadow-xl 
-                       transition-all duration-300 hover:-translate-y-2 bg-white 
-                       rounded-xl backdrop-blur-sm group ${!isActive ? "opacity-75" : ""}`}
+        className={`h-full overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white rounded-xl backdrop-blur-sm group ${
+          !isActive ? "opacity-75" : ""
+        }`}
       >
-        {/* Image */}
+        {/* Imagen */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
           <Image
@@ -108,7 +118,7 @@ export function ReservationItem({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
 
-          {/* Status badge */}
+          {/* Estado */}
           <div className="absolute top-3 right-3 z-20">
             <div className="backdrop-blur-sm rounded-lg shadow-lg">
               <StatusBadge
@@ -119,48 +129,42 @@ export function ReservationItem({
             </div>
           </div>
 
-          {/* Date badge */}
+          {/* Fecha breve */}
           <div className="absolute top-3 left-3 z-20">
             <Badge
               variant="outline"
-              className="bg-white/90 text-gray-700 border-white/50 
-                                              backdrop-blur-sm shadow-sm"
+              className="bg-white/90 text-gray-700 border-white/50 backdrop-blur-sm shadow-sm"
             >
               <CalendarIcon className="w-3 h-3 mr-1" />
               {formattedShortDate}
             </Badge>
           </div>
 
-          {/* Bottom overlay info */}
-          <div
-            className="absolute bottom-0 left-0 right-0 z-20 p-4 
-                         bg-gradient-to-t from-black/80 to-transparent"
-          >
-            <h3
-              className="font-semibold text-lg mb-1 line-clamp-2 text-white 
-                         group-hover:text-blue-200 transition-colors"
-            >
+          {/* Overlay inferior */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/80 to-transparent">
+            <h3 className="font-semibold text-lg mb-1 line-clamp-2 text-white group-hover:text-blue-200 transition-colors">
               {reservation.subScenario.name}
             </h3>
             <div className="flex items-center text-white/90 text-sm">
               <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
               <span className="line-clamp-1">
-                {reservation.subScenario.scenario.neighborhood.name}
+                {reservation.subScenario.scenario?.neighborhood?.name}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Contenido */}
         <CardContent className="p-5">
-          {/* Cost and capacity info */}
+          {/* Costo / capacidad */}
           <div className="flex items-center justify-between mb-3">
             <Badge
               variant="outline"
-              className={`text-xs ${reservation.subScenario.hasCost
+              className={`text-xs ${
+                reservation.subScenario.hasCost
                   ? "bg-yellow-50 text-yellow-700 border-yellow-200"
                   : "bg-green-50 text-green-700 border-green-200"
-                }`}
+              }`}
             >
               <Tag className="w-3 h-3 mr-1" />
               {reservation.subScenario.hasCost ? "De pago" : "Gratuito"}
@@ -173,30 +177,27 @@ export function ReservationItem({
             )}
           </div>
 
-          {/* Date and time */}
+          {/* Fecha y hora */}
           <div className="space-y-3 mb-4">
             <div className="flex items-center text-sm">
               <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
                 <CalendarIcon className="w-4 h-4 text-blue-600" />
               </div>
-              <div>
-                <p className="font-medium text-gray-900 capitalize">
-                  {formattedDate}
-                </p>
-              </div>
+              <p className="font-medium text-gray-900 capitalize">
+                {formattedDate}
+              </p>
             </div>
 
-            <div className="flex items-center text-sm">
-              <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center mr-3">
-                <Clock className="w-4 h-4 text-green-600" />
-              </div>
-              <div>
+            {timeSlot && (
+              <div className="flex items-center text-sm">
+                <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center mr-3">
+                  <Clock className="w-4 h-4 text-green-600" />
+                </div>
                 <p className="font-medium text-gray-900">
-                  {reservation.timeSlot.startTime} -{" "}
-                  {reservation.timeSlot.endTime}
+                  {timeSlot.startTime} - {timeSlot.endTime}
                 </p>
               </div>
-            </div>
+            )}
 
             <div className="flex items-start text-sm">
               <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center mr-3 mt-0.5">
@@ -204,26 +205,26 @@ export function ReservationItem({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-gray-900 line-clamp-2">
-                  {reservation.subScenario.scenario.address}
+                  {reservation.subScenario.scenario?.address}
                 </p>
                 <p className="text-gray-500 text-xs mt-1">
-                  {reservation.subScenario.scenario.neighborhood.name}
+                  {reservation.subScenario.scenario?.neighborhood?.name}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Action */}
+          {/* Acciones */}
           {isActive ? (
             <div className="space-y-2">
               {onModify && (
                 <Button
                   variant="default"
-                  className={`w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg
-                           transition-all duration-200 group/btn font-medium relative ${highlightManageButton
+                  className={`w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 group/btn font-medium relative ${
+                    highlightManageButton
                       ? "ring-2 ring-blue-300 ring-offset-2 shadow-blue-200/50 shadow-lg"
                       : ""
-                    }`}
+                  }`}
                   onClick={() => onModify(reservation)}
                 >
                   {highlightManageButton && (
@@ -235,8 +236,7 @@ export function ReservationItem({
               )}
               <Button
                 variant="outline"
-                className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300
-                         transition-all duration-200 group/btn"
+                className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 group/btn"
                 onClick={() => setIsConfirmOpen(true)}
               >
                 <X className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
@@ -248,8 +248,7 @@ export function ReservationItem({
               {onModify && (
                 <Button
                   variant="outline"
-                  className="w-full border-gray-200 text-gray-600 hover:bg-gray-50
-                           transition-all duration-200 group/btn"
+                  className="w-full border-gray-200 text-gray-600 hover:bg-gray-50 transition-all duration-200 group/btn"
                   onClick={() => onModify(reservation)}
                 >
                   <Settings className="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform" />
@@ -260,16 +259,14 @@ export function ReservationItem({
                 <span className="text-gray-500 font-medium">
                   Reserva completada
                 </span>
-                <div className="flex items-center text-gray-400">
-                  <CheckCircle2 className="w-4 h-4 ml-1" />
-                </div>
+                <CheckCircle2 className="w-4 h-4 ml-1 text-gray-400" />
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
+      {/* Diálogo de confirmación */}
       <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -292,9 +289,11 @@ export function ReservationItem({
             <p className="text-sm text-gray-600 mb-2 capitalize">
               {formattedDate}
             </p>
-            <p className="text-sm text-gray-600">
-              {reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}
-            </p>
+            {timeSlot && (
+              <p className="text-sm text-gray-600">
+                {timeSlot.startTime} - {timeSlot.endTime}
+              </p>
+            )}
           </div>
 
           <DialogFooter className="sm:justify-between gap-3">

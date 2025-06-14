@@ -1,4 +1,4 @@
-import { GetUserReservationsResponse } from '@/features/reservations/list/application/GetUserReservationsUseCase';
+import { GetUserReservationsResponse } from '@/features/reservations/use-cases/list/application/GetUserReservationsUseCase';
 import { createUserReservationsContainer } from '@/features/reservations/di/ReservationsContainer.server';
 import { AccessDeniedError, InvalidUserIdError } from '@/entities/user/domain/user-access.policy';
 import { ReservationsPage } from '@/templates/reservations/ui/ReservationsPage';
@@ -8,7 +8,7 @@ interface PageProps {
   params: Promise<{ userId: string }>;
 }
 
-export default async function UserReservationsRoute({ params }: PageProps) {
+export default async function UserReservationsPage({ params }: PageProps) {
   const { userId } = await params;
 
   // Dependency injection - build the complete DDD container

@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ModifyReservationModal.tsx · Adaptado al contrato 2025-06-14
+ * ────────────────────────────────────────────────────────────────────────────*/
+
 "use client";
 
 import { ReservationDto } from "@/services/reservation.service";
@@ -27,10 +31,10 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ClickableStatusBadge } from "../molecules/clickable-statud-badge";
-import { cancelReservationAction } from "../../cancel/actions/cancel-reservation.action";
+import { cancelReservationAction } from "../../use-cases/cancel/actions/cancel-reservation.action";
+import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 
-
+/* ───────────────────────────────────  Props  ─────────────────────────────── */
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
   isOpen: boolean;
@@ -39,6 +43,7 @@ interface ModifyReservationModalProps {
   onCreateNewReservation: (subScenarioId: number) => void;
 }
 
+/* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ModifyReservationModal({
   reservation,
   isOpen,
@@ -51,34 +56,17 @@ export function ModifyReservationModal({
 
   if (!reservation) return null;
 
-  const handleCancelReservation = async () => {
-    setIsLoading(true);
-    try {
-      await cancelReservationAction(reservation.id);
-      toast.success("Tu reserva ha sido cancelada exitosamente");
-      onReservationUpdated(reservation.id);
-      onClose();
-    } catch (error) {
-      toast.error("No se pudo cancelar la reserva. Intenta de nuevo");
-    } finally {
-      setIsLoading(false);
-      setShowCancelConfirm(false);
-    }
-  };
-
-  const handleStatusChange = (newStatusId: number) => {
-    // Actualizar estado local y notificar al padre
-    onReservationUpdated(reservation.id);
-  };
+  /* ---------- Helpers ---------- */
+  const slot = reservation.timeslots?.[0] ?? reservation.timeSlot; // compat
+  const localDate = new Date(reservation.initialDate);
 
   const isReservationActive = () => {
     const now = new Date();
-    const reservationDateTime = new Date(
-      `${reservation.reservationDate}T${reservation.timeSlot.endTime}`,
-    );
+    const endDateTime = slot
+      ? new Date(`${reservation.initialDate}T${slot.endTime}`)
+      : new Date(`${reservation.initialDate}T23:59`);
     return (
-      reservationDateTime >= now &&
-      reservation.reservationState.state !== "CANCELADA"
+      endDateTime >= now && reservation.reservationState.state !== "CANCELADA"
     );
   };
 
@@ -86,6 +74,27 @@ export function ModifyReservationModal({
     isReservationActive() &&
     ["PENDIENTE", "CONFIRMADA"].includes(reservation.reservationState.state);
 
+  /* ---------- Acciones ---------- */
+  const handleCancelReservation = async () => {
+    setIsLoading(true);
+    try {
+      await cancelReservationAction(reservation.id);
+      toast.success("Tu reserva ha sido cancelada exitosamente");
+      onReservationUpdated(reservation.id);
+      onClose();
+    } catch (err) {
+      toast.error("No se pudo cancelar la reserva. Intenta de nuevo");
+    } finally {
+      setIsLoading(false);
+      setShowCancelConfirm(false);
+    }
+  };
+
+  const handleStatusChange = (_newStatusId: number) => {
+    onReservationUpdated(reservation.id);
+  };
+
+  /* ---------- Render ---------- */
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
@@ -97,9 +106,8 @@ export function ModifyReservationModal({
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Información de la reserva - 1 columna */}
+          {/* Información de la reserva */}
           <div className="space-y-6">
-            {/* Card principal con información */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -112,30 +120,31 @@ export function ModifyReservationModal({
                     reservationId={reservation.id}
                     reservationInfo={{
                       userEmail: reservation.user?.email,
-                      date: new Date(
-                        reservation.reservationDate,
-                      ).toLocaleDateString("es-ES"),
+                      date: localDate.toLocaleDateString("es-ES"),
                     }}
                     onStatusChange={handleStatusChange}
                   />
                 </div>
               </CardHeader>
+
               <CardContent className="space-y-4">
+                {/* Datos principales */}
                 <div className="grid grid-cols-1 gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <MapPin className="text-teal-600 h-4 w-4" /> Escenario
-                        Principal
+                        <MapPin className="text-teal-600 h-4 w-4" />
+                        Escenario Principal
                       </h3>
                       <p className="text-gray-600 text-sm pt-1">
-                        {reservation.subScenario.scenario.name}
+                        {reservation.subScenario.scenario?.name}
                       </p>
                     </div>
 
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <User className="text-teal-600 h-4 w-4" /> Tipo
+                        <User className="text-teal-600 h-4 w-4" />
+                        Tipo
                       </h3>
                       <Badge
                         variant="outline"
@@ -145,9 +154,7 @@ export function ModifyReservationModal({
                             : "bg-green-50 text-green-700 border-green-200"
                         }
                       >
-                        {reservation.subScenario.hasCost
-                          ? "De pago"
-                          : "Gratuito"}
+                        {reservation.subScenario.hasCost ? "De pago" : "Gratuito"}
                       </Badge>
                     </div>
                   </div>
@@ -155,12 +162,11 @@ export function ModifyReservationModal({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Calendar className="text-teal-600 h-4 w-4" /> Fecha
+                        <Calendar className="text-teal-600 h-4 w-4" />
+                        Fecha
                       </h3>
-                      <p className="text-gray-600 text-sm pt-1">
-                        {new Date(
-                          reservation.reservationDate,
-                        ).toLocaleDateString("es-ES", {
+                      <p className="text-gray-600 text-sm pt-1 capitalize">
+                        {localDate.toLocaleDateString("es-ES", {
                           weekday: "long",
                           year: "numeric",
                           month: "long",
@@ -171,29 +177,32 @@ export function ModifyReservationModal({
 
                     <div>
                       <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Clock className="text-teal-600 h-4 w-4" /> Horario
+                        <Clock className="text-teal-600 h-4 w-4" />
+                        Horario
                       </h3>
                       <p className="text-gray-600 text-sm pt-1">
-                        {reservation.timeSlot.startTime} -{" "}
-                        {reservation.timeSlot.endTime}
+                        {slot ? `${slot.startTime} - ${slot.endTime}` : "—"}
                       </p>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                      <MapPin className="text-teal-600 h-4 w-4" /> Dirección
+                      <MapPin className="text-teal-600 h-4 w-4" />
+                      Dirección
                     </h3>
                     <p className="text-gray-600 text-sm">
-                      {reservation.subScenario.scenario.address}
+                      {reservation.subScenario.scenario?.address}
                     </p>
-                    <p className="text-gray-500 text-xs mt-1">
-                      Barrio:{" "}
-                      {reservation.subScenario.scenario.neighborhood.name}
-                    </p>
+                    {reservation.subScenario.scenario?.neighborhood?.name && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        Barrio: {reservation.subScenario.scenario.neighborhood.name}
+                      </p>
+                    )}
                   </div>
                 </div>
 
+                {/* Comentarios */}
                 {reservation.comments && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <h4 className="font-medium text-blue-800 mb-1 flex items-center gap-1">
@@ -208,7 +217,7 @@ export function ModifyReservationModal({
               </CardContent>
             </Card>
 
-            {/* Información del usuario */}
+            {/* Información del cliente */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -224,7 +233,7 @@ export function ModifyReservationModal({
                     </h4>
                     <p className="text-sm text-gray-900">
                       {reservation.user
-                        ? `${reservation.user.first_name} ${reservation.user.last_name}`
+                        ? `${reservation.user.firstName} ${reservation.user.lastName}`
                         : "Cliente sin nombre"}
                     </p>
                   </div>
@@ -249,7 +258,7 @@ export function ModifyReservationModal({
             </Card>
           </div>
 
-          {/* Panel de acciones - 1 columna */}
+          {/* Panel de acciones */}
           <div className="space-y-6">
             {canModify ? (
               <Card>
@@ -260,11 +269,11 @@ export function ModifyReservationModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Opción 1: Cancelar */}
+                  {/* Cancelar */}
                   {!showCancelConfirm ? (
                     <div className="border border-red-200 rounded-lg p-4 hover:bg-red-50 transition-colors">
                       <div className="flex items-start gap-3">
-                        <CalendarX className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <CalendarX className="h-5 w-5 text-red-600 mt-0.5" />
                         <div className="flex-1">
                           <h5 className="font-medium text-red-700 mb-1">
                             Cancelar Reserva
@@ -320,10 +329,10 @@ export function ModifyReservationModal({
 
                   <Separator />
 
-                  {/* Información sobre cambio de fecha/horario */}
+                  {/* Info cambio de fecha/horario */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Info className="h-5 w-5 text-blue-600 mt-0.5" />
                       <div className="flex-1">
                         <h5 className="font-medium text-blue-800 mb-2">
                           Cambio de Fecha u Horario
@@ -338,28 +347,29 @@ export function ModifyReservationModal({
                           ℹ️ Puedes crear una nueva reserva desde la página
                           principal de
                           <Link
-                            href={`/scenario/${reservation.id}`}
+                            href={`/scenario/${reservation.subScenarioId}`}
                             className="text-blue-600 hover:text-blue-800 font-medium underline ml-1"
                           >
-                            escenarios.
+                            escenarios
                           </Link>
+                          .
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Información importante */}
+                  {/* Aviso importante */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
                       <div>
                         <h6 className="font-medium text-amber-800 mb-1">
                           Importante
                         </h6>
                         <p className="text-xs text-amber-700 leading-relaxed">
                           Tampoco es posible cambiar de escenario en una reserva
-                          existente. Para reservar otro escenario, debes crear
-                          una nueva reserva desde el inicio.
+                          existente. Para reservar otro escenario, crea una
+                          nueva reserva desde el inicio.
                         </p>
                       </div>
                     </div>
@@ -387,6 +397,7 @@ export function ModifyReservationModal({
           </div>
         </div>
 
+        {/* Footer */}
         <div className="flex justify-end pt-6 border-t">
           <Button variant="outline" onClick={onClose} className="px-6">
             <X className="h-4 w-4 mr-2" />
