@@ -14,7 +14,7 @@ export interface User {
   email: string;
   phone: string;
   roleId: number;
-  role?: EUserRole; // Computed from roleId for backward compatibility
+  role: EUserRole; // Computed from roleId for backward compatibility
   address: string;
   neighborhoodId: number;
   isActive: boolean;

@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
 import {
-  AuthState,
-} from '@/entities/user/model/types';
-import { useQueryClient } from '@tanstack/react-query';
-import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { toast } from 'sonner';
-import { login, register, resetPassword, logout } from '../api/auth-actions';
-import { TLoginData, TRegisterData, TResetData } from '../schemas/auth-schemas';
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import { AuthState } from "@/entities/user/model/types";
+import { TLoginData, TRegisterData, TResetData } from "../schemas/auth-schemas";
+import { login, register, resetPassword, logout } from "../api/auth-actions";
 
 interface AuthContextType extends AuthState {
   // Actions
@@ -39,11 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'include', // incluye httpOnly cookies
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include", // incluye httpOnly cookies
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data?.user) {
@@ -57,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
-        
+
         // No autenticado o error
         setAuthState(() => ({
           user: null,
@@ -66,12 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: null,
         }));
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error("Error initializing auth:", error);
         setAuthState(() => ({
           user: null,
           isAuthenticated: false,
           isLoading: false,
-          error: 'Error de inicialización',
+          error: "Error de inicialización",
         }));
       }
     };
@@ -80,89 +86,109 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // OPTIMIZADO: Login con useCallback y función directa
-  const handleLogin = useCallback(async (credentials: TLoginData): Promise<void> => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      // CORRECTO: Usar función directa (sin FormData)
-      const result = await login(credentials);
-      
-      if (result.success && result.data) {
-        // Server action ya configuró httpOnly cookies + revalidatePath
-        // FIX: Versión funcional para evitar stale closures
-        setAuthState(() => ({
-          user: result.data.user,
-          isAuthenticated: true,
+  const handleLogin = useCallback(
+    async (credentials: TLoginData): Promise<void> => {
+      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        // CORRECTO: Usar función directa (sin FormData)
+        const result = await login(credentials);
+
+        if (result.success && result.data) {
+          // Server action ya configuró httpOnly cookies + revalidatePath
+          // FIX: Versión funcional para evitar stale closures
+          setAuthState(() => ({
+            user: result.data.user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          }));
+
+          toast.success("¡Bienvenido! Inicio de sesión correcto");
+
+          // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
+        } else {
+          throw new Error(result.error || "Error de autenticación");
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Error de autenticación";
+        // FIX: Versión funcional
+        setAuthState((prev) => ({
+          ...prev,
+          error: errorMessage,
           isLoading: false,
-          error: null,
         }));
-        
-        toast.success('¡Bienvenido! Inicio de sesión correcto');
-        
-        // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
-      } else {
-        throw new Error(result.error || 'Error de autenticación');
+        toast.error(errorMessage);
+        throw error;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error de autenticación';
-      // FIX: Versión funcional 
-      setAuthState(prev => ({ ...prev, error: errorMessage, isLoading: false }));
-      toast.error(errorMessage);
-      throw error;
-    }
-  }, []);
-  
+    },
+    []
+  );
+
   // OPTIMIZADO: Register con useCallback y función directa
-  const handleRegister = useCallback(async (data: TRegisterData): Promise<void> => {
-    setAuthState(prev => ({ ...prev, error: null }));
-    
-    try {
-      // CORRECTO: Usar función directa (sin FormData)
-      const result = await register(data);
-      
-      if (result.success) {
-        toast.success('Registrado correctamente. Revisa tu correo para confirmar tu cuenta.');
-      } else {
-        throw new Error(result.error || 'Error de registro');
+  const handleRegister = useCallback(
+    async (data: TRegisterData): Promise<void> => {
+      setAuthState((prev) => ({ ...prev, error: null }));
+
+      try {
+        // CORRECTO: Usar función directa (sin FormData)
+        const result = await register(data);
+
+        if (result.success) {
+          toast.success(
+            "Registrado correctamente. Revisa tu correo para confirmar tu cuenta."
+          );
+        } else {
+          throw new Error(result.error || "Error de registro");
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Error de registro";
+        // FIX: Versión funcional
+        setAuthState((prev) => ({ ...prev, error: errorMessage }));
+        toast.error(errorMessage);
+        throw error;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error de registro';
-      // FIX: Versión funcional
-      setAuthState(prev => ({ ...prev, error: errorMessage }));
-      toast.error(errorMessage);
-      throw error;
-    }
-  }, []);
-  
+    },
+    []
+  );
+
   // OPTIMIZADO: Reset password con useCallback y función directa
-  const handleResetPassword = useCallback(async (data: TResetData): Promise<void> => {
-    setAuthState(prev => ({ ...prev, error: null }));
-    
-    try {
-      // CORRECTO: Usar función directa (sin FormData)
-      const result = await resetPassword(data);
-      
-      if (result.success) {
-        toast.success('Correo enviado. Revisa tu bandeja para restablecer tu contraseña.');
-      } else {
-        throw new Error(result.error || 'Error al enviar correo');
+  const handleResetPassword = useCallback(
+    async (data: TResetData): Promise<void> => {
+      setAuthState((prev) => ({ ...prev, error: null }));
+
+      try {
+        // CORRECTO: Usar función directa (sin FormData)
+        const result = await resetPassword(data);
+
+        if (result.success) {
+          toast.success(
+            "Correo enviado. Revisa tu bandeja para restablecer tu contraseña."
+          );
+        } else {
+          throw new Error(result.error || "Error al enviar correo");
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Error al enviar correo";
+        // FIX: Versión funcional
+        setAuthState((prev) => ({ ...prev, error: errorMessage }));
+        toast.error(errorMessage);
+        throw error;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al enviar correo';
-      // FIX: Versión funcional
-      setAuthState(prev => ({ ...prev, error: errorMessage }));
-      toast.error(errorMessage);
-      throw error;
-    }
-  }, []);
-  
+    },
+    []
+  );
+
   // OPTIMIZADO: Logout con useCallback y función directa
   const handleLogout = useCallback(async (): Promise<void> => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+    setAuthState((prev) => ({ ...prev, isLoading: true }));
+
     try {
       const result = await logout();
-      
+
       if (result.success) {
         // Server action ya limpió cookies httpOnly + revalidatePath
         // FIX: Versión funcional para evitar stale closures
@@ -172,16 +198,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isLoading: false,
           error: null,
         }));
-        
+
         // INVALIDACIÓN ESPECÍFICA: Solo queries relevantes por userId
-        queryClient.invalidateQueries({ queryKey: ['current-user'] });
-        queryClient.invalidateQueries({ queryKey: ['reservations'] });
-        
-        toast.success('Sesión cerrada correctamente');
-        
+        queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        queryClient.invalidateQueries({ queryKey: ["reservations"] });
+
+        toast.success("Sesión cerrada correctamente");
+
         // NO MÁS router.refresh() - revalidatePath lo maneja automáticamente
       } else {
-        throw new Error(result.error || 'Error al cerrar sesión');
+        throw new Error(result.error || "Error al cerrar sesión");
       }
     } catch (error) {
       // Incluso si hay error, limpiar estado local
@@ -192,11 +218,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: false,
         error: null,
       }));
-      
+
       // LIMPIAR solo queries específicas
-      queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      
-      const errorMessage = error instanceof Error ? error.message : 'Error al cerrar sesión';
+      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Error al cerrar sesión";
       toast.error(errorMessage);
     }
   }, [queryClient]);
@@ -212,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // El servidor maneja expiración automáticamente con httpOnly cookies
     return !authState.isAuthenticated;
   }, [authState.isAuthenticated]);
-  
+
   // Compatibilidad - Refresh token (automático en servidor)
   const handleRefreshToken = useCallback(async (): Promise<boolean> => {
     // Con httpOnly cookies, el refresh es automático en el servidor
@@ -234,9 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
@@ -244,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

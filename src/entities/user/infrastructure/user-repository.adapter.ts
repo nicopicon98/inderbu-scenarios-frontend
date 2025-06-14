@@ -1,10 +1,11 @@
 import {
-  AuthTokens,
-  User
-} from '../model/types';
-import { TLoginData, TRegisterData, TResetData } from '@/features/auth/schemas/auth-schemas';
-import { ClientHttpClient } from '@/shared/api/http-client-client';
-import { SimpleApiResponse } from '@/shared/api/types';
+  TLoginData,
+  TRegisterData,
+  TResetData,
+} from "@/features/auth/schemas/auth-schemas";
+import { ClientHttpClient } from "@/shared/api/http-client-client";
+import { SimpleApiResponse } from "@/shared/api/types";
+import { AuthTokens, User } from "../model/types";
 
 export interface UserRepository {
   login(credentials: TLoginData): Promise<AuthTokens>;
@@ -16,33 +17,30 @@ export interface UserRepository {
 }
 
 export class ApiUserRepository implements UserRepository {
-  constructor(private httpClient: ClientHttpClient) { }
+  constructor(private httpClient: ClientHttpClient) {}
 
   async login(credentials: TLoginData): Promise<AuthTokens> {
     const response = await this.httpClient.post<SimpleApiResponse<AuthTokens>>(
-      '/auth/login',
+      "/auth/login",
       credentials
     );
     return response.data;
   }
 
   async register(data: TRegisterData): Promise<void> {
-    await this.httpClient.post<SimpleApiResponse<void>>(
-      '/auth/register',
-      data
-    );
+    const { confirmPassword, ...payload } = data; // ⬅️ remove it here
+    await this.httpClient.post<SimpleApiResponse<void>>("/users", payload);
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await this.httpClient.get<SimpleApiResponse<User>>(
-      '/auth/me'
-    );
+    const response =
+      await this.httpClient.get<SimpleApiResponse<User>>("/auth/me");
     return response.data;
   }
 
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
     const response = await this.httpClient.post<SimpleApiResponse<AuthTokens>>(
-      '/auth/refresh',
+      "/auth/refresh",
       { refresh_token: refreshToken }
     );
     return response.data;
@@ -50,19 +48,19 @@ export class ApiUserRepository implements UserRepository {
 
   async resetPassword(data: TResetData): Promise<void> {
     await this.httpClient.post<SimpleApiResponse<void>>(
-      '/auth/reset-password',
+      "/auth/reset-password",
       data
     );
   }
 
   async logout(): Promise<void> {
-    await this.httpClient.post<SimpleApiResponse<void>>(
-      '/auth/logout'
-    );
+    await this.httpClient.post<SimpleApiResponse<void>>("/auth/logout");
   }
 }
 
 // Factory function for creating repository instances
-export const createUserRepository = (httpClient: ClientHttpClient): UserRepository => {
+export const createUserRepository = (
+  httpClient: ClientHttpClient
+): UserRepository => {
   return new ApiUserRepository(httpClient);
 };
