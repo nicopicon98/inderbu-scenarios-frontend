@@ -1,5 +1,3 @@
-"use client";
-
 import { 
   CalendarIcon, 
   Check, 
@@ -22,6 +20,7 @@ import {
   HelpCircle,
   CheckCircle2
 } from "lucide-react";
+import { useAvailabilityConfiguration } from "@/features/reservations/hooks/use-availability-configuration.hook";
 import {
   Card,
   CardContent,
@@ -29,12 +28,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { useTimeslotAvailability } from "@/features/reservations/hooks/use-timeslot-availability.hook";
 import { createReservation } from "@/features/reservations/create/api/createReservationAction";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { CreateReservationDto } from "@/entities/reservation/model/types";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/features/auth/model/use-auth";
-import { useState, useEffect, useMemo } from "react";
 import { FiCheck, FiLoader } from "react-icons/fi";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/shared/ui/button";
@@ -45,7 +43,6 @@ import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
 
 
-// 🎯 MEJORA PRIORIDAD MEDIA: Tooltips contextuales
 const Tooltip = ({ children, content, side = "top" }: { 
   children: React.ReactNode; 
   content: string; 
@@ -82,7 +79,6 @@ const Tooltip = ({ children, content, side = "top" }: {
   );
 };
 
-// 🎯 MEJORA PRIORIDAD BAJA: Onboarding Steps
 const OnboardingStep = ({ 
   step, 
   title, 
@@ -119,7 +115,7 @@ const OnboardingStep = ({
   </div>
 );
 
-// 🎯 MEJORA: Formateo de horas más humano
+// MEJORA: Formateo de horas más humano
 const formatHourHuman = (hour: number): string => {
   if (hour === 0) return "12 AM";
   if (hour === 12) return "12 PM";
@@ -127,11 +123,11 @@ const formatHourHuman = (hour: number): string => {
   return `${hour - 12} PM`;
 };
 
-// 🎯 MEJORA: Agrupación inteligente con iconos y shortcuts
+// MEJORA: Agrupación inteligente con iconos y shortcuts
 const TIME_PERIODS = [
   {
     id: 'morning',
-    name: '🌅 Mañana',
+    name: 'Mañana',
     icon: Sun,
     description: '6 AM - 12 PM',
     hours: [6, 7, 8, 9, 10, 11],
@@ -141,7 +137,7 @@ const TIME_PERIODS = [
   },
   {
     id: 'afternoon', 
-    name: '☀️ Tarde',
+    name: 'Tarde',
     icon: Sunset,
     description: '12 PM - 6 PM',
     hours: [12, 13, 14, 15, 16, 17],
@@ -151,7 +147,7 @@ const TIME_PERIODS = [
   },
   {
     id: 'evening',
-    name: '🌆 Noche',
+    name: 'Noche',
     icon: Coffee,
     description: '6 PM - 12 AM',
     hours: [18, 19, 20, 21, 22, 23],
@@ -161,7 +157,7 @@ const TIME_PERIODS = [
   },
   {
     id: 'late_night',
-    name: '🌙 Madrugada',
+    name: 'Madrugada',
     icon: Moon,
     description: '12 AM - 6 AM',
     hours: [0, 1, 2, 3, 4, 5],
@@ -171,18 +167,18 @@ const TIME_PERIODS = [
   },
 ];
 
-// 🎯 MEJORA PRIORIDAD MEDIA: Shortcuts inteligentes predefinidos
+// MEJORA PRIORIDAD MEDIA: Shortcuts inteligentes predefinidos
 const SMART_SHORTCUTS = [
   {
     id: 'business',
-    name: '🏢 Horario comercial',
+    name: 'Horario comercial',
     description: 'Lunes a viernes, 9 AM - 5 PM',
     hours: [9, 10, 11, 12, 13, 14, 15, 16, 17],
     icon: '🏢',
   },
   {
     id: 'morning-workout',
-    name: '💪 Ejercicio matutino',
+    name: 'Ejercicio matutino',
     description: 'Perfecto para entrenar antes del trabajo',
     hours: [6, 7, 8],
     icon: '💪',
@@ -236,7 +232,7 @@ const WEEKDAYS = [
   { value: 0, label: "Domingo", short: "D" },
 ];
 
-// 🎯 MEJORA: Generación de slots con formateo humano
+// MEJORA: Generación de slots con formateo humano
 const generateTimeSlots = (availabilityChecker?: (hour: number) => 'available' | 'occupied' | 'unknown'): TimeSlot[] => {
   const slots: TimeSlot[] = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -264,7 +260,7 @@ export default function FlexibleScheduler({
 }: FlexibleSchedulerProps) {
   const getTodayISO = () => new Date().toISOString().split("T")[0];
 
-  // 🎯 MEJORA PRIORIDAD MEDIA: Estados para wizard de pasos
+  // MEJORA PRIORIDAD MEDIA: Estados para wizard de pasos
   const [currentStep, setCurrentStep] = useState(1);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -295,30 +291,41 @@ export default function FlexibleScheduler({
   // Estados para lógica de reservas
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  // 🛡️ REMOVED: refreshTrigger ya no es necesario
+  // REMOVED: refreshTrigger ya no es necesario
   const { isAuthenticated } = useAuth();
 
-  // 🛡️ FIXED: Hook simplificado sin auto-refetch para evitar loops
+  // 🎯 Hook único para disponibilidad (simplificado)
+  const availabilityConfig = useMemo(() => ({
+    subScenarioId,
+    initialDate: dateRange.from || new Date().toISOString().split("T")[0],
+    finalDate: config.hasDateRange ? dateRange.to : undefined,
+    weekdays: config.hasWeekdaySelection && selectedWeekdays.length > 0 ? selectedWeekdays : undefined,
+  }), [subScenarioId, dateRange.from, dateRange.to, config.hasDateRange, config.hasWeekdaySelection, selectedWeekdays]);
+
   const {
+    timeSlots: availabilityTimeSlots,
     availableSlotIds,
-    occupiedSlotIds,
+    calculatedDates,
+    stats,
     isLoading: isLoadingAvailability,
     error: availabilityError,
-    getSlotStatus,
+    checkAvailability,
     checkSlotAvailability,
-    refetch: refetchAvailability
-  } = useTimeslotAvailability({
-    subScenarioId,
-    enabled: true,
-    // 🛡️ REMOVED: refetchInterval para evitar requests innecesarios
-  });
+    getSlotStatus,
+  } = useAvailabilityConfiguration();
+
+  // 🔄 Auto-consultar cuando cambie la configuración
+  useEffect(() => {
+    console.log('🔍 Availability config changed:', availabilityConfig);
+    checkAvailability(availabilityConfig);
+  }, [availabilityConfig, checkAvailability]);
 
   // Generar timeSlots con estado de disponibilidad
   const timeSlots = useMemo(() => {
     return generateTimeSlots((hour) => getSlotStatus(hour));
   }, [getSlotStatus]);
 
-  // 🎯 MEJORA PRIORIDAD BAJA: Detectar primera visita para onboarding
+  // MEJORA PRIORIDAD BAJA: Detectar primera visita para onboarding
   useEffect(() => {
     const hasVisited = localStorage.getItem('reservations-visited');
     if (!hasVisited) {
@@ -330,18 +337,12 @@ export default function FlexibleScheduler({
     }
   }, []);
 
-  // 🛡️ FIXED: Refetch solo cuando cambia la fecha de verdad (sin refreshTrigger)
-  useEffect(() => {
-    if (dateRange.from) {
-      console.log(`📅 Date changed to ${dateRange.from}, fetching availability...`);
-      refetchAvailability(dateRange.from);
-    }
-  }, [dateRange.from]); // 🛡️ REMOVED: refetchAvailability y refreshTrigger de dependencias
+
 
   // Tracking de slots seleccionados localmente
   const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
 
-  // 🎯 MEJORA PRIORIDAD MEDIA: Wizard steps logic
+  // MEJORA PRIORIDAD MEDIA: Wizard steps logic
   const steps = [
     {
       number: 1,
@@ -399,7 +400,7 @@ export default function FlexibleScheduler({
         timeSlots: selectedHours,
       }));
 
-      // 🎯 MEJORA: Auto-avanzar al siguiente paso cuando se selecciona algo
+      // MEJORA: Auto-avanzar al siguiente paso cuando se selecciona algo
       if (newSelectedSlots.size > 0 && currentStep === 2) {
         setTimeout(() => {
           if (currentStep === 2) nextStep();
@@ -410,7 +411,7 @@ export default function FlexibleScheduler({
     });
   };
 
-  // 🎯 MEJORA PRIORIDAD MEDIA: Shortcuts inteligentes mejorados
+  // MEJORA PRIORIDAD MEDIA: Shortcuts inteligentes mejorados
   const applySmartShortcut = (shortcutId: string) => {
     const shortcut = SMART_SHORTCUTS.find(s => s.id === shortcutId);
     if (!shortcut) return;
@@ -486,7 +487,7 @@ export default function FlexibleScheduler({
     setDateRange((prev) => ({ ...prev, from: dateStr }));
     setConfig((prev) => ({ ...prev, startDate: dateStr }));
     
-    // 🎯 MEJORA: Auto-avanzar al siguiente paso cuando se selecciona fecha
+    // MEJORA: Auto-avanzar al siguiente paso cuando se selecciona fecha
     if (currentStep === 1) {
       setTimeout(() => {
         nextStep();
@@ -511,7 +512,7 @@ export default function FlexibleScheduler({
     }
   };
 
-  // 🛡️ FIXED: Lógica de reservas con refetch manual
+  // FIXED: Lógica de reservas con refetch manual
   const doReservation = async () => {
     if (getSelectedTimeSlotsCount() === 0) {
       toast.error("Por favor selecciona al menos un horario para reservar");
@@ -562,9 +563,7 @@ export default function FlexibleScheduler({
       if (!result.success) {
         if (result.error?.includes('conflicto') || result.error?.includes('ocupado')) {
           toast.error("Algunos horarios fueron ocupados por otro usuario. Refrescando disponibilidad...");
-          if (dateRange.from) {
-            await refetchAvailability(dateRange.from);
-          }
+          await checkAvailability(availabilityConfig);
         } else {
           toast.error(result.error || "Error desconocido al crear la reserva");
         }
@@ -577,10 +576,8 @@ export default function FlexibleScheduler({
       
       setSelectedSlots(new Set());
       setConfig((prev) => ({ ...prev, timeSlots: [] }));
-      // 🛡️ FIXED: Manual refetch en lugar de refreshTrigger
-      if (dateRange.from) {
-        await refetchAvailability(dateRange.from);
-      }
+      // Refetch disponibilidad
+      await checkAvailability(availabilityConfig);
       setCurrentStep(1); // Reset wizard
       
     } catch (err) {
@@ -624,7 +621,7 @@ export default function FlexibleScheduler({
 
   return (
     <div className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6">
-      {/* 🎯 MEJORA PRIORIDAD BAJA: Onboarding modal */}
+      {/* MEJORA PRIORIDAD BAJA: Onboarding modal */}
       {showOnboarding && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
@@ -663,53 +660,11 @@ export default function FlexibleScheduler({
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={() => setShowOnboarding(false)}
               >
-                ¡Empezar! 🚀
+                ¡Empezar!
               </Button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* 🎯 MEJORA PRIORIDAD MEDIA: Wizard Progress */}
-      {!config.hasDateRange && (
-        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-blue-900">Tu progreso</h3>
-              <div className="text-sm text-blue-700">
-                Paso {currentStep} de 3
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between mb-4">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                    step.isCompleted ? "bg-green-500 text-white" :
-                    step.isActive ? "bg-blue-500 text-white" :
-                    "bg-gray-300 text-gray-600"
-                  }`}>
-                    {step.isCompleted ? <CheckCircle2 className="h-5 w-5" /> : step.number}
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`w-12 h-1 mx-2 transition-all duration-300 ${
-                      step.isCompleted ? "bg-green-500" : "bg-gray-300"
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-center">
-              <h4 className="font-medium text-blue-900">
-                {steps.find(s => s.isActive)?.title}
-              </h4>
-              <p className="text-sm text-blue-700">
-                {steps.find(s => s.isActive)?.description}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       <Card className="border-2 shadow-lg transition-all duration-300 hover:shadow-xl">
@@ -721,7 +676,7 @@ export default function FlexibleScheduler({
               <FiLoader className="h-4 w-4 animate-spin text-blue-500" />
             )}
             
-            {/* 🎯 MEJORA: Help button con tooltip */}
+            {/* MEJORA: Help button con tooltip */}
             <Tooltip content="Selecciona una fecha y horarios para crear tu reserva. ¡Es súper fácil!" side="bottom">
               <Button variant="ghost" size="sm" className="ml-auto">
                 <HelpCircle className="h-4 w-4" />
@@ -729,9 +684,9 @@ export default function FlexibleScheduler({
             </Tooltip>
           </CardTitle>
           <CardDescription>
-            {currentStep === 1 && "📅 Primero, elige cuándo quieres reservar"}
+            {currentStep === 1 && "Primero, elige cuándo quieres reservar"}
             {currentStep === 2 && "Ahora, selecciona tus horarios preferidos"}
-            {currentStep === 3 && "🎉 ¡Perfecto! Revisa y confirma tu reserva"}
+            {currentStep === 3 && "¡Perfecto! Revisa y confirma tu reserva"}
             {availabilityError && (
               <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
                 <AlertTriangle className="h-4 w-4" />
@@ -772,7 +727,7 @@ export default function FlexibleScheduler({
 
           {/* Configuración de fechas */}
           {!config.hasDateRange ? (
-            /* 🎯 MEJORA PRIORIDAD MEDIA: Layout wizard mejorado */
+            /* MEJORA PRIORIDAD MEDIA: Layout wizard mejorado */
             <div className="space-y-6">
               {/* Paso 1: Fecha */}
               <div className={`transition-all duration-300 ${currentStep === 1 ? "opacity-100" : currentStep > 1 ? "opacity-75" : "opacity-50"}`}>
@@ -780,7 +735,7 @@ export default function FlexibleScheduler({
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Label className="text-lg font-semibold">
-                        📅 ¿Cuándo quieres reservar?
+                        ¿Cuándo quieres reservar?
                       </Label>
                       {currentStep > 1 && dateRange.from && (
                         <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -808,8 +763,8 @@ export default function FlexibleScheduler({
                         </div>
                       </div>
 
-                      {/* 🎯 MEJORA PRIORIDAD MEDIA: Smart Shortcuts */}
-                      <div className="mb-4">
+                      {/* MEJORA PRIORIDAD MEDIA: Smart Shortcuts */}
+                      {/* <div className="mb-4">
                         <Label className="text-sm font-medium mb-2 block">✨ Atajos inteligentes:</Label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {SMART_SHORTCUTS.slice(0, 3).map((shortcut) => (
@@ -826,7 +781,7 @@ export default function FlexibleScheduler({
                             </Tooltip>
                           ))}
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Horarios agrupados por períodos */}
                       <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -881,7 +836,7 @@ export default function FlexibleScheduler({
                                 </div>
                               </div>
 
-                              {/* 🎯 MEJORA PRIORIDAD BAJA: Animación de expansión */}
+                              {/* MEJORA PRIORIDAD BAJA: Animación de expansión */}
                               <div className={`overflow-hidden transition-all duration-300 ${
                                 expandedPeriods[period.id] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                               }`}>
@@ -956,13 +911,13 @@ export default function FlexibleScheduler({
                     <div className="flex items-center gap-2 mb-4">
                       <Star className="h-6 w-6 text-green-600" />
                       <Label className="font-bold text-green-800 text-lg">
-                        🎉 ¡Tu reserva está lista!
+                        ¡Tu reserva está casi lista!
                       </Label>
                     </div>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-green-700 mb-2">
-                          📅 <strong>Fecha:</strong> {formatDateSafe(dateRange.from)}
+                          <strong>Fecha:</strong> {formatDateSafe(dateRange.from)}
                         </p>
                         <p className="text-sm text-green-700 mb-3">
                           <strong>Horarios:</strong> {getSelectedTimeSlotsCount()} seleccionado{getSelectedTimeSlotsCount() > 1 ? 's' : ''}
@@ -984,7 +939,7 @@ export default function FlexibleScheduler({
                 </div>
               )}
 
-              {/* 🎯 MEJORA PRIORIDAD MEDIA: Navegación de wizard */}
+              {/* MEJORA PRIORIDAD MEDIA: Navegación de wizard */}
               {!config.hasDateRange && (
                 <div className="flex justify-between items-center pt-4 border-t">
                   <Button
@@ -1027,7 +982,7 @@ export default function FlexibleScheduler({
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <Label className="text-lg font-semibold mb-3 block">
-                    📅 Fecha de inicio
+                    Fecha de inicio
                   </Label>
                   <SimpleCalendar
                     selectedDate={dateRange.from || getTodayISO()}
@@ -1036,7 +991,7 @@ export default function FlexibleScheduler({
                 </div>
                 <div>
                   <Label className="text-lg font-semibold mb-3 block">
-                    📅 Fecha de finalización
+                    Fecha de finalización
                   </Label>
                   <SimpleCalendar
                     selectedDate={dateRange.to || getTodayISO()}
@@ -1248,13 +1203,13 @@ export default function FlexibleScheduler({
                 {/* Resumen para rango */}
                 {dateRange.from && getSelectedTimeSlotsCount() > 0 && (
                   <div className="mt-4 p-4 border-2 border-green-200 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 animate-in slide-in-from-bottom duration-500">
-                    <Label className="font-semibold text-green-800">🎉 Tu reserva:</Label>
+                    <Label className="font-semibold text-green-800">Tu reserva:</Label>
                     <p className="text-sm text-green-700 mt-2">
                       {!config.hasDateRange
-                        ? `📅 ${formatDateSafe(dateRange.from)} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`
+                        ? `${formatDateSafe(dateRange.from)} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`
                         : config.hasWeekdaySelection && selectedWeekdays.length > 0
-                        ? `📅 ${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • 📆 ${selectedWeekdays.map((w) => WEEKDAYS.find((wd) => wd.value === w)?.label).join(", ")} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`
-                        : `📅 ${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`}
+                        ? `${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • 📆 ${selectedWeekdays.map((w) => WEEKDAYS.find((wd) => wd.value === w)?.label).join(", ")} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`
+                        : `${formatDateSafe(dateRange.from)}${dateRange.to ? ` - ${formatDateSafe(dateRange.to)}` : ""} • ${getSelectedTimeSlotsCount()} horario${getSelectedTimeSlotsCount() > 1 ? 's' : ''}`}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {Array.from(selectedSlots).sort((a, b) => a - b).map((hour) => (
@@ -1269,9 +1224,9 @@ export default function FlexibleScheduler({
             </div>
           )}
 
-          {/* 🎯 MEJORA PRIORIDAD BAJA: Botón de confirmación súper atractivo con animaciones */}
+          {/* MEJORA PRIORIDAD BAJA: Botón de confirmación súper atractivo con animaciones */}
           <div className="relative">
-            {/* 🛡️ FIXED: Efecto de glow DETRÁS del botón para no bloquear clicks */}
+            {/* FIXED: Efecto de glow DETRÁS del botón para no bloquear clicks */}
             {getSelectedTimeSlotsCount() > 0 && !isSubmitting && (
               <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg blur-xl opacity-20 -z-10 pointer-events-none" />
             )}
@@ -1294,13 +1249,13 @@ export default function FlexibleScheduler({
               ) : (
                 <>
                   <Zap className="h-5 w-5 mr-2" />
-                  🎉 Confirmar mi reserva ({getSelectedTimeSlotsCount()} horario{getSelectedTimeSlotsCount() !== 1 ? 's' : ''})
+                  Confirmar mi reserva ({getSelectedTimeSlotsCount()} horario{getSelectedTimeSlotsCount() !== 1 ? 's' : ''})
                 </>
               )}
             </Button>
           </div>
 
-          {/* 🎯 MEJORA PRIORIDAD MEDIA: Clear button mejorado */}
+          {/* MEJORA PRIORIDAD MEDIA: Clear button mejorado */}
           {getSelectedTimeSlotsCount() > 0 && (
             <div className="text-center">
               <Button
@@ -1309,7 +1264,7 @@ export default function FlexibleScheduler({
                 onClick={clearAllTimeSlots}
                 className="text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105"
               >
-                🗑️ Limpiar selección
+                Limpiar selección
               </Button>
             </div>
           )}

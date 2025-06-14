@@ -44,7 +44,7 @@ export class ClientHttpClient implements HttpClient {
       console.log('HTTP CLIENT: No auth context provided');
     }
 
-    console.log('📄 HTTP CLIENT: Final auth headers:', Object.keys(headers));
+    console.log('HTTP CLIENT: Final auth headers:', Object.keys(headers));
     return headers;
   }
 
@@ -70,13 +70,9 @@ export class ClientHttpClient implements HttpClient {
 
     const url = `${this.baseURL}${endpoint}`;
     const headers = await this.buildHeaders(config.headers);
-
-    console.log(`HTTP CLIENT: Making ${method} request to ${url}`);
-    console.log('📄 HTTP CLIENT: Request headers:', Object.keys(headers as Record<string, string>));
-    console.log('📎 HTTP CLIENT: Has Authorization header:', 'Authorization' in headers);
-    
+ 
     if (body) {
-      console.log('📋 HTTP CLIENT: Request body:', typeof body === 'string' ? 'JSON string' : typeof body);
+      console.log('HTTP CLIENT: Request body:', typeof body === 'string' ? 'JSON string' : typeof body);
     }
 
     const controller = new AbortController();

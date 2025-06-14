@@ -318,7 +318,7 @@ function WelcomeBanner() {
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-800 mb-2">
-                🎉 ¡Bienvenido a tu panel de reservas!
+                ¡Bienvenido a tu panel de reservas!
               </h3>
               <p className="text-gray-700 mb-4 leading-relaxed">
                 Desde aquí puedes <strong>gestionar todas tus reservas</strong> de manera

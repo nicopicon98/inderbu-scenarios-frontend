@@ -201,19 +201,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [queryClient]);
 
-  // 📄 Compatibilidad - Session validation (delegado al servidor)
+  // Compatibilidad - Session validation (delegado al servidor)
   const validateCurrentSession = useCallback(async (): Promise<boolean> => {
     // Con httpOnly cookies, el servidor maneja la validación automáticamente
     return authState.isAuthenticated;
   }, [authState.isAuthenticated]);
 
-  // 📄 Compatibilidad - Token expiration (ya no relevante)
+  // Compatibilidad - Token expiration (ya no relevante)
   const checkTokenExpired = useCallback((): boolean => {
     // El servidor maneja expiración automáticamente con httpOnly cookies
     return !authState.isAuthenticated;
   }, [authState.isAuthenticated]);
   
-  // 📄 Compatibilidad - Refresh token (automático en servidor)
+  // Compatibilidad - Refresh token (automático en servidor)
   const handleRefreshToken = useCallback(async (): Promise<boolean> => {
     // Con httpOnly cookies, el refresh es automático en el servidor
     return authState.isAuthenticated;

@@ -124,7 +124,7 @@ export interface TimeslotResponseDto {
   id: number;
   startTime: string;
   endTime: string;
-  isAvailable: boolean; // 🎯 FIXED: Cambiar de 'available' a 'isAvailable' para coincidir con backend
+  isAvailable: boolean; // FIXED: Cambiar de 'available' a 'isAvailable' para coincidir con backend
 }
 
 // Query parameters interface (matching current service filters)

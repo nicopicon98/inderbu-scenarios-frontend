@@ -7,7 +7,7 @@
 
 Sistema de reserva y gestión de escenarios deportivos para el Instituto de Deportes y Recreación de Bucaramanga (INDERBU).
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
 - [Inicio Rápido](#-inicio-rápido)
 - [Arquitectura](#-arquitectura)
@@ -19,7 +19,7 @@ Sistema de reserva y gestión de escenarios deportivos para el Instituto de Depo
 - [Despliegue](#-despliegue)
 - [📝 Guías de Desarrollo](#-guías-de-desarrollo)
 - [👥 Contribución](#-contribución)
-- [📄 Licencia](#-licencia)
+- [Licencia](#-licencia)
 - [Contacto](#-contacto)
 
 ## Inicio Rápido
@@ -429,7 +429,7 @@ Para implementar una nueva feature:
 4. Push a la rama (`git push origin feature/amazing-feature`)
 5. Abrir Pull Request
 
-## 📄 Licencia
+## Licencia
 
 Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
 

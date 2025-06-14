@@ -76,7 +76,7 @@ export class GetUserReservationsUseCase {
       reservations.data.length
     ));
 
-    // 📋 Response with metadata
+    // Response with metadata
     return {
       reservations,
       metadata: {

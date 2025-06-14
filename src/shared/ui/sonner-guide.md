@@ -150,6 +150,6 @@ Después de la configuración, los toasts aparecen así:
 
 Los toasts se adaptan automáticamente a diferentes tamaños de pantalla y respetan el tema del sistema (light/dark mode).
 
-## 🎉 ¡Listo para usar!
+## ¡Listo para usar!
 
 Ahora todos los toasts en tu aplicación tendrán los colores apropiados y una mejor experiencia visual.
