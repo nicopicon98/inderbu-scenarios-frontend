@@ -1,10 +1,9 @@
 import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
-import { EventBus } from '@/entities/reservation/domain/reservation.domain';
 import { createUserRepository, UserRepository } from '@/entities/user/infrastructure/user-repository.adapter';
-// import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
+import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
+import { EventBus } from '@/entities/reservation/domain/reservation.domain';
 import { ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext } from '@/shared/api/server-auth';
-import { createInMemoryEventBus } from '@/shared/infrastructure/InMemoryEventBus';
 import {
   createGetUserReservationsUseCase,
   GetUserReservationsUseCase

@@ -15,6 +15,7 @@ export interface CreateReservationResult {
 
 const validateCreateReservation = createFormDataValidator(CreateReservationSchema);
 
+// This action is used to create a reservation from a form submission in the UI.
 export async function createReservationAction(
   prevState: CreateReservationResult | null,
   formData: FormData
