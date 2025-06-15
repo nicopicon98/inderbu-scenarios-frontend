@@ -3,7 +3,7 @@
 import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
 import { CreateReservationDto, CreateReservationSchema } from '@/entities/reservation/model/types';
 import { ServerHttpClientFactory } from '@/shared/api/http-client-server';
-import { createFormDataValidator } from '@/shared/lib/validation';
+import { createFormDataValidator } from '@/utils/utils';
 import { revalidateTag } from 'next/cache';
 
 export interface CreateReservationResult {

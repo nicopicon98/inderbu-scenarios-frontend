@@ -1,11 +1,9 @@
+import { TimePeriodGroup } from "../molecules/time-period-group";
+import { TIME_PERIODS } from "../../constants/time-periods";
+import { TimeSlot } from "../../types/scheduler.types";
 import { FiLoader } from "react-icons/fi";
 import { Badge } from "@/shared/ui/badge";
 import { Label } from "@/shared/ui/label";
-import { TimePeriodGroup } from "../molecules/time-period-group";
-import { SmartShortcutsGrid } from "../molecules/smart-shortcuts-grid";
-import { TIME_PERIODS } from "../../constants/time-periods";
-import { SMART_SHORTCUTS } from "../../constants/smart-shortcuts";
-import { TimeSlot } from "../../types/scheduler.types";
 
 interface TimeSelectionGridProps {
   timeSlots: TimeSlot[];
@@ -45,8 +43,12 @@ export const TimeSelectionGrid = ({
     return (
       <div className="text-center py-6 animate-in fade-in duration-500">
         <div className="text-6xl mb-4">😔</div>
-        <p className="text-sm text-red-600 font-medium">No hay horarios disponibles para esta fecha</p>
-        <p className="text-xs text-muted-foreground mt-1">Intenta con otra fecha</p>
+        <p className="text-sm text-red-600 font-medium">
+          No hay horarios disponibles para esta fecha
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Intenta con otra fecha
+        </p>
       </div>
     );
   }
@@ -55,20 +57,18 @@ export const TimeSelectionGrid = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Label className="text-lg font-semibold">
-            Elige tus horarios
-          </Label>
+          <Label className="text-lg font-semibold">Elige tus horarios</Label>
           <Badge variant="outline" className="text-sm">
             {availableSlotIds.length} disponibles
           </Badge>
         </div>
       </div>
 
-      <SmartShortcutsGrid
+      {/* <SmartShortcutsGrid
         shortcuts={SMART_SHORTCUTS}
         onApplyShortcut={onApplyShortcut}
         isLoading={isLoading}
-      />
+      /> */}
 
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {TIME_PERIODS.map((period) => (
@@ -87,9 +87,10 @@ export const TimeSelectionGrid = ({
       </div>
 
       {!isLoading && selectedCount === 0 && availableSlotIds.length > 0 && (
-        <div className="text-center py-4">
-          <div className="text-4xl mb-2">👆</div>
-          <p className="text-sm text-gray-500">Selecciona un horario disponible para continuar</p>
+        <div className="text-center py-2">
+          <p className="text-sm text-gray-500">
+            Selecciona un horario disponible para continuar
+          </p>
         </div>
       )}
     </div>

@@ -389,13 +389,6 @@ function ReservationsContent({
                 {activeReservations.length}
               </Badge>
             </div>
-
-            <div className="hidden md:flex items-center gap-2 text-sm text-blue-600">
-              <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
-                <Settings className="h-3 w-3" />
-                <span className="font-medium">Gestiona tus reservas →</span>
-              </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
