@@ -1,17 +1,26 @@
-'use client';
+"use client";
 
-import { reservationQueryKeys } from '@/entities/reservation/api/reservation-query-keys';
-import { createReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
+import { reservationQueryKeys } from "@/entities/reservation/api/reservation-query-keys";
+import { ReservationRepository } from "@/entities/reservation/domain/reservation.domain";
+import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
 import {
   GetReservationsQuery,
   PaginatedReservations,
   calculateReservationStats,
   isActiveReservation,
-  isPastReservation
-} from '@/entities/reservation/model/types';
-import { ClientHttpClientFactory, createClientAuthContext } from '@/shared/api/http-client-client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+  isPastReservation,
+} from "@/entities/reservation/model/types";
+import {
+  ClientHttpClient,
+  ClientHttpClientFactory,
+  createClientAuthContext,
+} from "@/shared/api/http-client-client";
+import {
+  createServerAuthContext,
+  ServerAuthContext,
+} from "@/shared/api/server-auth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 
 interface UseReservationsWidgetProps {
   userId: number;
@@ -28,13 +37,13 @@ interface ReservationsFilters {
 export function useReservationsWidget({
   userId,
   initialData = null,
-  initialFilters = {}
+  initialFilters = {},
 }: UseReservationsWidgetProps) {
   const queryClient = useQueryClient();
 
   // Local filter state
   const [filters, setFilters] = useState<ReservationsFilters>({
-    searchQuery: initialFilters.searchQuery || '',
+    searchQuery: initialFilters.searchQuery || "",
     page: initialFilters.page || 1,
     limit: initialFilters.limit || 6,
   });
@@ -42,22 +51,19 @@ export function useReservationsWidget({
   // Create repository
   const createRepository = () => {
     // Use cookies for httpOnly authentication instead of localStorage
-    const httpClient = ClientHttpClientFactory.createClientWithCookies();
+    // const authContext: ServerAuthContext = createServerAuthContext();
+    const authContext = createClientAuthContext();
+    const httpClient: ClientHttpClient =
+      ClientHttpClientFactory.createClient(authContext);
     return createReservationRepository(httpClient);
   };
 
   // Query for reservations
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    isFetching
-  } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: reservationQueryKeys.list({
       userId,
       ...filters,
-      searchQuery: filters.searchQuery || undefined
+      searchQuery: filters.searchQuery || undefined,
     }),
     queryFn: async () => {
       const repository = createRepository();
@@ -67,7 +73,10 @@ export function useReservationsWidget({
         searchQuery: filters.searchQuery || undefined,
       });
     },
-    initialData: filters.searchQuery === '' && filters.page === 1 ? initialData : undefined,
+    initialData:
+      filters.searchQuery === "" && filters.page === 1
+        ? initialData
+        : undefined,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: any) => {
       // Don't retry on auth errors
@@ -92,7 +101,7 @@ export function useReservationsWidget({
           confirmed: 0,
           rejected: 0,
           cancelled: 0,
-        }
+        },
       };
     }
 
@@ -107,13 +116,13 @@ export function useReservationsWidget({
         ...statistics,
         // Use meta total for accurate count across pages
         total: data.meta?.totalItems || data.data.length,
-      }
+      },
     };
   }, [data]);
 
   // Filter handlers
   const updateFilters = (newFilters: Partial<ReservationsFilters>) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       ...newFilters,
       // Reset page when other filters change (except when changing page itself)
@@ -123,14 +132,14 @@ export function useReservationsWidget({
 
   const clearFilters = () => {
     setFilters({
-      searchQuery: '',
+      searchQuery: "",
       page: 1,
       limit: filters.limit,
     });
   };
 
   const changePage = (newPage: number) => {
-    setFilters(prev => ({ ...prev, page: newPage }));
+    setFilters((prev) => ({ ...prev, page: newPage }));
   };
 
   // Optimistic update helper
@@ -160,14 +169,14 @@ export function useReservationsWidget({
     try {
       await refetch();
     } catch (error) {
-      console.error('Error refetching reservations:', error);
+      console.error("Error refetching reservations:", error);
     }
   };
 
   // Invalidate and refetch from server
   const invalidateAndRefetch = () => {
     queryClient.invalidateQueries({
-      queryKey: reservationQueryKeys.list({ userId })
+      queryKey: reservationQueryKeys.list({ userId }),
     });
   };
 
@@ -209,7 +218,7 @@ export function useReservationOperations(userId: number) {
 
   const invalidateReservations = () => {
     queryClient.invalidateQueries({
-      queryKey: reservationQueryKeys.list({ userId })
+      queryKey: reservationQueryKeys.list({ userId }),
     });
   };
 
@@ -242,13 +251,13 @@ export function useReservationOperations(userId: number) {
 
         return {
           ...oldData,
-          data: oldData.data.filter((reservation: any) =>
-            reservation.id !== reservationId
+          data: oldData.data.filter(
+            (reservation: any) => reservation.id !== reservationId
           ),
           meta: {
             ...oldData.meta,
             totalItems: Math.max(0, oldData.meta.totalItems - 1),
-          }
+          },
         };
       }
     );
