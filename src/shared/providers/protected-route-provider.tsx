@@ -2,10 +2,10 @@
 
 import { useAuth } from "@/features/auth";
 import { EUserRole } from "@/shared/enums/user-role.enum";
+import { getRedirectPath } from "@/utils/utils";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getRedirectPath } from "../utils/get-redirect-path";
 
 interface ProtectedRouteProviderProps {
   children: React.ReactNode;

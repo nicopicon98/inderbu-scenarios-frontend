@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { useSidebar } from "@/shared/providers/dashboard-sidebar.provider";
 import {
   GlobeIcon,

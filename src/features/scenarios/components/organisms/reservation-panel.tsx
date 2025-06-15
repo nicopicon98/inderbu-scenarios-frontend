@@ -4,7 +4,7 @@ import { AuthModal } from "@/features/auth";
 import { useAuth } from "@/features/auth/model/use-auth";
 import { CreateReservationDto } from '@/entities/reservation/model/types';
 import { TimeSlots } from "@/features/scenarios/components/organisms/time-slots";
-import { getTodayLocalISO } from "@/lib/utils";
+import { getTodayLocalISO } from "@/utils/utils";
 import { SimpleCalendar } from "@/shared/components/organisms/simple-calendar";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
