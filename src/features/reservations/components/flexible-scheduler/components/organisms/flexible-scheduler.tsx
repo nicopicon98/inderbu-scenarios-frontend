@@ -1,3 +1,4 @@
+import { useAvailabilityConfiguration } from "@/features/reservations/hooks/use-availability-configuration.hook";
 import {
   Card,
   CardContent,
@@ -5,8 +6,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { useAvailabilityConfiguration } from "@/features/reservations/hooks/use-availability-configuration.hook";
+import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
+import { useReservationProcess } from "../../hooks/use-reservation-process";
+import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
+import { useDateConfiguration } from "../../hooks/use-date-configuration";
+import { ConfirmationSection } from "../molecules/confirmation-section";
 import { CalendarIcon, HelpCircle, AlertTriangle } from "lucide-react";
+import { TimeSelectionGrid } from "../organisms/time-selection-grid";
+import { useSchedulerState } from "../../hooks/use-scheduler-state";
+import { useURLPersistence } from "../../hooks/use-url-persistence";
+import { DateRangePicker } from "../molecules/date-range-picker";
+import { AdvancedOptions } from "../molecules/advanced-options";
+import { generateTimeSlots } from "../../utils/time-formatters";
 import { Tooltip } from "@/shared/components/atoms/tooltip";
 import { Button } from "@/shared/ui/button";
 import { AuthModal } from "@/features/auth";
@@ -14,23 +25,12 @@ import { useMemo, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
 
 // Hooks
-import { useSchedulerState } from "../../hooks/use-scheduler-state";
-import { useDateConfiguration } from "../../hooks/use-date-configuration";
-import { useTimeSlotSelection } from "../../hooks/use-time-slot-selection";
-import { useReservationProcess } from "../../hooks/use-reservation-process";
-import { useURLPersistence } from "../../hooks/use-url-persistence";
 
 // Components
-import { AdvancedOptions } from "../molecules/advanced-options";
-import { DateRangePicker } from "../molecules/date-range-picker";
-import { TimeSelectionGrid } from "../organisms/time-selection-grid";
-import { ConfirmationSection } from "../molecules/confirmation-section";
 
 // Utils
-import { generateTimeSlots } from "../../utils/time-formatters";
 
 // Types
-import { FlexibleSchedulerProps, ScheduleConfig, IFromTo } from "../../types/scheduler.types";
 
 export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerProps) {
   // Hooks de estado
@@ -79,23 +79,21 @@ export default function FlexibleScheduler({ subScenarioId }: FlexibleSchedulerPr
     selectPeriodHours,
     clearAllTimeSlots,
     removeUnavailableSlots,
-    getSelectedTimeSlotsCount,
   } = slotSelection;
 
   // Hook del proceso de reserva
-  const reservationProcess = useReservationProcess(
-    subScenarioId,
-    availabilityConfig,
-    checkAvailability,
-    checkSlotAvailability
-  );
   const {
     isSubmitting,
     isLoginModalOpen,
     setIsLoginModalOpen,
     onSubmit,
     handleLoginSuccess,
-  } = reservationProcess;
+  } = useReservationProcess(
+    subScenarioId,
+    availabilityConfig,
+    checkAvailability,
+    checkSlotAvailability
+  );
 
   // Callbacks para URL persistence
   const handleRestoreConfig = (restoredConfig: Partial<ScheduleConfig>) => {

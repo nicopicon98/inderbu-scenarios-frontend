@@ -17,8 +17,6 @@ export async function cancelReservationAction(
   reason?: string
 ): Promise<CancelReservationResult> {
   try {
-    console.log(`SERVER ACTION: Cancelling reservation ${reservationId}`);
-    
     // Create repository with server-side authentication context
     const authContext: ServerAuthContext = createServerAuthContext();
     const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);

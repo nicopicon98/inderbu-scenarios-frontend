@@ -1,19 +1,7 @@
 "use client";
 
-import { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import { Separator } from "@/shared/ui/separator";
 import {
   AlertTriangle,
-  Calendar,
   CalendarX,
   CheckCircle,
   Clock,
@@ -26,16 +14,32 @@ import {
   CalendarDays,
   Repeat,
   CalendarRange,
+  Building,
+  Mail,
+  Phone,
 } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
-import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { cancelReservationAction } from "../../use-cases/cancel/actions/cancel-reservation.action";
-import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
+import Link from "next/link";
 
-/* ───────────────────────────────────  Props  ─────────────────────────────── */
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { cancelReservationAction } from "../../use-cases/cancel/actions/cancel-reservation.action";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
+import { ReservationDto } from "@/services/reservation.service";
+import { formatReservationInfo } from "../../utils/utils";
+import { Separator } from "@/shared/ui/separator";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
+import { tabTrigger } from "../../utils/ui";
+import { AnimatePresence, motion } from "framer-motion";
+
 interface ModifyReservationModalProps {
   reservation: ReservationDto | null;
   isOpen: boolean;
@@ -44,50 +48,6 @@ interface ModifyReservationModalProps {
   onCreateNewReservation: (subScenarioId: number) => void;
 }
 
-/* ──────────────────────  Helpers de formateo mejorados  ────────────────── */
-const formatReservationInfo = (reservation: ReservationDto) => {
-  try {
-    const initialDate = parseISO(reservation.initialDate);
-    const isRange = reservation.type === "RANGE" && reservation.finalDate;
-    
-    if (isRange) {
-      const finalDate = parseISO(reservation.finalDate!);
-      
-      return {
-        type: "RANGE",
-        startDate: format(initialDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
-        endDate: format(finalDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
-        shortRange: `${format(initialDate, "dd/MM/yyyy")} - ${format(finalDate, "dd/MM/yyyy")}`,
-        weekDays: reservation.weekDays || [],
-        weekDayNames: getWeekDayNames(reservation.weekDays || []),
-        totalInstances: reservation.totalInstances || 1,
-        durationDays: Math.ceil((finalDate.getTime() - initialDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-      };
-    } else {
-      return {
-        type: "SINGLE",
-        startDate: format(initialDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
-        shortDate: format(initialDate, "dd/MM/yyyy"),
-        totalInstances: reservation.totalInstances || 1
-      };
-    }
-  } catch (error) {
-    console.error("Error formatting reservation:", error);
-    return {
-      type: "SINGLE",
-      startDate: "Fecha inválida",
-      shortDate: "Fecha inválida",
-      totalInstances: 1
-    };
-  }
-};
-
-const getWeekDayNames = (weekDays: number[]) => {
-  const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-  return weekDays.map(day => days[day]);
-};
-
-/* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ModifyReservationModal({
   reservation,
   isOpen,
@@ -97,13 +57,13 @@ export function ModifyReservationModal({
 }: ModifyReservationModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [tab, setTab] = useState<"details" | "client" | "actions">("details");
 
   if (!reservation) return null;
 
-  /* ---------- Helpers ---------- */
   const reservationInfo = formatReservationInfo(reservation);
   const isRange = reservationInfo.type === "RANGE";
-  
+
   const isReservationActive = () => {
     const now = new Date();
     const firstSlot = reservation.timeslots?.[0] ?? reservation.timeSlot;
@@ -119,7 +79,6 @@ export function ModifyReservationModal({
     isReservationActive() &&
     ["PENDIENTE", "CONFIRMADA"].includes(reservation.reservationState.state);
 
-  /* ---------- Acciones ---------- */
   const handleCancelReservation = async () => {
     setIsLoading(true);
     try {
@@ -139,402 +98,537 @@ export function ModifyReservationModal({
     onReservationUpdated(reservation.id);
   };
 
-  /* ---------- Render ---------- */
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <Settings className="h-5 w-5 text-blue-600" />
-            <span>Gestionar Reserva</span>
-            <Badge
-              variant="outline"
-              className={`text-xs font-medium ${
-                isRange 
-                  ? "bg-purple-100 text-purple-700 border-purple-200" 
-                  : "bg-blue-100 text-blue-700 border-blue-200"
-              }`}
-            >
-              {isRange ? (
-                <>
-                  <Repeat className="w-3 h-3 mr-1" />
-                  RANGO
-                </>
-              ) : (
-                <>
-                  <CalendarDays className="w-3 h-3 mr-1" />
-                  ÚNICA
-                </>
-              )}
-            </Badge>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-4">
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Settings className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Gestionar Reserva</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  ID: #{reservation.id} • {reservation.subScenario.name}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={`text-xs font-medium ${
+                  isRange
+                    ? "bg-purple-100 text-purple-700 border-purple-200"
+                    : "bg-blue-100 text-blue-700 border-blue-200"
+                }`}
+              >
+                {isRange ? (
+                  <>
+                    <CalendarRange className="w-3 h-3 mr-1" />
+                    RANGO
+                  </>
+                ) : (
+                  <>
+                    <CalendarDays className="w-3 h-3 mr-1" />
+                    ÚNICA
+                  </>
+                )}
+              </Badge>
+              <ClickableStatusBadge
+                statusId={reservation.reservationState.id}
+              />
+            </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Información de la reserva */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
+<div className="flex-1 overflow-y-auto">
+  <Tabs
+    value={tab}
+    onValueChange={(value) =>
+      setTab(value as "details" | "client" | "actions")
+    }
+    className="w-full"
+  >
+    {/* ───────────── TAB LIST ───────────── */}
+    <TabsList className="flex justify-center gap-x-6 mb-6">
+      <TabsTrigger value="details" className={tabTrigger({ active: true })}>
+        <Info className="h-4 w-4" />
+        Detalles de la reserva
+      </TabsTrigger>
+      <TabsTrigger value="client" className={tabTrigger({ active: true })}>
+        <User className="h-4 w-4" />
+        Detalles del cliente
+      </TabsTrigger>
+      <TabsTrigger value="actions" className={tabTrigger({ active: true })}>
+        <Zap className="h-4 w-4" />
+        Acciones
+      </TabsTrigger>
+    </TabsList>
+
+    {/* ───────────── CONTENIDOS ANIMADOS ───────────── */}
+    <div className="relative">
+      <AnimatePresence mode="wait">
+        {/* ---------- DETAILS ---------- */}
+        {tab === "details" && (
+          <motion.div
+            key="details"
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            {/* Resumen de la reserva */}
+            <Card className="border-l-4 border-l-blue-500">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-teal-600" />
-                    {reservation.subScenario.name}
-                  </CardTitle>
-                  <ClickableStatusBadge
-                    statusId={reservation.reservationState.id}
-                    reservationId={reservation.id}
-                    reservationInfo={{
-                      userEmail: reservation.user?.email,
-                      date: isRange ? reservationInfo.shortRange : reservationInfo.shortDate
-                    }}
-                    onStatusChange={handleStatusChange}
-                  />
+                  <CardTitle className="text-lg">Resumen de la Reserva</CardTitle>
+                  <Badge
+                    variant="outline"
+                    className={
+                      reservation.subScenario.hasCost
+                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        : "bg-green-50 text-green-700 border-green-200"
+                    }
+                  >
+                    {reservation.subScenario.hasCost ? "De pago" : "Gratuito"}
+                  </Badge>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {/* Información del tipo de reserva */}
-                <div className={`p-4 rounded-lg border-2 ${
-                  isRange 
-                    ? "bg-purple-50 border-purple-200" 
-                    : "bg-blue-50 border-blue-200"
-                }`}>
+                {/* Información de fechas */}
+                <div
+                  className={`p-4 rounded-lg border-2 ${
+                    isRange
+                      ? "bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200"
+                      : "bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200"
+                  }`}
+                >
                   <div className="flex items-center gap-3 mb-3">
                     {isRange ? (
                       <CalendarRange className="h-6 w-6 text-purple-600" />
                     ) : (
                       <CalendarDays className="h-6 w-6 text-blue-600" />
                     )}
-
-                {/* Datos del escenario */}
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <MapPin className="text-teal-600 h-4 w-4" />
-                        Escenario Principal
-                      </h3>
-                      <p className="text-gray-600 text-sm pt-1">
-                        {reservation.subScenario.scenario?.name}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <User className="text-teal-600 h-4 w-4" />
-                        Tipo
-                      </h3>
-                      <Badge
-                        variant="outline"
-                        className={
-                          reservation.subScenario.hasCost
-                            ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                            : "bg-green-50 text-green-700 border-green-200"
-                        }
+                      <h3
+                        className={`font-semibold ${
+                          isRange ? "text-purple-800" : "text-blue-800"
+                        }`}
                       >
-                        {reservation.subScenario.hasCost ? "De pago" : "Gratuito"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-                      <MapPin className="text-teal-600 h-4 w-4" />
-                      Dirección
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      {reservation.subScenario.scenario?.address}
-                    </p>
-                    {reservation.subScenario.scenario?.neighborhood?.name && (
-                      <p className="text-gray-500 text-xs mt-1">
-                        Barrio: {reservation.subScenario.scenario.neighborhood.name}
-                        {reservation.subScenario.scenario.neighborhood.commune && (
-                          <> · {reservation.subScenario.scenario.neighborhood.commune.name}</>
-                        )}
-                        {reservation.subScenario.scenario.neighborhood.commune?.city && (
-                          <> · {reservation.subScenario.scenario.neighborhood.commune.city.name}</>
-                        )}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                    <div>
-                      <h3 className={`font-semibold ${
-                        isRange ? "text-purple-800" : "text-blue-800"
-                      }`}>
                         {isRange ? "Reserva de Rango" : "Reserva Única"}
                       </h3>
-                      <p className={`text-sm ${
-                        isRange ? "text-purple-600" : "text-blue-600"
-                      }`}>
-                        {isRange 
-                          ? `${reservationInfo.durationDays} días · ${reservationInfo.totalInstances} instancias`
-                          : `1 día · ${reservationInfo.totalInstances} instancia${reservationInfo.totalInstances > 1 ? 's' : ''}`
-                        }
+                      <p
+                        className={`text-sm ${
+                          isRange ? "text-purple-600" : "text-blue-600"
+                        }`}
+                      >
+                        {isRange
+                          ? `${reservationInfo.durationDays} días • ${reservationInfo.totalInstances} instancias`
+                          : `1 día • ${reservationInfo.totalInstances} instancia${
+                              reservationInfo.totalInstances > 1 ? "s" : ""
+                            }`}
                       </p>
                     </div>
                   </div>
 
-                  {/* Fechas */}
-                  <div className="space-y-2">
-                    {isRange ? (
-                      <>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div>
-                            <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
-                              Fecha de inicio
-                            </span>
-                            <p className="text-sm text-purple-800 capitalize">
-                              {reservationInfo.startDate}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
-                              Fecha de fin
-                            </span>
-                            <p className="text-sm text-purple-800 capitalize">
-                              {reservationInfo.endDate}
-                            </p>
-                          </div>
-                          {reservationInfo.weekDayNames && reservationInfo.weekDayNames.length > 0 && (
-                            <div>
-                              <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
-                                Días de la semana
-                              </span>
-                              <p className="text-sm text-purple-800">
-                                {reservationInfo.weekDayNames.join(", ")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span
+                        className={`text-xs font-medium uppercase tracking-wide ${
+                          isRange ? "text-purple-700" : "text-blue-700"
+                        }`}
+                      >
+                        {isRange ? "Fecha de inicio" : "Fecha"}
+                      </span>
+                      <p
+                        className={`text-sm font-medium capitalize ${
+                          isRange ? "text-purple-800" : "text-blue-800"
+                        }`}
+                      >
+                        {reservationInfo.startDate}
+                      </p>
+                    </div>
+
+                    {isRange && (
                       <div>
-                        <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">
-                          Fecha
+                        <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                          Fecha de fin
                         </span>
-                        <p className="text-sm text-blue-800 capitalize">
-                          {reservationInfo.startDate}
+                        <p className="text-sm font-medium text-purple-800 capitalize">
+                          {reservationInfo.endDate}
                         </p>
                       </div>
                     )}
                   </div>
+
+                  {isRange &&
+                    (reservationInfo.weekDayNames?.length ?? 0) > 0 && (
+                      <div className="mt-3 pt-3 border-t border-purple-200">
+                        <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                          Días de la semana
+                        </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {reservationInfo.weekDayNames?.map((day, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs bg-purple-200 text-purple-800"
+                            >
+                              {day}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
 
-                {/* Información de horarios */}
-                {reservation.timeslots && reservation.timeslots.length > 0 && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                {/* Horarios */}
+                {reservation.timeslots?.length > 0 && (
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <Clock className="h-5 w-5 text-green-600" />
                       <h3 className="font-semibold text-green-800">
                         Horarios {isRange ? "por día" : ""}
                       </h3>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      {reservation.timeslots.map((slot, index) => (
-                        <div 
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {reservation.timeslots.map((slot) => (
+                        <div
                           key={slot.id}
-                          className="bg-white p-2 rounded border border-green-200"
+                          className="bg-white p-3 rounded-lg border border-green-200 shadow-sm"
                         >
-                          <span className="text-sm font-medium text-green-800">
-                            {slot.startTime} - {slot.endTime}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-800">
+                              {slot.startTime} - {slot.endTime}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
-                    
-                    <p className="text-xs text-green-600 mt-2">
-                      Total: {reservation.timeslots.length} horario{reservation.timeslots.length > 1 ? 's' : ''}
-                      {isRange && ` × ${reservationInfo.durationDays} días`}
-                    </p>
-                  </div>
-                )}
 
-                {/* Comentarios */}
-                {reservation.comments && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h4 className="font-medium text-blue-800 mb-1 flex items-center gap-1">
-                      <Info className="h-4 w-4" />
-                      Comentarios
-                    </h4>
-                    <p className="text-sm text-blue-700 whitespace-pre-wrap">
-                      {reservation.comments}
-                    </p>
+                    <div className="mt-3 pt-3 border-t border-green-200">
+                      <p className="text-xs text-green-600">
+                        <strong>Total:</strong> {reservation.timeslots.length}{" "}
+                        horario
+                        {reservation.timeslots.length > 1 ? "s" : ""}
+                        {isRange && ` × ${reservationInfo.durationDays} días`}
+                      </p>
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Información del cliente */}
+            {/* Información del escenario */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <User className="h-4 w-4 text-teal-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5 text-teal-600" />
+                  Información del Escenario
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">
+                      Escenario Principal
+                    </h4>
+                    <p className="text-gray-900 font-medium">
+                      {reservation.subScenario.scenario?.name}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">
+                      Sub-escenario
+                    </h4>
+                    <p className="text-gray-900 font-medium">
+                      {reservation.subScenario.name}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-teal-600" />
+                    Dirección
+                  </h4>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-gray-900 font-medium">
+                      {reservation.subScenario.scenario?.address}
+                    </p>
+                    {reservation.subScenario.scenario?.neighborhood?.name && (
+                      <p className="text-gray-600 text-sm mt-1">
+                        {reservation.subScenario.scenario.neighborhood.name}
+                        {reservation.subScenario.scenario.neighborhood.commune && (
+                          <>
+                            {" "}
+                            •{" "}
+                            {
+                              reservation.subScenario.scenario.neighborhood
+                                .commune.name
+                            }
+                          </>
+                        )}
+                        {reservation.subScenario.scenario.neighborhood.commune
+                          ?.city && (
+                          <>
+                            {" "}
+                            •{" "}
+                            {
+                              reservation.subScenario.scenario.neighborhood
+                                .commune.city.name
+                            }
+                          </>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comentarios */}
+                {reservation.comments && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      Comentarios
+                    </h4>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                        {reservation.comments}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* ---------- CLIENT ---------- */}
+        {tab === "client" && (
+          <motion.div
+            key="client"
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-teal-600" />
                   Información del Cliente
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      Nombre completo
-                    </h4>
-                    <p className="text-sm text-gray-900">
-                      {reservation.user
-                        ? `${reservation.user.firstName} ${reservation.user.lastName}`
-                        : "Cliente sin nombre"}
-                    </p>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Nombre completo
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <p className="text-gray-900 font-medium">
+                          {reservation.user
+                            ? `${reservation.user.firstName} ${reservation.user.lastName}`
+                            : "Cliente sin nombre"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Correo electrónico
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <p className="text-gray-900 font-medium">
+                          {reservation.user?.email || "Sin email"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Teléfono
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <p className="text-gray-900 font-medium">
+                          {reservation.user?.phone || "Sin teléfono"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      Correo electrónico
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      Resumen del Cliente
                     </h4>
-                    <p className="text-sm text-gray-900">
-                      {reservation.user?.email || "Sin email"}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      Teléfono
-                    </h4>
-                    <p className="text-sm text-gray-900">
-                      {reservation.user?.phone || "Sin teléfono"}
-                    </p>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <p>
+                        • Reserva activa desde{" "}
+                        {new Date(
+                          reservation.initialDate
+                        ).toLocaleDateString("es-ES")}
+                      </p>
+                      <p>• Estado: {reservation.reservationState.state}</p>
+                      <p>
+                        • Tipo:{" "}
+                        {reservation.subScenario.hasCost
+                          ? "Cliente de pago"
+                          : "Cliente gratuito"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
+        )}
 
-          {/* Panel de acciones */}
-          <div className="space-y-6">
+        {/* ---------- ACTIONS ---------- */}
+        {tab === "actions" && (
+          <motion.div
+            key="actions"
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-6"
+          >
             {canModify ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-blue-600" />
-                    Acciones Disponibles
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Cancelar */}
-                  {!showCancelConfirm ? (
-                    <div className="border border-red-200 rounded-lg p-4 hover:bg-red-50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <CalendarX className="h-5 w-5 text-red-600 mt-0.5" />
-                        <div className="flex-1">
-                          <h5 className="font-medium text-red-700 mb-1">
-                            Cancelar Reserva
-                          </h5>
-                          <p className="text-sm text-gray-600 mb-3">
-                            Cancela tu reserva completamente. Esta acción no se
-                            puede deshacer.
-                          </p>
+              <div className="space-y-6">
+                {/* Cancelar reserva */}
+                <Card className="border-red-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-700">
+                      <CalendarX className="h-5 w-5" />
+                      Cancelar Reserva
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!showCancelConfirm ? (
+                      <div className="space-y-4">
+                        <p className="text-gray-600">
+                          Cancela tu reserva completamente. Esta acción no se
+                          puede deshacer.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="border-red-200 text-red-700 hover:bg-red-50 w-full"
+                          onClick={() => setShowCancelConfirm(true)}
+                        >
+                          <CalendarX className="h-4 w-4 mr-2" />
+                          Cancelar Reserva
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <AlertTriangle className="h-5 w-5 text-red-600" />
+                          <div>
+                            <h5 className="font-medium text-red-700">
+                              Confirmar Cancelación
+                            </h5>
+                            <p className="text-sm text-red-600">
+                              ¿Estás seguro de que quieres cancelar esta reserva?
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            variant="destructive"
+                            onClick={handleCancelReservation}
+                            disabled={isLoading}
+                            className="flex-1"
+                          >
+                            {isLoading ? "Cancelando..." : "Sí, Cancelar"}
+                          </Button>
                           <Button
                             variant="outline"
-                            size="sm"
-                            className="border-red-200 text-red-700 hover:bg-red-100 w-full"
-                            onClick={() => setShowCancelConfirm(true)}
+                            onClick={() => setShowCancelConfirm(false)}
+                            className="flex-1"
                           >
-                            Cancelar Reserva
+                            No, Mantener
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="border-2 border-red-200 rounded-lg p-4 bg-red-50">
-                      <div className="flex items-center gap-2 mb-3">
-                        <AlertTriangle className="h-5 w-5 text-red-600" />
-                        <h5 className="font-medium text-red-700">
-                          Confirmar Cancelación
-                        </h5>
-                      </div>
-                      <p className="text-sm text-red-700 mb-4">
-                        ¿Estás seguro de que quieres cancelar esta reserva? Esta
-                        acción no se puede deshacer.
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Separator />
+
+                {/* Información sobre modificaciones */}
+                <Card className="border-blue-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                      <Info className="h-5 w-5" />
+                      Cambio de Fecha u Horario
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-blue-800 text-sm leading-relaxed">
+                        <strong>No es posible modificar</strong> la fecha u
+                        horario de una reserva existente. Para cambiar estos
+                        datos, debes <strong>cancelar esta reserva</strong> y
+                        crear una nueva.
                       </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleCancelReservation}
-                          disabled={isLoading}
-                          className="flex-1"
-                        >
-                          {isLoading ? "Cancelando..." : "Sí, Cancelar"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowCancelConfirm(false)}
-                          className="flex-1"
-                        >
-                          No, Mantener
-                        </Button>
-                      </div>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-600">
+                        Crear nueva reserva para este escenario
+                      </span>
+                      <Link
+                        href={`/scenario/${reservation.subScenarioId}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm underline"
+                      >
+                        Ir al escenario →
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Separator />
-
-                  {/* Info cambio de fecha/horario */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                {/* Aviso importante */}
+                <Card className="border-amber-200">
+                  <CardContent className="pt-6">
                     <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                      <div className="flex-1">
-                        <h5 className="font-medium text-blue-800 mb-2">
-                          Cambio de Fecha u Horario
-                        </h5>
-                        <p className="text-sm text-blue-700 leading-relaxed">
-                          <strong>No es posible modificar</strong> la fecha u
-                          horario de una reserva existente. Para cambiar estos
-                          datos, debes <strong>cancelar esta reserva</strong> y
-                          crear una nueva con la fecha y horario que prefieras.
-                        </p>
-                        <div className="mt-3 text-xs text-blue-600">
-                          ℹ️ Puedes crear una nueva reserva desde la página
-                          principal de
-                          <Link
-                            href={`/scenario/${reservation.subScenarioId}`}
-                            className="text-blue-600 hover:text-blue-800 font-medium underline ml-1"
-                          >
-                            escenarios
-                          </Link>
-                          .
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Aviso importante */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+                      <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
                       <div>
                         <h6 className="font-medium text-amber-800 mb-1">
                           Importante
                         </h6>
-                        <p className="text-xs text-amber-700 leading-relaxed">
+                        <p className="text-sm text-amber-700 leading-relaxed">
                           Tampoco es posible cambiar de escenario en una reserva
-                          existente. Para reservar otro escenario, crea una
-                          nueva reserva desde el inicio.
+                          existente. Para reservar otro escenario, crea una nueva
+                          reserva desde el inicio.
                         </p>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             ) : (
-              /* Reserva no modificable */
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-center">
-                    <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h4 className="font-medium text-gray-700 mb-2">
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h4 className="font-medium text-gray-700 mb-2 text-lg">
                       Reserva No Modificable
                     </h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-gray-600">
                       {reservation.reservationState.state === "CANCELADA"
                         ? "Esta reserva ya ha sido cancelada."
                         : "Esta reserva ya ha pasado y no se puede modificar."}
@@ -543,11 +637,20 @@ export function ModifyReservationModal({
                 </CardContent>
               </Card>
             )}
-          </div>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  </Tabs>
+</div>
+
 
         {/* Footer */}
-        <div className="flex justify-end pt-6 border-t">
+        <div className="flex-shrink-0 flex justify-between items-center pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+          <div className="text-sm text-gray-500">
+            Reserva #{reservation.id} • Última actualización:{" "}
+            {new Date().toLocaleDateString("es-ES")}
+          </div>
           <Button variant="outline" onClick={onClose} className="px-6">
             <X className="h-4 w-4 mr-2" />
             Cerrar

@@ -7,7 +7,7 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import {
   DropdownMenu,
@@ -25,12 +25,10 @@ import { useMemo, useState } from "react";
 import { cn } from "@/utils/utils";
 import { toast } from "sonner";
 
-
-
 interface ClickableStatusBadgeProps {
   /** id actual de la reserva – viene del backend */
   statusId: number;
-  reservationId: number;
+  reservationId?: number;
   /** Datos completos de la reserva para mostrar en confirmación */
   reservationInfo?: {
     userEmail?: string;
@@ -81,7 +79,7 @@ export function ClickableStatusBadge({
 
   /** 2. Estado actual (puede ser undefined mientras carga) */
   const currentState: ReservationStateDto | undefined = states.find(
-    (s) => s.id === statusId,
+    (s) => s.id === statusId
   );
   /** 3. Determinar clave del catálogo */
   const keyCurrent = currentState?.state ?? "PENDIENTE";
@@ -108,7 +106,7 @@ export function ClickableStatusBadge({
         tw: "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300",
         dotTw: "bg-gray-500",
       },
-    [keyCurrent],
+    [keyCurrent]
   );
 
   /** 5. Mostrar diálogo de confirmación */
@@ -129,10 +127,12 @@ export function ClickableStatusBadge({
 
     try {
       setIsUpdating(true);
-      await ReservationService.updateReservationState(
-        reservationId,
-        selectedState,
-      );
+      reservationId
+        ? await ReservationService.updateReservationState(
+            reservationId,
+            selectedState
+          )
+        : null;
 
       const state = states.find((s) => s.id === selectedState);
       const key = (state as any).name ?? (state as any).state ?? "";
@@ -164,11 +164,14 @@ export function ClickableStatusBadge({
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger disabled={loading || isUpdating} asChild>
+        <DropdownMenuTrigger
+          disabled={loading || isUpdating || !reservationId}
+          asChild
+        >
           <Badge
             className={cn(
               "text-xs px-2 py-0.5 cursor-pointer border",
-              currentCatalog.tw,
+              currentCatalog.tw
             )}
           >
             {isUpdating ? (
@@ -204,7 +207,7 @@ export function ClickableStatusBadge({
                   onClick={() => showConfirmDialog(state.id)}
                   className={cn(
                     "text-xs flex items-center",
-                    state.id === statusId && "font-medium",
+                    state.id === statusId && "font-medium"
                   )}
                 >
                   {state.id === statusId && <Check className="h-3 w-3 mr-1" />}
@@ -254,13 +257,13 @@ export function ClickableStatusBadge({
                     className={cn(
                       "font-semibold px-1.5 py-0.5 rounded-md text-sm",
                       selectedStateInfo.key === "CONFIRMADA" &&
-                      "bg-green-100 text-green-800",
+                        "bg-green-100 text-green-800",
                       selectedStateInfo.key === "CANCELADA" &&
-                      "bg-red-100 text-red-800",
+                        "bg-red-100 text-red-800",
                       selectedStateInfo.key === "PENDIENTE" &&
-                      "bg-yellow-100 text-yellow-800",
+                        "bg-yellow-100 text-yellow-800",
                       selectedStateInfo.key === "RECHAZADA" &&
-                      "bg-gray-100 text-gray-800",
+                        "bg-gray-100 text-gray-800"
                     )}
                   >
                     {selectedStateInfo.label.toLowerCase()}
@@ -296,13 +299,13 @@ export function ClickableStatusBadge({
               className={cn(
                 "text-white w-full h-9 text-sm font-medium",
                 selectedStateInfo?.key === "CONFIRMADA" &&
-                "bg-green-600 hover:bg-green-700",
+                  "bg-green-600 hover:bg-green-700",
                 selectedStateInfo?.key === "CANCELADA" &&
-                "bg-red-600 hover:bg-red-700",
+                  "bg-red-600 hover:bg-red-700",
                 selectedStateInfo?.key === "PENDIENTE" &&
-                "bg-yellow-600 hover:bg-yellow-700",
+                  "bg-yellow-600 hover:bg-yellow-700",
                 selectedStateInfo?.key === "RECHAZADA" &&
-                "bg-gray-600 hover:bg-gray-700",
+                  "bg-gray-600 hover:bg-gray-700"
               )}
             >
               Confirmar cambio
