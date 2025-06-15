@@ -1,9 +1,7 @@
-// 'use client';
-
 import { PaginatedReservations } from '@/entities/reservation/model/types';
 import { UserReservationsGuard } from '@/features/auth';
+import { ReservationsContainer } from '@/features/reservations/components/organisms/reservations-container.component';
 import { MainHeader } from '@/shared/components/organisms/main-header';
-import { ReservationsContainer } from '@/widgets/reservations-list';
 
 // Updated interface to include access metadata from DDD use case
 interface ReservationsPageProps {

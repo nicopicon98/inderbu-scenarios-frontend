@@ -65,16 +65,6 @@ export const DateRangePicker = ({
             </Badge>
           )}
         </div>
-        {dateRange.from && (
-          <div className="mb-2 text-sm text-gray-600">
-            <span>Debe ser posterior al {formatDateSafe(dateRange.from)}</span>
-            {!dateRange.to && (
-              <span className="text-green-600 ml-2">
-                • Sugerencia: {formatDateSafe(getNextDay(dateRange.from))}
-              </span>
-            )}
-          </div>
-        )}
         <SimpleCalendar
           selectedDate={dateRange.to || (dateRange.from ? getNextDay(dateRange.from) : getTodayISO())}
           onDateChange={onEndDateChange}

@@ -350,7 +350,6 @@ export const CreateReservationModal = ({
     }
   };
 
-  /* ---------- JSX ---------- */
   return (
     <Modal
       open={open}

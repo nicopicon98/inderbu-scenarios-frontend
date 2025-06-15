@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useReservationsWidget } from '../model/use-reservation-widget.hook';
+import { useReservationsWidget } from '../../hooks/use-reservation-widget.hook';
 
 // UI Components - reusing existing ones
 import { Pagination } from '@/shared/components/organisms/pagination';
@@ -308,9 +308,6 @@ function WelcomeBanner() {
   return (
     <div className="mb-8">
       <div className="bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50 border-2 border-dashed border-blue-300 rounded-xl p-6 relative overflow-hidden">
-        <div className="absolute top-2 right-2 text-4xl opacity-20">✨</div>
-        <div className="absolute bottom-2 left-2 text-3xl opacity-20">🎆</div>
-
         <div className="relative z-10">
           <div className="flex items-start gap-4">
             <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-full p-3 shadow-lg">

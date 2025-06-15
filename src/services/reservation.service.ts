@@ -6,13 +6,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export interface CreateReservationDto {
   subScenarioId: number;
   timeSlotId: number;
-  reservationDate: string;           // YYYY-MM-DD
+  reservationDate: string; // YYYY-MM-DD
   comments?: string;
 }
 
 export interface CreateReservationResponseDto {
   id: number;
-  reservationDate: string;           // alias de initialDate
+  reservationDate: string; // alias de initialDate
   subScenarioId: number;
   userId: number;
   timeSlotId: number;
@@ -30,8 +30,8 @@ export interface ReservationStateDto {
 /* ---------- Timeslot simplificado ---------- */
 export interface TimeSlotDto {
   id: number;
-  startTime: string;                 // HH:mm
-  endTime: string;                   // HH:mm
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
 }
 
 export interface TimeslotResponseDto extends TimeSlotDto {
@@ -45,14 +45,14 @@ export interface ReservationDto {
   type: "SINGLE" | "RANGE";
   subScenarioId: number;
   userId: number;
-  initialDate: string;               // YYYY-MM-DD
-  finalDate: string | null;          // YYYY-MM-DD | null
-  weekDays: number[] | null;         // 0-6 (lun-dom) | null
+  initialDate: string; // YYYY-MM-DD
+  finalDate: string | null; // YYYY-MM-DD | null
+  weekDays: number[] | null; // 0-6 (lun-dom) | null
   comments?: string | null;
   reservationStateId: number;
   totalInstances: number;
-  createdAt: string;                 // ISO
-  updatedAt: string;                 // ISO
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
 
   /* Asociaciones */
   subScenario: {
@@ -82,9 +82,9 @@ export interface ReservationDto {
   timeslots: TimeSlotDto[];
 
   /* ---- SHIMS DE COMPATIBILIDAD ---- */
-  reservationDate?: string;          // = initialDate
-  timeSlot?: TimeSlotDto;            // primer slot
-  timeSlotId?: number;               // id del primer slot
+  reservationDate?: string; // = initialDate
+  timeSlot?: TimeSlotDto; // primer slot
+  timeSlotId?: number; // id del primer slot
 }
 
 /* ───────────────────────────────  HELPERS PRIVADOS  ─────────────────────────────────────── */
@@ -95,7 +95,7 @@ function normalizeReservation(api: any): ReservationDto {
 
   return {
     ...api,
-    reservationDate: api.initialDate,   // alias para UI actual
+    reservationDate: api.initialDate, // alias para UI actual
     timeSlot: firstSlot,
     timeSlotId: firstSlot?.id,
     subScenario: {
@@ -126,7 +126,7 @@ function buildFilterURL(base: string, filters: Record<string, any>) {
 /** Fetch genérico para catálogos (escenarios, áreas, etc.). */
 async function genericListFetch<T = any>(
   endpoint: string,
-  mapper: (raw: any) => T = (x) => x,
+  mapper: (raw: any) => T = (x) => x
 ): Promise<T[]> {
   const res = await fetch(`${API_URL}${endpoint}`, {
     credentials: "include",
@@ -142,11 +142,11 @@ const ReservationService = {
   /* ---------- Disponibilidad de slots ---------- */
   async getAvailableTimeSlots(
     subScenarioId: number,
-    date: string,
+    date: string
   ): Promise<TimeslotResponseDto[]> {
     const res = await fetch(
       `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
-      { credentials: "include" },
+      { credentials: "include" }
     );
     if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
     const { data } = await res.json();
@@ -155,7 +155,7 @@ const ReservationService = {
 
   /* ---------- Crear reserva ---------- */
   async createReservation(
-    reservationData: CreateReservationDto,
+    reservationData: CreateReservationDto
   ): Promise<CreateReservationResponseDto> {
     const res = await fetch(`${API_URL}/reservations`, {
       method: "POST",
@@ -182,7 +182,9 @@ const ReservationService = {
   },
 
   /* ---------- Todas las reservas (admin) ---------- */
-  async getAllReservations(filters: Record<string, any> = {}): Promise<ReservationDto[]> {
+  async getAllReservations(
+    filters: Record<string, any> = {}
+  ): Promise<ReservationDto[]> {
     const url = buildFilterURL(`${API_URL}/reservations`, filters);
     const res = await fetch(url, {
       credentials: "include",
@@ -194,9 +196,16 @@ const ReservationService = {
   },
 
   /* ---------- Con paginación ---------- */
-  async getAllReservationsWithPagination(filters: Record<string, any> = {}): Promise<{
+  async getAllReservationsWithPagination(
+    filters: Record<string, any> = {}
+  ): Promise<{
     data: ReservationDto[];
-    meta: { page: number; limit: number; totalItems: number; totalPages: number };
+    meta: {
+      page: number;
+      limit: number;
+      totalItems: number;
+      totalPages: number;
+    };
   }> {
     const url = buildFilterURL(`${API_URL}/reservations`, filters);
     const res = await fetch(url, {
@@ -222,17 +231,14 @@ const ReservationService = {
   /* ---------- Actualizar estado (legacy) ---------- */
   async updateReservationState(
     reservationId: number,
-    stateId: number,
+    stateId: number
   ): Promise<ReservationDto> {
-    const res = await fetch(
-      `${API_URL}/reservations/${reservationId}/state`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stateId }),
-      },
-    );
+    const res = await fetch(`${API_URL}/reservations/${reservationId}/state`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stateId }),
+    });
     if (!res.ok) {
       const err = await res.json().catch(() => null);
       throw new Error(err?.message ?? `Error ${res.status}`);
@@ -242,17 +248,24 @@ const ReservationService = {
   },
 
   /* ---------- Filtros generales ---------- */
-  getAllScenarios:     () => genericListFetch<{ id: number; name: string }>("/scenarios"),
-  getAllActivityAreas: () => genericListFetch<{ id: number; name: string }>("/activity-areas"),
-  getAllNeighborhoods: () => genericListFetch<{ id: number; name: string }>("/neighborhoods"),
-  getAllUsers:         () => genericListFetch<
-                              { id: number; firstName: string; lastName: string; email: string }
-                            >("/users", (u) => ({
-                              id: u.id,
-                              firstName: u.firstName ?? u.first_name ?? "",
-                              lastName:  u.lastName  ?? u.last_name  ?? "",
-                              email:     u.email     ?? "",
-                            })),
+  getAllScenarios: () =>
+    genericListFetch<{ id: number; name: string }>("/scenarios"),
+  getAllActivityAreas: () =>
+    genericListFetch<{ id: number; name: string }>("/activity-areas"),
+  getAllNeighborhoods: () =>
+    genericListFetch<{ id: number; name: string }>("/neighborhoods"),
+  getAllUsers: () =>
+    genericListFetch<{
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+    }>("/users", (u) => ({
+      id: u.id,
+      firstName: u.firstName ?? u.first_name ?? "",
+      lastName: u.lastName ?? u.last_name ?? "",
+      email: u.email ?? "",
+    })),
 };
 
 export default ReservationService;

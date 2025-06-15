@@ -3,8 +3,8 @@ import {
   ScenarioNotFoundError,
   ScenarioAccessDeniedError 
 } from '@/entities/scenario/domain/scenario-detail.domain';
+import { ScenarioDetailPage } from '@/features/scenarios/detail/components/pages/ScenarioDetailPage';
 import { createScenarioDetailContainer } from '@/features/scenarios/detail/di';
-import { ScenarioDetailPage } from '@/templates/scenario-detail/ui';
 import { redirect, notFound } from 'next/navigation';
 interface PageProps {
   params: { id: string };
@@ -25,7 +25,7 @@ export default async function ScenarioDetailRoute({ params }: PageProps) {
 
     // Atomic Design: Render page template with clean separation
     // PASS SERVER ACTION AS PROP
-    return <ScenarioDetailPage 
+    return <ScenarioDetailPage
       initialData={result} 
     />;
 

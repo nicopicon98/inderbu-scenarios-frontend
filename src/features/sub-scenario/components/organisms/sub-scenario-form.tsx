@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageUploader } from "@/components/image-uploader";
+import { ImageUploader } from "@/shared/components/organisms/image-uploader";
 import { ActivityArea, Scenario } from "@/services/api";
 import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";

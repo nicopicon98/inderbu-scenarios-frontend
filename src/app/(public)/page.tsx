@@ -1,7 +1,7 @@
 import { InvalidFiltersError, SearchLimitExceededError } from '@/entities/sub-scenario/domain/sub-scenario.domain';
 import { HomeDataResponse } from '@/features/home/data/application/get-home-data-use-case';
 import { createHomeContainer } from '@/features/home/di/home.container';
-import { HomePage } from '@/templates/home/ui';
+import { HomePage } from '@/features/home/components/pages/home.page';
 import { redirect } from 'next/navigation';
 
 interface HomePageProps {
@@ -25,11 +25,6 @@ export default async function HomeRoute(props: HomePageProps) {
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
     const result: HomeDataResponse = await homeService.getHomeData(searchParams);
-
-    console.log(`SSR: Home data loaded successfully with data ${result}`);
-    console.log(`Results: ${result.subScenarios.data.length} scenarios, ${result.activityAreas.length} areas, ${result.neighborhoods.length} neighborhoods`);
-    console.log(`Filters: ${result.appliedFilters.appliedFiltersList.join(', ') || 'None'}`);
-    console.log(`Load time: ${result.metadata.loadTime}ms`);
 
     // Atomic Design: Render page template with clean separation
     return <HomePage initialData={result} />;

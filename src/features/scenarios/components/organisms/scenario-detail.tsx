@@ -1,9 +1,9 @@
 "use client";
 
+import { FlexibleScheduler } from "@/features/reservations/components/flexible-scheduler";
 import { IGetScenarioByIdResponse } from "../../interfaces/get-scenario-by-id-res.interface";
 import { ScenarioImageCarousel } from "./scenario-image-carousel";
 import { ScenarioInfoCard } from "./scenario-info-card";
-import FlexibleScheduler from "@/components/flexible-scheduler";
 
 
 interface Props {
@@ -24,7 +24,7 @@ export function ScenarioDetail({ subScenario }: Props) {
 
       {/* Configurador de reservas - Full width abajo */}
       <div className="w-full">
-        <FlexibleScheduler 
+        <FlexibleScheduler
           subScenarioId={subScenario.id} 
         />
       </div>

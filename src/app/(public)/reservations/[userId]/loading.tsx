@@ -128,12 +128,6 @@ export default function ReservationsLoading() {
         <div className="mb-8">
           <div className="relative bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50 border-2 border-dashed border-blue-200 rounded-xl p-6 overflow-hidden glass-effect">
             {/* Floating elements */}
-            <FloatingElement delay={0}>
-              <div className="absolute top-2 right-2 text-2xl">✨</div>
-            </FloatingElement>
-            <FloatingElement delay={0.5}>
-              <div className="absolute bottom-2 left-2 text-xl">🎆</div>
-            </FloatingElement>
             
             <div className="flex items-start gap-4">
               <div className="relative">
