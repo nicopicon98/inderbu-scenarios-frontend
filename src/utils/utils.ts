@@ -13,6 +13,19 @@ export function getTodayLocalISO(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+export const getStatusBadgeClass = (state?: string) => {
+    switch (state) {
+      case "PENDIENTE":
+        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+      case "CONFIRMADA":
+        return "bg-green-100 text-green-800 border-green-300";
+      case "CANCELADA":
+        return "bg-red-100 text-red-800 border-red-300";
+      default:
+        return "bg-blue-100 text-blue-800 border-blue-300";
+    }
+  };
+
 export function decodeJWT(token: string) {
   try {
     const base64Url = token.split(".")[1];

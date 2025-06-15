@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { formatDate, reservationStateById } from "@/utils/reservation.utils";
+import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 import type { ReservationDto } from "@/services/reservation.service";
+import { formatDate, reservationStateById } from "@/utils/utils";
 import { FileEdit, MoreHorizontal } from "lucide-react";
 import { DataTable } from "@/shared/ui/data-table";
 import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
-import { ClickableStatusBadge } from "../molecules/clickable-status-badge";
 
 
 interface ReservationsTableProps {

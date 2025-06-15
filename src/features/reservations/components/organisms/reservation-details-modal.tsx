@@ -19,12 +19,12 @@ import {
   User,
 } from "lucide-react";
 import type { ReservationDto } from "@/services/reservation.service";
-import { formatDate } from "@/utils/reservation.utils";
 import { Button } from "@/shared/ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { formatDate, getStatusBadgeClass } from "@/utils/utils";
 
 
 interface ReservationDetailsModalProps {
@@ -42,20 +42,6 @@ export const ReservationDetailsModal = ({
   useEffect(() => {
     setOpen(!!reservation);
   }, [reservation]);
-
-  // Helper para obtener la clase de la insignia según el estado
-  const getStatusBadgeClass = (state?: string) => {
-    switch (state) {
-      case "PENDIENTE":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
-      case "CONFIRMADA":
-        return "bg-green-100 text-green-800 border-green-300";
-      case "CANCELADA":
-        return "bg-red-100 text-red-800 border-red-300";
-      default:
-        return "bg-blue-100 text-blue-800 border-blue-300";
-    }
-  };
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
@@ -111,7 +97,7 @@ export const ReservationDetailsModal = ({
                   </Label>
                   <p className="font-medium">
                     {reservation.user
-                      ? `${reservation.user.first_name} ${reservation.user.last_name}`
+                      ? `${reservation.user.firstName} ${reservation.user.lastName}`
                       : "Cliente sin nombre"}
                   </p>
                 </div>
@@ -178,7 +164,7 @@ export const ReservationDetailsModal = ({
                   </Label>
                   <p className="flex items-center gap-1 mt-1">
                     <CalendarCheck className="h-4 w-4 text-gray-500" />
-                    {formatDate(reservation.reservationDate)}
+                    {formatDate(reservation.initialDate)}
                   </p>
                 </div>
                 <div>

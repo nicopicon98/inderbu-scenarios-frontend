@@ -9,7 +9,7 @@ type Filters = {
   activityAreaId?: number;
   neighborhoodId?: number;
   userId?: number;
-  // ⭐ NUEVOS FILTROS DE FECHA
+  // NUEVOS FILTROS DE FECHA
   dateFrom?: string; // YYYY-MM-DD
   dateTo?: string; // YYYY-MM-DD
 };

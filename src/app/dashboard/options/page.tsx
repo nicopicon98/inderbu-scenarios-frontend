@@ -6,7 +6,6 @@ import { SimpleLayout } from "@/shared/components/layout/simple-layout";
 import { ImageIcon, Settings, Users } from "lucide-react";
 import Link from "next/link";
 
-
 export default function OptionsPage() {
   const optionCategories = [
     {
@@ -66,55 +65,51 @@ export default function OptionsPage() {
   ];
 
   return (
-    <SimpleLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Opciones del Sistema
-          </h1>
-          <p className="text-muted-foreground">
-            Configura y personaliza la plataforma según tus necesidades.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Opciones del Sistema
+        </h1>
+        <p className="text-muted-foreground">
+          Configura y personaliza la plataforma según tus necesidades.
+        </p>
+      </div>
 
-        <Tabs defaultValue="content" className="space-y-4">
-          <TabsList>
-            {optionCategories.map((category) => (
-              <TabsTrigger
-                key={category.id}
-                value={category.id}
-                className="flex items-center gap-2"
-              >
-                <category.icon className="h-4 w-4" />
-                <span>{category.title}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
+      <Tabs defaultValue="content" className="space-y-4">
+        <TabsList>
           {optionCategories.map((category) => (
-            <TabsContent
+            <TabsTrigger
               key={category.id}
               value={category.id}
-              className="space-y-4"
+              className="flex items-center gap-2"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {category.options.map((option) => (
-                  <Link key={option.id} href={option.href}>
-                    <Card className="h-full transition-all hover:shadow-md">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">
-                          {option.title}
-                        </CardTitle>
-                        <CardDescription>{option.description}</CardDescription>
-                      </CardHeader>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </TabsContent>
+              <category.icon className="h-4 w-4" />
+              <span>{category.title}</span>
+            </TabsTrigger>
           ))}
-        </Tabs>
-      </div>
-    </SimpleLayout>
+        </TabsList>
+
+        {optionCategories.map((category) => (
+          <TabsContent
+            key={category.id}
+            value={category.id}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {category.options.map((option) => (
+                <Link key={option.id} href={option.href}>
+                  <Card className="h-full transition-all hover:shadow-md">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{option.title}</CardTitle>
+                      <CardDescription>{option.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 }

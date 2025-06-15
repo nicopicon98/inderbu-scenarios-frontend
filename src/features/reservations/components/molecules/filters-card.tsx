@@ -26,7 +26,7 @@ type Filters = {
   activityAreaId?: number;
   neighborhoodId?: number;
   userId?: number;
-  // ⭐ NUEVOS FILTROS DE FECHA
+  // NUEVOS FILTROS DE FECHA
   dateFrom?: string; // YYYY-MM-DD
   dateTo?: string; // YYYY-MM-DD
 };
@@ -96,7 +96,7 @@ export const FiltersCard = ({
     );
   };
 
-  // ⭐ NUEVOS HANDLERS PARA FECHAS
+  // NUEVOS HANDLERS PARA FECHAS
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value || undefined;
     onFiltersChange({ ...filters, dateFrom: value });
@@ -131,7 +131,7 @@ export const FiltersCard = ({
     else if (type === "activity") handleActivityAreaChange("all");
     else if (type === "neighborhood") handleNeighborhoodChange("all");
     else if (type === "user") handleUserChange("all");
-    // ⭐ NUEVOS CASOS PARA FECHAS
+    // NUEVOS CASOS PARA FECHAS
     else if (type === "dateFrom") {
       onFiltersChange({ ...filters, dateFrom: undefined });
     } else if (type === "dateTo") {
@@ -247,7 +247,7 @@ export const FiltersCard = ({
                 />
               </div>
 
-              {/* ⭐ FECHA DESDE */}
+              {/* FECHA DESDE */}
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Fecha Desde
@@ -264,7 +264,7 @@ export const FiltersCard = ({
                 </div>
               </div>
 
-              {/* ⭐ FECHA HASTA */}
+              {/* FECHA HASTA */}
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Fecha Hasta

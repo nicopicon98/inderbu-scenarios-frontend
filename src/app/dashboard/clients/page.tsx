@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/shared/ui/badge";
 
 
-
 interface IUser {
   id: number;
   dni: number;
@@ -108,7 +107,7 @@ const filterOptions: IFilterOption[] = [
 /** Small helper so we don’t repeat response.ok checks everywhere. */
 async function fetchJson<T>(
   input: RequestInfo,
-  init?: RequestInit,
+  init?: RequestInit
 ): Promise<T> {
   const res = await fetch(input, init);
   if (!res.ok) {
@@ -163,7 +162,7 @@ export default function UsersPage() {
       }
 
       const data = await fetchJson<IPageResponse>(
-        `${url}?${params.toString()}`,
+        `${url}?${params.toString()}`
       );
 
       setUsers(data.data);
@@ -188,7 +187,7 @@ export default function UsersPage() {
       }
 
       const fullUser = await fetchJson<IUser>(
-        `${API_BASE_URL}/users/${user.id}`,
+        `${API_BASE_URL}/users/${user.id}`
       );
 
       // También asegurar que el usuario completo tenga las propiedades correctas
@@ -217,7 +216,7 @@ export default function UsersPage() {
           method: isUpdate ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        },
+        }
       );
 
       // Refresh list
@@ -305,7 +304,7 @@ export default function UsersPage() {
   /* ---------------------------------------------------------------------- */
 
   return (
-    <SimpleLayout>
+    <>
       <FilterToolbar filters={filterOptions} onSearch={handleSearch} />
 
       <div className="bg-white rounded-md border p-4 mb-4 flex items-center justify-between">
@@ -360,7 +359,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "admin").length /
-                pageSize,
+                pageSize
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
@@ -378,7 +377,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "independiente")
-                .length / pageSize,
+                .length / pageSize
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
@@ -397,7 +396,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "club-deportivo")
-                .length / pageSize,
+                .length / pageSize
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
@@ -415,7 +414,7 @@ export default function UsersPage() {
             currentPage={1}
             totalPages={Math.ceil(
               users.filter((user) => user.role?.name === "entrenador").length /
-                pageSize,
+                pageSize
             )}
             onPageChange={setCurrentPage}
             isLoading={loading}
@@ -430,6 +429,6 @@ export default function UsersPage() {
         onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveDrawer}
       />
-    </SimpleLayout>
+    </>
   );
 }

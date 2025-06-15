@@ -27,7 +27,6 @@ export async function searchScenariosForSubScenarios(
     params.append("limit", "20");
 
     const url = `${API_BASE_URL}/scenarios${params.toString() ? `?${params.toString()}` : "?limit=20"}`;
-    console.log("Fetching scenarios from:", url);
 
     const token = localStorage.getItem("auth_token");
     const response = await fetch(url, {

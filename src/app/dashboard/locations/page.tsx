@@ -59,8 +59,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
 
-
-// ⭐ COMPONENTES SEPARADOS PARA EVITAR RE-CREACIÓN
+// COMPONENTES SEPARADOS PARA EVITAR RE-CREACIÓN
 interface ValidatedInputProps {
   id: string;
   label: string;
@@ -97,7 +96,7 @@ const ValidatedInput = memo(
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
-  ),
+  )
 );
 ValidatedInput.displayName = "ValidatedInput";
 
@@ -145,7 +144,7 @@ const ValidatedSelect = memo(
       </select>
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
-  ),
+  )
 );
 ValidatedSelect.displayName = "ValidatedSelect";
 
@@ -239,7 +238,7 @@ export default function LocationsManagement() {
     });
 
   const [communeFormErrors, setCommuneFormErrors] = useState<CommuneFormErrors>(
-    {},
+    {}
   );
   const [neighborhoodFormErrors, setNeighborhoodFormErrors] =
     useState<NeighborhoodFormErrors>({});
@@ -270,7 +269,7 @@ export default function LocationsManagement() {
   };
 
   const validateNeighborhoodForm = (
-    data: NeighborhoodFormData,
+    data: NeighborhoodFormData
   ): NeighborhoodFormErrors => {
     const errors: NeighborhoodFormErrors = {};
 
@@ -302,7 +301,7 @@ export default function LocationsManagement() {
         return prev;
       });
     },
-    [],
+    []
   );
 
   const handleUpdateCommuneFieldChange = useCallback(
@@ -317,7 +316,7 @@ export default function LocationsManagement() {
         return prev;
       });
     },
-    [],
+    []
   );
 
   const handleCreateNeighborhoodFieldChange = useCallback(
@@ -332,7 +331,7 @@ export default function LocationsManagement() {
         return prev;
       });
     },
-    [],
+    []
   );
 
   const handleUpdateNeighborhoodFieldChange = useCallback(
@@ -347,7 +346,7 @@ export default function LocationsManagement() {
         return prev;
       });
     },
-    [],
+    []
   );
 
   // Funciones CRUD para Comunas
@@ -420,7 +419,7 @@ export default function LocationsManagement() {
 
       const updatedCommune = await communeService.update(
         selectedCommune.id,
-        updateData,
+        updateData
       );
       await fetchCommunes(communeFilters);
 
@@ -514,7 +513,7 @@ export default function LocationsManagement() {
 
       const updatedNeighborhood = await neighborhoodService.update(
         selectedNeighborhood.id,
-        updateData,
+        updateData
       );
       await fetchNeighborhoods(neighborhoodFilters);
 
@@ -658,7 +657,7 @@ export default function LocationsManagement() {
   const renderPaginationItems = (
     currentPage: number,
     totalPages: number,
-    onPageChange: (page: number) => void,
+    onPageChange: (page: number) => void
   ) => {
     const items = [];
 
@@ -671,7 +670,7 @@ export default function LocationsManagement() {
         >
           1
         </PaginationLink>
-      </PaginationItem>,
+      </PaginationItem>
     );
 
     // Mostrar elipsis si es necesario antes del rango
@@ -679,7 +678,7 @@ export default function LocationsManagement() {
       items.push(
         <PaginationItem key="ellipsis-1">
           <PaginationEllipsis />
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -697,7 +696,7 @@ export default function LocationsManagement() {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -706,7 +705,7 @@ export default function LocationsManagement() {
       items.push(
         <PaginationItem key="ellipsis-2">
           <PaginationEllipsis />
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -720,7 +719,7 @@ export default function LocationsManagement() {
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -728,407 +727,472 @@ export default function LocationsManagement() {
   };
 
   return (
-    <SimpleLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Gestión de Ubicaciones
-          </h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Gestión de Ubicaciones
+        </h1>
+        <div className="flex items-center gap-2">
+          {activeTab === "communes" ? (
+            <Button onClick={() => setIsCommuneModalOpen(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Comuna
+            </Button>
+          ) : (
+            <Button onClick={() => setIsNeighborhoodModalOpen(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Barrio
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center justify-between mb-4">
+          <TabsList>
+            <TabsTrigger value="communes">Comunas</TabsTrigger>
+            <TabsTrigger value="neighborhoods">Barrios</TabsTrigger>
+          </TabsList>
+
           <div className="flex items-center gap-2">
-            {activeTab === "communes" ? (
-              <Button onClick={() => setIsCommuneModalOpen(true)} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Comuna
-              </Button>
-            ) : (
-              <Button
-                onClick={() => setIsNeighborhoodModalOpen(true)}
-                size="sm"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Barrio
-              </Button>
-            )}
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between mb-4">
-            <TabsList>
-              <TabsTrigger value="communes">Comunas</TabsTrigger>
-              <TabsTrigger value="neighborhoods">Barrios</TabsTrigger>
-            </TabsList>
+        {/* Tab Comunas */}
+        <TabsContent value="communes" className="mt-0">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle>Listado de Comunas</CardTitle>
+                  <Badge variant="outline" className="ml-2">
+                    {communePageMeta?.totalItems || communes.length}
+                  </Badge>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar comuna..."
+                    className="pl-8"
+                    value={communeFilters.search}
+                    onChange={(e) => handleCommuneSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        #
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Nombre
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Ciudad
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center">
+                          <div className="flex justify-center items-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                            <span>Cargando comunas...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : communes.length > 0 ? (
+                      communes.map((commune) => (
+                        <tr
+                          key={commune.id}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-3 text-sm">{commune.id}</td>
+                          <td className="px-4 py-3 text-sm font-medium">
+                            {commune.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {commune.city?.name || "No asignada"}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenCommuneEdit(commune)}
+                                className="h-8 px-2 py-0"
+                              >
+                                <FileEdit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>
+                                    Ver detalles
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>Exportar</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600">
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center text-sm text-gray-500"
+                        >
+                          No se encontraron comunas con los filtros aplicados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
+              {/* Paginación para Comunas */}
+              {communePageMeta && (
+                <div className="flex items-center justify-between px-4 py-2 border-t">
+                  <div className="text-sm text-gray-500">
+                    Mostrando{" "}
+                    <span className="font-medium">{communes.length}</span> de{" "}
+                    <span className="font-medium">
+                      {communePageMeta.totalItems}
+                    </span>{" "}
+                    comunas (Página {communeFilters.page} de{" "}
+                    {communePageMeta.totalPages})
+                  </div>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => {
+                            if (communePageMeta?.hasPreviousPage && !loading) {
+                              handleCommunePageChange(communeFilters.page - 1);
+                            }
+                          }}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(
+                        communeFilters.page,
+                        communePageMeta.totalPages,
+                        handleCommunePageChange
+                      )}
+                      <PaginationItem>
+                        {communePageMeta?.hasNextPage && !loading ? (
+                          <PaginationNext
+                            onClick={() =>
+                              handleCommunePageChange(communeFilters.page + 1)
+                            }
+                          />
+                        ) : (
+                          <span className="pointer-events-none opacity-50">
+                            <PaginationNext onClick={() => {}} />
+                          </span>
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab Barrios */}
+        <TabsContent value="neighborhoods" className="mt-0">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle>Listado de Barrios</CardTitle>
+                  <Badge variant="outline" className="ml-2">
+                    {neighborhoodPageMeta?.totalItems || neighborhoods.length}
+                  </Badge>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar barrio..."
+                    className="pl-8"
+                    value={neighborhoodFilters.search}
+                    onChange={(e) => handleNeighborhoodSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        #
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Comuna
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Nombre
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center">
+                          <div className="flex justify-center items-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                            <span>Cargando barrios...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : neighborhoods.length > 0 ? (
+                      neighborhoods.map((neighborhood) => (
+                        <tr
+                          key={neighborhood.id}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-3 text-sm">
+                            {neighborhood.id}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {neighborhood.commune?.name || "No asignada"}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium">
+                            {neighborhood.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleOpenNeighborhoodEdit(neighborhood)
+                                }
+                                className="h-8 px-2 py-0"
+                              >
+                                <FileEdit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>
+                                    Ver detalles
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>Exportar</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600">
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center text-sm text-gray-500"
+                        >
+                          No se encontraron barrios con los filtros aplicados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Paginación para Barrios */}
+              {neighborhoodPageMeta && (
+                <div className="flex items-center justify-between px-4 py-2 border-t">
+                  <div className="text-sm text-gray-500">
+                    Mostrando{" "}
+                    <span className="font-medium">{neighborhoods.length}</span>{" "}
+                    de{" "}
+                    <span className="font-medium">
+                      {neighborhoodPageMeta.totalItems}
+                    </span>{" "}
+                    barrios (Página {neighborhoodFilters.page} de{" "}
+                    {neighborhoodPageMeta.totalPages})
+                  </div>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => {
+                            if (
+                              neighborhoodPageMeta?.hasPreviousPage &&
+                              !loading
+                            ) {
+                              handleNeighborhoodPageChange(
+                                neighborhoodFilters.page - 1
+                              );
+                            }
+                          }}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(
+                        neighborhoodFilters.page,
+                        neighborhoodPageMeta.totalPages,
+                        handleNeighborhoodPageChange
+                      )}
+                      <PaginationItem>
+                        {neighborhoodPageMeta?.hasNextPage && !loading ? (
+                          <PaginationNext
+                            onClick={() =>
+                              handleNeighborhoodPageChange(
+                                neighborhoodFilters.page + 1
+                              )
+                            }
+                          />
+                        ) : (
+                          <span className="pointer-events-none opacity-50">
+                            <PaginationNext onClick={() => {}} />
+                          </span>
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Modal Crear Comuna */}
+      <Dialog open={isCommuneModalOpen} onOpenChange={setIsCommuneModalOpen}>
+        <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl text-teal-700">
+              Crear Comuna
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-3 rounded-md">
+              <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                <Building2 className="h-3 w-3 mr-1 text-teal-600" />
+                Información de la Comuna
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
+                <ValidatedInput
+                  id="new-commune-name"
+                  label="Nombre de la Comuna"
+                  value={createCommuneData.name}
+                  onChange={(value) =>
+                    handleCreateCommuneFieldChange("name", value)
+                  }
+                  error={communeFormErrors.name}
+                  placeholder="Ingrese nombre de la comuna"
+                  required
+                />
+
+                <ValidatedSelect
+                  id="new-commune-city"
+                  label="Ciudad"
+                  value={createCommuneData.cityId}
+                  onChange={(value) =>
+                    handleCreateCommuneFieldChange("cityId", value)
+                  }
+                  options={cities}
+                  error={communeFormErrors.cityId}
+                  placeholder="Seleccione ciudad..."
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          {/* Tab Comunas */}
-          <TabsContent value="communes" className="mt-0">
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CardTitle>Listado de Comunas</CardTitle>
-                    <Badge variant="outline" className="ml-2">
-                      {communePageMeta?.totalItems || communes.length}
-                    </Badge>
-                  </div>
-                  <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar comuna..."
-                      className="pl-8"
-                      value={communeFilters.search}
-                      onChange={(e) => handleCommuneSearch(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          #
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Nombre
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Ciudad
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center">
-                            <div className="flex justify-center items-center">
-                              <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
-                              <span>Cargando comunas...</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : communes.length > 0 ? (
-                        communes.map((commune) => (
-                          <tr
-                            key={commune.id}
-                            className="border-b hover:bg-gray-50"
-                          >
-                            <td className="px-4 py-3 text-sm">{commune.id}</td>
-                            <td className="px-4 py-3 text-sm font-medium">
-                              {commune.name}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {commune.city?.name || "No asignada"}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleOpenCommuneEdit(commune)}
-                                  className="h-8 px-2 py-0"
-                                >
-                                  <FileEdit className="h-4 w-4 mr-1" />
-                                  Editar
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                    >
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>
-                                      Ver detalles
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      Exportar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600">
-                                      Eliminar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="px-4 py-8 text-center text-sm text-gray-500"
-                          >
-                            No se encontraron comunas con los filtros aplicados.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+          <DialogFooter className="flex justify-end gap-3 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCommuneModalOpen(false);
+                setCreateCommuneData({ name: "", cityId: "" });
+                setCommuneFormErrors({});
+              }}
+              size="sm"
+              className="px-4"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 px-4"
+              onClick={handleCreateCommune}
+              size="sm"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-                {/* Paginación para Comunas */}
-                {communePageMeta && (
-                  <div className="flex items-center justify-between px-4 py-2 border-t">
-                    <div className="text-sm text-gray-500">
-                      Mostrando{" "}
-                      <span className="font-medium">{communes.length}</span> de{" "}
-                      <span className="font-medium">
-                        {communePageMeta.totalItems}
-                      </span>{" "}
-                      comunas (Página {communeFilters.page} de{" "}
-                      {communePageMeta.totalPages})
-                    </div>
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => {
-                              if (
-                                communePageMeta?.hasPreviousPage &&
-                                !loading
-                              ) {
-                                handleCommunePageChange(
-                                  communeFilters.page - 1,
-                                );
-                              }
-                            }}
-                          />
-                        </PaginationItem>
-                        {renderPaginationItems(
-                          communeFilters.page,
-                          communePageMeta.totalPages,
-                          handleCommunePageChange,
-                        )}
-                        <PaginationItem>
-                          {communePageMeta?.hasNextPage && !loading ? (
-                            <PaginationNext
-                              onClick={() =>
-                                handleCommunePageChange(communeFilters.page + 1)
-                              }
-                            />
-                          ) : (
-                            <span className="pointer-events-none opacity-50">
-                              <PaginationNext onClick={() => {}} />
-                            </span>
-                          )}
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+      {/* Modal Editar Comuna */}
+      <Dialog open={isCommuneEditOpen} onOpenChange={setIsCommuneEditOpen}>
+        <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl text-teal-700">
+              {selectedCommune
+                ? `Editar Comuna: ${selectedCommune.name}`
+                : "Editar Comuna"}
+            </DialogTitle>
+          </DialogHeader>
 
-          {/* Tab Barrios */}
-          <TabsContent value="neighborhoods" className="mt-0">
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CardTitle>Listado de Barrios</CardTitle>
-                    <Badge variant="outline" className="ml-2">
-                      {neighborhoodPageMeta?.totalItems || neighborhoods.length}
-                    </Badge>
-                  </div>
-                  <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar barrio..."
-                      className="pl-8"
-                      value={neighborhoodFilters.search}
-                      onChange={(e) => handleNeighborhoodSearch(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          #
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Comuna
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Nombre
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center">
-                            <div className="flex justify-center items-center">
-                              <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
-                              <span>Cargando barrios...</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : neighborhoods.length > 0 ? (
-                        neighborhoods.map((neighborhood) => (
-                          <tr
-                            key={neighborhood.id}
-                            className="border-b hover:bg-gray-50"
-                          >
-                            <td className="px-4 py-3 text-sm">
-                              {neighborhood.id}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {neighborhood.commune?.name || "No asignada"}
-                            </td>
-                            <td className="px-4 py-3 text-sm font-medium">
-                              {neighborhood.name}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleOpenNeighborhoodEdit(neighborhood)
-                                  }
-                                  className="h-8 px-2 py-0"
-                                >
-                                  <FileEdit className="h-4 w-4 mr-1" />
-                                  Editar
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                    >
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>
-                                      Ver detalles
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      Exportar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600">
-                                      Eliminar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="px-4 py-8 text-center text-sm text-gray-500"
-                          >
-                            No se encontraron barrios con los filtros aplicados.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Paginación para Barrios */}
-                {neighborhoodPageMeta && (
-                  <div className="flex items-center justify-between px-4 py-2 border-t">
-                    <div className="text-sm text-gray-500">
-                      Mostrando{" "}
-                      <span className="font-medium">
-                        {neighborhoods.length}
-                      </span>{" "}
-                      de{" "}
-                      <span className="font-medium">
-                        {neighborhoodPageMeta.totalItems}
-                      </span>{" "}
-                      barrios (Página {neighborhoodFilters.page} de{" "}
-                      {neighborhoodPageMeta.totalPages})
-                    </div>
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => {
-                              if (
-                                neighborhoodPageMeta?.hasPreviousPage &&
-                                !loading
-                              ) {
-                                handleNeighborhoodPageChange(
-                                  neighborhoodFilters.page - 1,
-                                );
-                              }
-                            }}
-                          />
-                        </PaginationItem>
-                        {renderPaginationItems(
-                          neighborhoodFilters.page,
-                          neighborhoodPageMeta.totalPages,
-                          handleNeighborhoodPageChange,
-                        )}
-                        <PaginationItem>
-                          {neighborhoodPageMeta?.hasNextPage && !loading ? (
-                            <PaginationNext
-                              onClick={() =>
-                                handleNeighborhoodPageChange(
-                                  neighborhoodFilters.page + 1,
-                                )
-                              }
-                            />
-                          ) : (
-                            <span className="pointer-events-none opacity-50">
-                              <PaginationNext onClick={() => {}} />
-                            </span>
-                          )}
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Modal Crear Comuna */}
-        <Dialog open={isCommuneModalOpen} onOpenChange={setIsCommuneModalOpen}>
-          <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
-            <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">
-                Crear Comuna
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
+          <div className="space-y-4">
+            {selectedCommune && (
               <div className="bg-gray-50 p-3 rounded-md">
                 <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
                   <Building2 className="h-3 w-3 mr-1 text-teal-600" />
@@ -1136,23 +1200,22 @@ export default function LocationsManagement() {
                 </h3>
                 <div className="grid grid-cols-1 gap-3">
                   <ValidatedInput
-                    id="new-commune-name"
+                    id="edit-commune-name"
                     label="Nombre de la Comuna"
-                    value={createCommuneData.name}
+                    value={updateCommuneData.name}
                     onChange={(value) =>
-                      handleCreateCommuneFieldChange("name", value)
+                      handleUpdateCommuneFieldChange("name", value)
                     }
                     error={communeFormErrors.name}
-                    placeholder="Ingrese nombre de la comuna"
                     required
                   />
 
                   <ValidatedSelect
-                    id="new-commune-city"
+                    id="edit-commune-city"
                     label="Ciudad"
-                    value={createCommuneData.cityId}
+                    value={updateCommuneData.cityId}
                     onChange={(value) =>
-                      handleCreateCommuneFieldChange("cityId", value)
+                      handleUpdateCommuneFieldChange("cityId", value)
                     }
                     options={cities}
                     error={communeFormErrors.cityId}
@@ -1161,134 +1224,138 @@ export default function LocationsManagement() {
                   />
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
-            <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsCommuneModalOpen(false);
-                  setCreateCommuneData({ name: "", cityId: "" });
-                  setCommuneFormErrors({});
-                }}
-                size="sm"
-                className="px-4"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4"
-                onClick={handleCreateCommune}
-                size="sm"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Guardar"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Modal Editar Comuna */}
-        <Dialog open={isCommuneEditOpen} onOpenChange={setIsCommuneEditOpen}>
-          <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
-            <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">
-                {selectedCommune
-                  ? `Editar Comuna: ${selectedCommune.name}`
-                  : "Editar Comuna"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {selectedCommune && (
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                    <Building2 className="h-3 w-3 mr-1 text-teal-600" />
-                    Información de la Comuna
-                  </h3>
-                  <div className="grid grid-cols-1 gap-3">
-                    <ValidatedInput
-                      id="edit-commune-name"
-                      label="Nombre de la Comuna"
-                      value={updateCommuneData.name}
-                      onChange={(value) =>
-                        handleUpdateCommuneFieldChange("name", value)
-                      }
-                      error={communeFormErrors.name}
-                      required
-                    />
-
-                    <ValidatedSelect
-                      id="edit-commune-city"
-                      label="Ciudad"
-                      value={updateCommuneData.cityId}
-                      onChange={(value) =>
-                        handleUpdateCommuneFieldChange("cityId", value)
-                      }
-                      options={cities}
-                      error={communeFormErrors.cityId}
-                      placeholder="Seleccione ciudad..."
-                      required
-                    />
-                  </div>
-                </div>
+          <DialogFooter className="flex justify-end gap-3 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCommuneEditOpen(false);
+                setSelectedCommune(null);
+                setCommuneFormErrors({});
+              }}
+              className="px-4"
+              size="sm"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 px-4"
+              size="sm"
+              onClick={handleUpdateCommune}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Crear Barrio */}
+      <Dialog
+        open={isNeighborhoodModalOpen}
+        onOpenChange={setIsNeighborhoodModalOpen}
+      >
+        <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl text-teal-700">
+              Crear Barrio
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-3 rounded-md">
+              <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
+                <MapPin className="h-3 w-3 mr-1 text-teal-600" />
+                Información del Barrio
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
+                <ValidatedSelect
+                  id="new-neighborhood-commune"
+                  label="Comuna"
+                  value={createNeighborhoodData.communeId}
+                  onChange={(value) =>
+                    handleCreateNeighborhoodFieldChange("communeId", value)
+                  }
+                  options={communes}
+                  error={neighborhoodFormErrors.communeId}
+                  placeholder="Seleccione comuna..."
+                  required
+                />
+
+                <ValidatedInput
+                  id="new-neighborhood-name"
+                  label="Nombre del Barrio"
+                  value={createNeighborhoodData.name}
+                  onChange={(value) =>
+                    handleCreateNeighborhoodFieldChange("name", value)
+                  }
+                  error={neighborhoodFormErrors.name}
+                  placeholder="Ingrese nombre del barrio"
+                  required
+                />
+              </div>
             </div>
+          </div>
 
-            <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsCommuneEditOpen(false);
-                  setSelectedCommune(null);
-                  setCommuneFormErrors({});
-                }}
-                className="px-4"
-                size="sm"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4"
-                size="sm"
-                onClick={handleUpdateCommune}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Guardar"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          <DialogFooter className="flex justify-end gap-3 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsNeighborhoodModalOpen(false);
+                setCreateNeighborhoodData({ name: "", communeId: "" });
+                setNeighborhoodFormErrors({});
+              }}
+              size="sm"
+              className="px-4"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 px-4"
+              onClick={handleCreateNeighborhood}
+              size="sm"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* Modal Crear Barrio */}
-        <Dialog
-          open={isNeighborhoodModalOpen}
-          onOpenChange={setIsNeighborhoodModalOpen}
-        >
-          <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
-            <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">
-                Crear Barrio
-              </DialogTitle>
-            </DialogHeader>
+      {/* Modal Editar Barrio */}
+      <Dialog
+        open={isNeighborhoodEditOpen}
+        onOpenChange={setIsNeighborhoodEditOpen}
+      >
+        <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl text-teal-700">
+              {selectedNeighborhood
+                ? `Editar Barrio: ${selectedNeighborhood.name}`
+                : "Editar Barrio"}
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="space-y-4">
+          <div className="space-y-4">
+            {selectedNeighborhood && (
               <div className="bg-gray-50 p-3 rounded-md">
                 <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
                   <MapPin className="h-3 w-3 mr-1 text-teal-600" />
@@ -1296,11 +1363,11 @@ export default function LocationsManagement() {
                 </h3>
                 <div className="grid grid-cols-1 gap-3">
                   <ValidatedSelect
-                    id="new-neighborhood-commune"
+                    id="edit-neighborhood-commune"
                     label="Comuna"
-                    value={createNeighborhoodData.communeId}
+                    value={updateNeighborhoodData.communeId}
                     onChange={(value) =>
-                      handleCreateNeighborhoodFieldChange("communeId", value)
+                      handleUpdateNeighborhoodFieldChange("communeId", value)
                     }
                     options={communes}
                     error={neighborhoodFormErrors.communeId}
@@ -1309,136 +1376,52 @@ export default function LocationsManagement() {
                   />
 
                   <ValidatedInput
-                    id="new-neighborhood-name"
+                    id="edit-neighborhood-name"
                     label="Nombre del Barrio"
-                    value={createNeighborhoodData.name}
+                    value={updateNeighborhoodData.name}
                     onChange={(value) =>
-                      handleCreateNeighborhoodFieldChange("name", value)
+                      handleUpdateNeighborhoodFieldChange("name", value)
                     }
                     error={neighborhoodFormErrors.name}
-                    placeholder="Ingrese nombre del barrio"
                     required
                   />
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
-            <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsNeighborhoodModalOpen(false);
-                  setCreateNeighborhoodData({ name: "", communeId: "" });
-                  setNeighborhoodFormErrors({});
-                }}
-                size="sm"
-                className="px-4"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4"
-                onClick={handleCreateNeighborhood}
-                size="sm"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Guardar"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Modal Editar Barrio */}
-        <Dialog
-          open={isNeighborhoodEditOpen}
-          onOpenChange={setIsNeighborhoodEditOpen}
-        >
-          <DialogContent className="w-[500px] max-h-[80vh] mx-auto bg-white overflow-y-auto">
-            <DialogHeader className="pb-2">
-              <DialogTitle className="text-xl text-teal-700">
-                {selectedNeighborhood
-                  ? `Editar Barrio: ${selectedNeighborhood.name}`
-                  : "Editar Barrio"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {selectedNeighborhood && (
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <h3 className="font-medium text-gray-800 mb-2 text-sm flex items-center">
-                    <MapPin className="h-3 w-3 mr-1 text-teal-600" />
-                    Información del Barrio
-                  </h3>
-                  <div className="grid grid-cols-1 gap-3">
-                    <ValidatedSelect
-                      id="edit-neighborhood-commune"
-                      label="Comuna"
-                      value={updateNeighborhoodData.communeId}
-                      onChange={(value) =>
-                        handleUpdateNeighborhoodFieldChange("communeId", value)
-                      }
-                      options={communes}
-                      error={neighborhoodFormErrors.communeId}
-                      placeholder="Seleccione comuna..."
-                      required
-                    />
-
-                    <ValidatedInput
-                      id="edit-neighborhood-name"
-                      label="Nombre del Barrio"
-                      value={updateNeighborhoodData.name}
-                      onChange={(value) =>
-                        handleUpdateNeighborhoodFieldChange("name", value)
-                      }
-                      error={neighborhoodFormErrors.name}
-                      required
-                    />
-                  </div>
-                </div>
+          <DialogFooter className="flex justify-end gap-3 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsNeighborhoodEditOpen(false);
+                setSelectedNeighborhood(null);
+                setNeighborhoodFormErrors({});
+              }}
+              className="px-4"
+              size="sm"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 px-4"
+              size="sm"
+              onClick={handleUpdateNeighborhood}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar"
               )}
-            </div>
-
-            <DialogFooter className="flex justify-end gap-3 pt-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsNeighborhoodEditOpen(false);
-                  setSelectedNeighborhood(null);
-                  setNeighborhoodFormErrors({});
-                }}
-                className="px-4"
-                size="sm"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="bg-teal-600 hover:bg-teal-700 px-4"
-                size="sm"
-                onClick={handleUpdateNeighborhood}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Guardar"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </SimpleLayout>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

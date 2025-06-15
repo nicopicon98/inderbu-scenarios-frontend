@@ -20,7 +20,7 @@ export function SubScenarioManagement() {
   const [selected, setSelected] = useState<any>(null);
 
   return (
-    <SimpleLayout>
+    <>
       <div className="space-y-6">
         {/* header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -112,6 +112,6 @@ export function SubScenarioManagement() {
         subScenario={selected}
         onOpenChange={setEditOpen}
       />
-    </SimpleLayout>
+    </>
   );
 }
