@@ -117,14 +117,20 @@ export class ApiReservationRepository implements ReservationRepository {
       PaginatedApiResponse<ReservationDto>
     >(`/reservations?${searchParams.toString()}`, cacheConfig);
 
-    // Map data to ensure backward compatibility fields exist
-    const mappedData = response.data.map((item: ReservationDto) => ({
+    // Map data to ensure backward compatibility fields exist and handle backend-frontend inconsistencies
+    const mappedData = response.data.map((item: any) => ({
       ...item,
       // Add derived fields for maintaining compatibility with existing code
       subScenarioId: item.subScenario?.id,
       userId: item.user?.id,
       timeSlotId: item.timeSlot?.id,
       reservationStateId: item.reservationState?.id,
+      
+      // IMPORTANT: Handle backend inconsistency - backend sends 'name' but frontend expects 'state'
+      reservationState: item.reservationState ? {
+        ...item.reservationState,
+        state: item.reservationState.name, // Map 'name' from backend to 'state' for frontend
+      } : item.reservationState,
     }));
 
     return {
@@ -149,6 +155,7 @@ export class ApiReservationRepository implements ReservationRepository {
       SimpleApiResponse<ReservationDto>
     >(`/reservations/${id}`, cacheConfig);
 
+    // Handle backend inconsistency and add derived fields
     return {
       ...response.data,
       // Add derived fields for maintaining compatibility
@@ -156,7 +163,13 @@ export class ApiReservationRepository implements ReservationRepository {
       userId: response.data.user?.id,
       timeSlotId: response.data.timeSlot?.id,
       reservationStateId: response.data.reservationState?.id,
-    };
+      
+      // IMPORTANT: Handle backend inconsistency - backend sends 'name' but frontend expects 'state'
+      reservationState: response.data.reservationState ? {
+        ...response.data.reservationState,
+        state: (response.data.reservationState as any).name, // Map 'name' from backend to 'state' for frontend
+      } : response.data.reservationState,
+    } as ReservationDto;
   }
 
   async create(
@@ -189,21 +202,22 @@ export class ApiReservationRepository implements ReservationRepository {
     };
 
     console.log(
-      `Repository: Updating reservation ${id} state to ${command.stateId}`
+      `Repository: Updating reservation ${id} state to ${command.reservationStateId}`
     );
 
-    // Backend expects: { stateId: number }
+    // Backend expects: { reservationStateId: number }
     // Backend returns: { statusCode, message, data: ReservationDto }
     const response = await this.httpClient.patch<
       SimpleApiResponse<ReservationDto>
     >(
       `/reservations/${id}/state`,
       command,
-      requestConfig // ← ¡INCLUIR CONFIG!
+      requestConfig
     );
 
     console.log(`Repository: Reservation ${id} state updated successfully`);
 
+    // Handle backend inconsistency and add derived fields
     return {
       ...response.data,
       // Add derived fields for maintaining compatibility
@@ -211,7 +225,13 @@ export class ApiReservationRepository implements ReservationRepository {
       userId: response.data.user?.id,
       timeSlotId: response.data.timeSlot?.id,
       reservationStateId: response.data.reservationState?.id,
-    };
+      
+      // IMPORTANT: Handle backend inconsistency - backend sends 'name' but frontend expects 'state'
+      reservationState: response.data.reservationState ? {
+        ...response.data.reservationState,
+        state: (response.data.reservationState as any).name, // Map 'name' from backend to 'state' for frontend
+      } : response.data.reservationState,
+    } as ReservationDto;
   }
 
   async delete(id: number): Promise<void> {

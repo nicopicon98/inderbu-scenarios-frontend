@@ -41,8 +41,8 @@ export function useReservationsWidget({
 
   // Create repository
   const createRepository = () => {
-    const authContext = createClientAuthContext();
-    const httpClient = ClientHttpClientFactory.createClient(authContext);
+    // Use cookies for httpOnly authentication instead of localStorage
+    const httpClient = ClientHttpClientFactory.createClientWithCookies();
     return createReservationRepository(httpClient);
   };
 

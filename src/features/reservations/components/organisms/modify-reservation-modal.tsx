@@ -1,7 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────────
- * ModifyReservationModal.tsx · Adaptado al contrato 2025-06-14
- * ────────────────────────────────────────────────────────────────────────────*/
-
 "use client";
 
 import { ReservationDto } from "@/services/reservation.service";
@@ -27,7 +23,12 @@ import {
   User,
   X,
   Zap,
+  CalendarDays,
+  Repeat,
+  CalendarRange,
 } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +44,49 @@ interface ModifyReservationModalProps {
   onCreateNewReservation: (subScenarioId: number) => void;
 }
 
+/* ──────────────────────  Helpers de formateo mejorados  ────────────────── */
+const formatReservationInfo = (reservation: ReservationDto) => {
+  try {
+    const initialDate = parseISO(reservation.initialDate);
+    const isRange = reservation.type === "RANGE" && reservation.finalDate;
+    
+    if (isRange) {
+      const finalDate = parseISO(reservation.finalDate!);
+      
+      return {
+        type: "RANGE",
+        startDate: format(initialDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
+        endDate: format(finalDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
+        shortRange: `${format(initialDate, "dd/MM/yyyy")} - ${format(finalDate, "dd/MM/yyyy")}`,
+        weekDays: reservation.weekDays || [],
+        weekDayNames: getWeekDayNames(reservation.weekDays || []),
+        totalInstances: reservation.totalInstances || 1,
+        durationDays: Math.ceil((finalDate.getTime() - initialDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+      };
+    } else {
+      return {
+        type: "SINGLE",
+        startDate: format(initialDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: es }),
+        shortDate: format(initialDate, "dd/MM/yyyy"),
+        totalInstances: reservation.totalInstances || 1
+      };
+    }
+  } catch (error) {
+    console.error("Error formatting reservation:", error);
+    return {
+      type: "SINGLE",
+      startDate: "Fecha inválida",
+      shortDate: "Fecha inválida",
+      totalInstances: 1
+    };
+  }
+};
+
+const getWeekDayNames = (weekDays: number[]) => {
+  const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  return weekDays.map(day => days[day]);
+};
+
 /* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ModifyReservationModal({
   reservation,
@@ -57,13 +101,14 @@ export function ModifyReservationModal({
   if (!reservation) return null;
 
   /* ---------- Helpers ---------- */
-  const slot = reservation.timeslots?.[0] ?? reservation.timeSlot; // compat
-  const localDate = new Date(reservation.initialDate);
-
+  const reservationInfo = formatReservationInfo(reservation);
+  const isRange = reservationInfo.type === "RANGE";
+  
   const isReservationActive = () => {
     const now = new Date();
-    const endDateTime = slot
-      ? new Date(`${reservation.initialDate}T${slot.endTime}`)
+    const firstSlot = reservation.timeslots?.[0] ?? reservation.timeSlot;
+    const endDateTime = firstSlot
+      ? new Date(`${reservation.initialDate}T${firstSlot.endTime}`)
       : new Date(`${reservation.initialDate}T23:59`);
     return (
       endDateTime >= now && reservation.reservationState.state !== "CANCELADA"
@@ -99,9 +144,29 @@ export function ModifyReservationModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-3">
             <Settings className="h-5 w-5 text-blue-600" />
-            Gestionar Reserva
+            <span>Gestionar Reserva</span>
+            <Badge
+              variant="outline"
+              className={`text-xs font-medium ${
+                isRange 
+                  ? "bg-purple-100 text-purple-700 border-purple-200" 
+                  : "bg-blue-100 text-blue-700 border-blue-200"
+              }`}
+            >
+              {isRange ? (
+                <>
+                  <Repeat className="w-3 h-3 mr-1" />
+                  RANGO
+                </>
+              ) : (
+                <>
+                  <CalendarDays className="w-3 h-3 mr-1" />
+                  ÚNICA
+                </>
+              )}
+            </Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -120,7 +185,7 @@ export function ModifyReservationModal({
                     reservationId={reservation.id}
                     reservationInfo={{
                       userEmail: reservation.user?.email,
-                      date: localDate.toLocaleDateString("es-ES"),
+                      date: isRange ? reservationInfo.shortRange : reservationInfo.shortDate
                     }}
                     onStatusChange={handleStatusChange}
                   />
@@ -128,7 +193,20 @@ export function ModifyReservationModal({
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {/* Datos principales */}
+                {/* Información del tipo de reserva */}
+                <div className={`p-4 rounded-lg border-2 ${
+                  isRange 
+                    ? "bg-purple-50 border-purple-200" 
+                    : "bg-blue-50 border-blue-200"
+                }`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    {isRange ? (
+                      <CalendarRange className="h-6 w-6 text-purple-600" />
+                    ) : (
+                      <CalendarDays className="h-6 w-6 text-blue-600" />
+                    )}
+
+                {/* Datos del escenario */}
                 <div className="grid grid-cols-1 gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -159,33 +237,6 @@ export function ModifyReservationModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Calendar className="text-teal-600 h-4 w-4" />
-                        Fecha
-                      </h3>
-                      <p className="text-gray-600 text-sm pt-1 capitalize">
-                        {localDate.toLocaleDateString("es-ES", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Clock className="text-teal-600 h-4 w-4" />
-                        Horario
-                      </h3>
-                      <p className="text-gray-600 text-sm pt-1">
-                        {slot ? `${slot.startTime} - ${slot.endTime}` : "—"}
-                      </p>
-                    </div>
-                  </div>
-
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
                       <MapPin className="text-teal-600 h-4 w-4" />
@@ -197,10 +248,108 @@ export function ModifyReservationModal({
                     {reservation.subScenario.scenario?.neighborhood?.name && (
                       <p className="text-gray-500 text-xs mt-1">
                         Barrio: {reservation.subScenario.scenario.neighborhood.name}
+                        {reservation.subScenario.scenario.neighborhood.commune && (
+                          <> · {reservation.subScenario.scenario.neighborhood.commune.name}</>
+                        )}
+                        {reservation.subScenario.scenario.neighborhood.commune?.city && (
+                          <> · {reservation.subScenario.scenario.neighborhood.commune.city.name}</>
+                        )}
                       </p>
                     )}
                   </div>
                 </div>
+                    <div>
+                      <h3 className={`font-semibold ${
+                        isRange ? "text-purple-800" : "text-blue-800"
+                      }`}>
+                        {isRange ? "Reserva de Rango" : "Reserva Única"}
+                      </h3>
+                      <p className={`text-sm ${
+                        isRange ? "text-purple-600" : "text-blue-600"
+                      }`}>
+                        {isRange 
+                          ? `${reservationInfo.durationDays} días · ${reservationInfo.totalInstances} instancias`
+                          : `1 día · ${reservationInfo.totalInstances} instancia${reservationInfo.totalInstances > 1 ? 's' : ''}`
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Fechas */}
+                  <div className="space-y-2">
+                    {isRange ? (
+                      <>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div>
+                            <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                              Fecha de inicio
+                            </span>
+                            <p className="text-sm text-purple-800 capitalize">
+                              {reservationInfo.startDate}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                              Fecha de fin
+                            </span>
+                            <p className="text-sm text-purple-800 capitalize">
+                              {reservationInfo.endDate}
+                            </p>
+                          </div>
+                          {reservationInfo.weekDayNames && reservationInfo.weekDayNames.length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                                Días de la semana
+                              </span>
+                              <p className="text-sm text-purple-800">
+                                {reservationInfo.weekDayNames.join(", ")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">
+                          Fecha
+                        </span>
+                        <p className="text-sm text-blue-800 capitalize">
+                          {reservationInfo.startDate}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Información de horarios */}
+                {reservation.timeslots && reservation.timeslots.length > 0 && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Clock className="h-5 w-5 text-green-600" />
+                      <h3 className="font-semibold text-green-800">
+                        Horarios {isRange ? "por día" : ""}
+                      </h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      {reservation.timeslots.map((slot, index) => (
+                        <div 
+                          key={slot.id}
+                          className="bg-white p-2 rounded border border-green-200"
+                        >
+                          <span className="text-sm font-medium text-green-800">
+                            {slot.startTime} - {slot.endTime}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs text-green-600 mt-2">
+                      Total: {reservation.timeslots.length} horario{reservation.timeslots.length > 1 ? 's' : ''}
+                      {isRange && ` × ${reservationInfo.durationDays} días`}
+                    </p>
+                  </div>
+                )}
 
                 {/* Comentarios */}
                 {reservation.comments && (

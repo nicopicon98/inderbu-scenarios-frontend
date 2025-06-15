@@ -150,7 +150,7 @@ export interface CreateReservationResponseDto {
 }
 
 export interface UpdateReservationStateCommand {
-  stateId: number; // Note: backend uses stateId, not reservationStateId
+  reservationStateId: number; // FIXED: backend expects reservationStateId, not stateId
 }
 
 export interface ReservationStateDto {
@@ -194,7 +194,7 @@ export const CreateReservationSchema = z.object({
 });
 
 export const UpdateReservationStateSchema = z.object({
-  stateId: z.number().int().positive(),
+  reservationStateId: z.number().int().positive(),
 });
 
 export const GetReservationsQuerySchema = z.object({

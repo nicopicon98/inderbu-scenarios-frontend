@@ -83,6 +83,8 @@ export class ClientHttpClient implements HttpClient {
         method,
         headers,
         signal: config.signal || controller.signal,
+        // CRITICAL: Include cookies for httpOnly authentication
+        credentials: 'include',
       };
 
       // NUEVO: Soporte para Next.js cache tags
@@ -176,6 +178,14 @@ export class ClientHttpClientFactory {
   static createClientWithAuth(): ClientHttpClient {
     const authContext = createClientAuthContext();
     return this.createClient(authContext);
+  }
+
+  // NEW: Factory method for httpOnly cookies (no authContext needed)
+  static createClientWithCookies(): ClientHttpClient {
+    return new ClientHttpClient({
+      baseURL: this.CLIENT_BASE_URL,
+      // No authContext needed - cookies will be sent automatically with credentials: 'include'
+    });
   }
 }
 

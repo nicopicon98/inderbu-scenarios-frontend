@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────────
- * ReservationItem.tsx  ·  Compatible con contrato 2025-06-14
+ * ReservationItem.tsx  ·  Mejorado para SINGLE vs RANGE  ·  2025-06-15
  * ────────────────────────────────────────────────────────────────────────────*/
 
 "use client";
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   CalendarIcon,
@@ -28,6 +28,8 @@ import {
   Tag,
   Users,
   X,
+  CalendarDays,
+  Repeat,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -47,6 +49,49 @@ interface ReservationItemProps {
   highlightManageButton?: boolean;
 }
 
+/* ──────────────────────  Helpers de formateo  ──────────────────────────── */
+const formatReservationDate = (reservation: ReservationDto) => {
+  try {
+    const initialDate = parseISO(reservation.initialDate);
+    
+    if (reservation.type === "RANGE" && reservation.finalDate) {
+      const finalDate = parseISO(reservation.finalDate);
+      
+      // Para reservas RANGE, mostrar el rango
+      const startFormatted = format(initialDate, "dd MMM", { locale: es });
+      const endFormatted = format(finalDate, "dd MMM", { locale: es });
+      
+      return {
+        shortDate: `${startFormatted} - ${endFormatted}`,
+        fullDate: `${format(initialDate, "EEEE d 'de' MMMM", { locale: es })} hasta ${format(finalDate, "EEEE d 'de' MMMM", { locale: es })}`,
+        isRange: true,
+        weekDays: reservation.weekDays || []
+      };
+    } else {
+      // Para reservas SINGLE, mostrar fecha única
+      return {
+        shortDate: format(initialDate, "dd MMM", { locale: es }),
+        fullDate: format(initialDate, "EEEE d 'de' MMMM", { locale: es }),
+        isRange: false,
+        weekDays: []
+      };
+    }
+  } catch (error) {
+    console.error("Error parsing date:", error);
+    return {
+      shortDate: "Fecha inválida",
+      fullDate: "Fecha inválida",
+      isRange: false,
+      weekDays: []
+    };
+  }
+};
+
+const getWeekDayNames = (weekDays: number[]) => {
+  const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  return weekDays.map(day => days[day]).join(", ");
+};
+
 /* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ReservationItem({
   reservation,
@@ -60,20 +105,8 @@ export function ReservationItem({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   /* ---------- Helpers ---------- */
-  const timeSlot =
-    reservation.timeSlot ?? reservation.timeslots?.[0] ?? undefined;
-
-  const formattedDate = format(
-    new Date(reservation.initialDate),
-    "EEEE d 'de' MMMM",
-    { locale: es },
-  );
-
-  const formattedShortDate = format(
-    new Date(reservation.initialDate),
-    "dd MMM",
-    { locale: es },
-  );
+  const timeSlot = reservation.timeSlot ?? reservation.timeslots?.[0] ?? undefined;
+  const dateInfo = formatReservationDate(reservation);
 
   /* ---------- Cancelación ---------- */
   const handleCancelReservation = async () => {
@@ -103,10 +136,33 @@ export function ReservationItem({
   return (
     <>
       <Card
-        className={`h-full overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white rounded-xl backdrop-blur-sm group ${
+        className={`h-full overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white rounded-xl backdrop-blur-sm group relative ${
           !isActive ? "opacity-75" : ""
         }`}
       >
+        {/* Badge de tipo de reserva */}
+        <div className="absolute top-2 left-2 z-30">
+          <Badge
+            variant="outline"
+            className={`text-xs font-medium ${
+              dateInfo.isRange 
+                ? "bg-purple-100 text-purple-700 border-purple-200" 
+                : "bg-blue-100 text-blue-700 border-blue-200"
+            }`}
+          >
+            {dateInfo.isRange ? (
+              <>
+                <Repeat className="w-3 h-3 mr-1" />
+                RANGO
+              </>
+            ) : (
+              <>
+                <CalendarDays className="w-3 h-3 mr-1" />
+                ÚNICA
+              </>
+            )}
+          </Badge>
+        </div>
         {/* Imagen */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
@@ -119,7 +175,7 @@ export function ReservationItem({
           />
 
           {/* Estado */}
-          <div className="absolute top-3 right-3 z-20">
+          <div className="absolute top-2 right-2 z-20">
             <div className="backdrop-blur-sm rounded-lg shadow-lg">
               <StatusBadge
                 status={reservation.reservationState.state}
@@ -130,13 +186,15 @@ export function ReservationItem({
           </div>
 
           {/* Fecha breve */}
-          <div className="absolute top-3 left-3 z-20">
+          <div className="absolute bottom-2 left-2 right-2 z-20">
             <Badge
               variant="outline"
-              className="bg-white/90 text-gray-700 border-white/50 backdrop-blur-sm shadow-sm"
+              className={`bg-white/95 text-gray-700 border-white/50 backdrop-blur-sm shadow-sm w-full justify-center ${
+                dateInfo.isRange ? "text-purple-700" : "text-blue-700"
+              }`}
             >
               <CalendarIcon className="w-3 h-3 mr-1" />
-              {formattedShortDate}
+              {dateInfo.shortDate}
             </Badge>
           </div>
 
@@ -177,28 +235,53 @@ export function ReservationItem({
             )}
           </div>
 
-          {/* Fecha y hora */}
+          {/* Información de fecha diferenciada */}
           <div className="space-y-3 mb-4">
-            <div className="flex items-center text-sm">
-              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
-                <CalendarIcon className="w-4 h-4 text-blue-600" />
+            {/* Fecha principal */}
+            <div className="flex items-start text-sm">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
+                dateInfo.isRange ? "bg-purple-50" : "bg-blue-50"
+              }`}>
+                {dateInfo.isRange ? (
+                  <Repeat className={`w-4 h-4 ${dateInfo.isRange ? "text-purple-600" : "text-blue-600"}`} />
+                ) : (
+                  <CalendarIcon className={`w-4 h-4 ${dateInfo.isRange ? "text-purple-600" : "text-blue-600"}`} />
+                )}
               </div>
-              <p className="font-medium text-gray-900 capitalize">
-                {formattedDate}
-              </p>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 capitalize leading-tight">
+                  {dateInfo.fullDate}
+                </p>
+                {/* Días de la semana para reservas RANGE */}
+                {dateInfo.isRange && dateInfo.weekDays.length > 0 && (
+                  <p className="text-xs text-purple-600 mt-1">
+                    {getWeekDayNames(dateInfo.weekDays)}
+                  </p>
+                )}
+              </div>
             </div>
 
+            {/* Horarios */}
             {timeSlot && (
               <div className="flex items-center text-sm">
                 <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center mr-3">
                   <Clock className="w-4 h-4 text-green-600" />
                 </div>
-                <p className="font-medium text-gray-900">
-                  {timeSlot.startTime} - {timeSlot.endTime}
-                </p>
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">
+                    {timeSlot.startTime} - {timeSlot.endTime}
+                  </p>
+                  {/* Múltiples horarios para RANGE */}
+                  {reservation.timeslots && reservation.timeslots.length > 1 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      +{reservation.timeslots.length - 1} horarios más
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
+            {/* Dirección */}
             <div className="flex items-start text-sm">
               <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center mr-3 mt-0.5">
                 <MapPin className="w-4 h-4 text-orange-600" />
@@ -283,15 +366,41 @@ export function ReservationItem({
           </DialogHeader>
 
           <div className="py-4 px-4 bg-gray-50 rounded-lg">
-            <h4 className="font-semibold text-gray-900 mb-1">
+            <div className="flex items-center gap-2 mb-2">
+              {dateInfo.isRange ? (
+                <Repeat className="w-4 h-4 text-purple-600" />
+              ) : (
+                <CalendarDays className="w-4 h-4 text-blue-600" />
+              )}
+              <span className={`text-xs font-medium ${
+                dateInfo.isRange ? "text-purple-600" : "text-blue-600"
+              }`}>
+                {dateInfo.isRange ? "RESERVA DE RANGO" : "RESERVA ÚNICA"}
+              </span>
+            </div>
+            
+            <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">
               {reservation.subScenario.name}
             </h4>
+            
             <p className="text-sm text-gray-600 mb-2 capitalize">
-              {formattedDate}
+              {dateInfo.fullDate}
             </p>
+            
+            {dateInfo.isRange && dateInfo.weekDays.length > 0 && (
+              <p className="text-xs text-purple-600 mb-2">
+                Días: {getWeekDayNames(dateInfo.weekDays)}
+              </p>
+            )}
+            
             {timeSlot && (
               <p className="text-sm text-gray-600">
                 {timeSlot.startTime} - {timeSlot.endTime}
+                {reservation.timeslots && reservation.timeslots.length > 1 && (
+                  <span className="text-xs text-green-600 ml-2">
+                    (+{reservation.timeslots.length - 1} más)
+                  </span>
+                )}
               </p>
             )}
           </div>

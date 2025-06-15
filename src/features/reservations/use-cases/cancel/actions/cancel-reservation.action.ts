@@ -1,6 +1,7 @@
 'use server';
 
 import { createReservationRepository, ReservationRepository } from '@/entities/reservation/infrastructure/reservation-repository.adapter';
+import { ReservationDto } from '@/entities/reservation/model/types';
 import { ClientHttpClient, ClientHttpClientFactory } from '@/shared/api/http-client-client';
 import { createServerAuthContext, ServerAuthContext } from '@/shared/api/server-auth';
 import { revalidateTag } from 'next/cache';
@@ -18,14 +19,14 @@ export async function cancelReservationAction(
   try {
     console.log(`SERVER ACTION: Cancelling reservation ${reservationId}`);
     
-    // Create repository
+    // Create repository with server-side authentication context
     const authContext: ServerAuthContext = createServerAuthContext();
     const httpClient: ClientHttpClient = ClientHttpClientFactory.createClient(authContext);
     const repository: ReservationRepository = createReservationRepository(httpClient);
 
     // Update state (ya devuelve ReservationDto completo)
-    const cancelledReservation = await repository.updateState(reservationId, {
-      stateId: 3, // CANCELADA
+    const cancelledReservation: ReservationDto = await repository.updateState(reservationId, {
+      reservationStateId: 3, // CANCELADA
     });
   
 
@@ -42,7 +43,7 @@ export async function cancelReservationAction(
       revalidateTag(`scenario-${cancelledReservation.subScenarioId}-reservations`);
       
       // Liberar timeslots (cancelación libera espacios)
-      const reservationDate = new Date(cancelledReservation.reservationDate).toISOString().split('T')[0];
+      const reservationDate = new Date(cancelledReservation.initialDate).toISOString().split('T')[0];
       revalidateTag(`timeslots-${cancelledReservation.subScenarioId}-${reservationDate}`);
       revalidateTag(`timeslots-${cancelledReservation.subScenarioId}`);
       revalidateTag('timeslots');
@@ -81,7 +82,7 @@ export async function cancelMultipleReservationsAction(
     await Promise.all(
       reservationIds.map(id =>
         repository.updateState(id, {
-          stateId: 3, // CANCELADA
+          reservationStateId: 3, // CANCELADA
         })
       )
     );
@@ -97,7 +98,7 @@ export async function cancelMultipleReservationsAction(
     const uniqueUserIds = [...new Set(reservations.map(r => r.userId).filter(Boolean))];
     const uniqueScenarioIds = [...new Set(reservations.map(r => r.subScenarioId).filter(Boolean))];
     const uniqueDates = [...new Set(reservations.map(r => 
-      new Date(r.reservationDate).toISOString().split('T')[0]
+      new Date(r.initialDate).toISOString().split('T')[0]
     ))];
 
     // Invalidar por usuarios únicos

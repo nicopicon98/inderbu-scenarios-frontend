@@ -172,7 +172,7 @@ const ReservationService = {
 
   /* ---------- Reservas de un usuario ---------- */
   async getUserReservations(userId: number): Promise<ReservationDto[]> {
-    const res = await fetch(`${API_URL}/users/${userId}/reservations`, {
+    const res = await fetch(`${API_URL}/reservations/user/${userId}`, {
       credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
@@ -231,13 +231,13 @@ const ReservationService = {
   /* ---------- Actualizar estado (legacy) ---------- */
   async updateReservationState(
     reservationId: number,
-    stateId: number
+    reservationStateId: number
   ): Promise<ReservationDto> {
     const res = await fetch(`${API_URL}/reservations/${reservationId}/state`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stateId }),
+      body: JSON.stringify({ reservationStateId }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => null);

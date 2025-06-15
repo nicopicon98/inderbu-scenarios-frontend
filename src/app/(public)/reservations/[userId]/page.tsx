@@ -8,6 +8,15 @@ interface PageProps {
   params: Promise<{ userId: string }>;
 }
 
+export async function generateMetadata({ params }: PageProps) {
+  const { userId } = await params;
+
+  return {
+    title: `Mis Reservas - Usuario ${userId}`,
+    description: 'Gestiona todas tus reservas de escenarios deportivos desde un solo lugar.',
+  };
+}
+
 export default async function UserReservationsPage({ params }: PageProps) {
   const { userId } = await params;
 
@@ -18,9 +27,6 @@ export default async function UserReservationsPage({ params }: PageProps) {
     // Execute use case through service layer
     // All business logic, validation, and authorization happens in domain/application layers
     const result: GetUserReservationsResponse = await reservationService.getUserReservations(userId);
-
-    console.log(`SSR: ${result.reservations.data.length} reservations loaded for user ${userId}`);
-    console.log(`Access metadata:`, result.metadata);
 
     // Render page component with clean separation
     return (
@@ -48,14 +54,4 @@ export default async function UserReservationsPage({ params }: PageProps) {
     console.error('Unexpected error in UserReservationsRoute:', error);
     throw error;
   }
-}
-
-// Generate metadata for SEO
-export async function generateMetadata({ params }: PageProps) {
-  const { userId } = await params;
-
-  return {
-    title: `Mis Reservas - Usuario ${userId}`,
-    description: 'Gestiona todas tus reservas de escenarios deportivos desde un solo lugar.',
-  };
 }
