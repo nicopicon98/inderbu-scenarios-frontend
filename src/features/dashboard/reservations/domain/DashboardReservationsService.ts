@@ -1,6 +1,5 @@
 import { 
   GetDashboardReservationsUseCase, 
-  DashboardReservationsFilters, 
   DashboardReservationsResponse 
 } from '../application/GetDashboardReservationsUseCase';
 
@@ -9,7 +8,7 @@ export class DashboardReservationsService {
     private readonly getDashboardReservationsUseCase: GetDashboardReservationsUseCase
   ) {}
 
-  async getDashboardReservations(filters: DashboardReservationsFilters = {}): Promise<DashboardReservationsResponse> {
+  async getDashboardReservations(filters: Record<string, any> = {}): Promise<DashboardReservationsResponse> {
     return await this.getDashboardReservationsUseCase.execute(filters);
   }
 }

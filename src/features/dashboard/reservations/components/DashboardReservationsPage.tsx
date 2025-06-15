@@ -1,17 +1,17 @@
 "use client";
 
-import { ReservationDto } from "@/services/reservation.service";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Filter, Plus, X } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { FiltersCard } from "@/features/reservations/components/molecules/filters-card";
-import { StatsGrid } from "@/features/reservations/components/molecules/stats-grid";
-import { CreateReservationModal } from "@/features/reservations/components/organisms/create-reservation-modal";
 import { ReservationDetailsModal } from "@/features/reservations/components/organisms/reservation-details-modal";
+import { CreateReservationModal } from "@/features/reservations/components/organisms/create-reservation-modal";
 import { ReservationsTable } from "@/features/reservations/components/organisms/reservations-table";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
+import { FiltersCard } from "@/features/reservations/components/molecules/filters-card";
+import { StatsGrid } from "@/features/reservations/components/molecules/stats-grid";
+import { ReservationDto } from "@/services/reservation.service";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Filter, Plus, X } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { useState } from "react";
 
 interface DashboardReservationsPageProps {
   initialData: DashboardReservationsResponse;

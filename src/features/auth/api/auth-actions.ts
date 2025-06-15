@@ -23,7 +23,6 @@ export interface AuthResult {
   fieldErrors?: Record<string, string[]> | null;
 }
 
-// HELPER: Convertir Zod errors a formato limpio
 const getFieldErrors = (error: z.ZodError): Record<string, string[]> => {
   const flattened = error.flatten().fieldErrors;
   const cleaned: Record<string, string[]> = {};
@@ -36,10 +35,6 @@ const getFieldErrors = (error: z.ZodError): Record<string, string[]> => {
   
   return cleaned;
 };
-
-// =====================================
-// SERVER ACTIONS (para formularios)
-// =====================================
 
 export async function loginAction(
   _prevState: AuthResult | null,
@@ -250,10 +245,6 @@ export async function logoutAction(): Promise<AuthResult> {
     };
   }
 }
-
-// =====================================
-// FUNCIONES DIRECTAS (para uso programático como: hooks, servicios, etc.)
-// =====================================
 
 // FUNCIÓN DIRECTA: Sin FormData, para uso programático
 export async function login(credentials: TLoginData): Promise<AuthResult> {

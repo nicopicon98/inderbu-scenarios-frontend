@@ -1,6 +1,6 @@
 import { createDashboardReservationsContainer } from '@/features/dashboard/reservations/di/DashboardReservationsContainer.server';
+import { DashboardReservationsResponse } from '@/features/dashboard/reservations/application/GetDashboardReservationsUseCase';
 import { DashboardReservationsPage } from '@/features/dashboard/reservations/components/DashboardReservationsPage';
-import { redirect } from 'next/navigation';
 
 interface DashboardPageProps {
   searchParams: {
@@ -36,14 +36,15 @@ export default async function DashboardRoute(props: DashboardPageProps) {
 
     // DDD: Execute use case through service layer
     // All business logic, validation, and data fetching happens in domain/application layers
-    const result = await reservationService.getDashboardReservations(filters);
+    const result: DashboardReservationsResponse = await reservationService.getDashboardReservations(filters);
+
+    console.log('SSR Result in DashboardRoute:', result);
 
     // Atomic Design: Render page template with clean separation
     return <DashboardReservationsPage initialData={result} />;
 
   } catch (error) {
     console.error('SSR Error in DashboardRoute:', error);
-
     // For unexpected errors, let Next.js error boundary handle it
     console.error('Unexpected error in DashboardRoute:', error);
     throw error;

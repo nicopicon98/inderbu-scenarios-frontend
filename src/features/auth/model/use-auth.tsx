@@ -211,7 +211,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       // Incluso si hay error, limpiar estado local
-      // FIX: Versión funcional
       setAuthState(() => ({
         user: null,
         isAuthenticated: false,
