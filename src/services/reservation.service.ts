@@ -23,7 +23,8 @@ export interface CreateReservationResponseDto {
 /* ---------- Catálogo de estados ---------- */
 export interface ReservationStateDto {
   id: number;
-  state: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA";
+  name?: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA"; // Backend usa 'name'
+  state?: "PENDIENTE" | "CONFIRMADA" | "RECHAZADA" | "CANCELADA"; // Frontend esperaba 'state'
   description?: string;
 }
 
@@ -144,13 +145,32 @@ const ReservationService = {
     subScenarioId: number,
     date: string
   ): Promise<TimeslotResponseDto[]> {
-    const res = await fetch(
-      `${API_URL}/reservations/available-timeslots?subScenarioId=${subScenarioId}&date=${date}`,
-      { credentials: "include" }
-    );
-    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
-    const { data } = await res.json();
-    return data;
+    const url = `${API_URL}/reservations/availability?subScenarioId=${subScenarioId}&initialDate=${date}`;
+    
+    const res = await fetch(url, { credentials: "include" });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('❌ Error response:', errorText);
+      throw new Error(`Error ${res.status}: ${res.statusText}`);
+    }
+    
+    const response = await res.json();
+    
+    // El backend envuelve la respuesta en {statusCode, message, data}
+    // Los timeSlots están en response.data.timeSlots
+    const data = response.data || response;
+    
+    if (data && data.timeSlots && Array.isArray(data.timeSlots)) {
+      return data.timeSlots.map((slot: any) => ({
+        id: slot.id,
+        startTime: slot.startTime.substring(0, 5), // Convertir "09:00:00" a "09:00"
+        endTime: slot.endTime.substring(0, 5),     // Convertir "10:00:00" a "10:00"
+        available: slot.isAvailableInAllDates
+      }));
+    }
+    
+    return [];
   },
 
   /* ---------- Crear reserva ---------- */

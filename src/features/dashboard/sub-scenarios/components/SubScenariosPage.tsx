@@ -1,84 +1,42 @@
 "use client";
 
-import { SubScenariosFiltersCard } from "@/features/sub-scenario/components/molecules/SubScenariosFiltersCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { CreateSubScenarioDialog } from "@/features/sub-scenario/components/organisms/create-sub-scenario-dialog";
+import { SubScenariosFiltersCard } from "@/features/sub-scenario/components/molecules/SubScenariosFiltersCard";
 import { EditSubScenarioDialog } from "@/features/sub-scenario/components/organisms/edit-sub-scenario-dialog";
 import { SubScenarioTable } from "@/features/sub-scenario/components/organisms/sub-scenario-table";
+import { useSubScenarioData } from "@/features/sub-scenario/hooks/use-sub-scenario-data";
+import { SubScenariosDataResponse } from "../application/GetSubScenariosDataUseCase";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Download, Filter, Plus } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SubScenariosDataResponse } from "../application/GetSubScenariosDataUseCase";
+
 
 interface SubScenariosPageProps {
   initialData: SubScenariosDataResponse;
 }
 
 export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Local state from initial data
-  const [subScenarios] = useState(initialData.subScenarios);
-  const [scenarios] = useState(initialData.scenarios);
-  const [activityAreas] = useState(initialData.activityAreas);
-  const [neighborhoods] = useState(initialData.neighborhoods);
-  const [fieldSurfaceTypes] = useState(initialData.fieldSurfaceTypes);
-  const [pageMeta] = useState(initialData.meta);
+  // Use the dynamic hook (ahora funciona correctamente)
+  const {
+    subScenarios,
+    scenarios,
+    activityAreas, 
+    neighborhoods,
+    fieldSurfaceTypes,
+    pageMeta,
+    loading,
+    filters,
+    onPageChange,
+    onSearch,
+    onFilterChange
+  } = useSubScenarioData();
 
   // UI state
   const [showFilters, setShowFilters] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
-
-  // Extract filters from URL
-  const filters = {
-    page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
-    limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : 7,
-    search: searchParams.get('search') || "",
-    scenarioId: searchParams.get('scenarioId') ? Number(searchParams.get('scenarioId')) : undefined,
-    activityAreaId: searchParams.get('activityAreaId') ? Number(searchParams.get('activityAreaId')) : undefined,
-    neighborhoodId: searchParams.get('neighborhoodId') ? Number(searchParams.get('neighborhoodId')) : undefined,
-  };
-
-  const onFilterChange = (updatedFilters: any) => {
-    const params = new URLSearchParams();
-    
-    // Add filters
-    Object.entries(updatedFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(key, String(value));
-      }
-    });
-
-    // Reset to page 1 when filters change
-    params.set('page', '1');
-    
-    router.push(`/dashboard/sub-scenarios?${params.toString()}`);
-  };
-
-  const onSearch = (searchQuery: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchQuery) {
-      params.set('search', searchQuery);
-    } else {
-      params.delete('search');
-    }
-    params.set('page', '1'); // Reset to page 1
-    router.push(`/dashboard/sub-scenarios?${params.toString()}`);
-  };
-
-  const onPageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', page.toString());
-    router.push(`/dashboard/sub-scenarios?${params.toString()}`);
-  };
-
-  const refetch = () => {
-    router.refresh();
-  };
 
   return (
     <>
@@ -127,10 +85,10 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
             <SubScenarioTable
               rows={subScenarios}
               meta={pageMeta}
-              loading={false}
+              loading={loading}
               filters={{
-                page: filters.page,
-                search: filters.search,
+                page: filters.page || 1,
+                search: filters.search || '',
               }}
               onPage={onPageChange}
               onSearch={onSearch}
@@ -149,10 +107,10 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
                   (r) => r.state === (k === "active"),
                 )}
                 meta={pageMeta}
-                loading={false}
+                loading={loading}
                 filters={{
-                  page: filters.page,
-                  search: filters.search,
+                  page: filters.page || 1,
+                  search: filters.search || '',
                 }}
                 onPage={onPageChange}
                 onSearch={onSearch}
@@ -170,20 +128,11 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
       <CreateSubScenarioDialog 
         open={createOpen} 
         onOpenChange={setCreateOpen}
-        onSuccess={() => {
-          refetch();
-          setCreateOpen(false);
-        }}
       />
       <EditSubScenarioDialog
         open={editOpen}
         subScenario={selected}
         onOpenChange={setEditOpen}
-        onSuccess={() => {
-          refetch();
-          setEditOpen(false);
-          setSelected(null);
-        }}
       />
     </>
   );

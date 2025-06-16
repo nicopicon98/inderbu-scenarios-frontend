@@ -135,6 +135,8 @@ export const ReservationsContainer = () => {
         reservation={viewingDetails}
         onClose={() => setViewingDetails(null)}
       />
+
+      
       <CreateReservationModal
         open={creating}
         onClose={() => setCreating(false)}

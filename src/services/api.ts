@@ -156,6 +156,30 @@ export interface UpdateScenarioDto {
   neighborhoodId?: number;
 }
 
+// DTOs para SubScenarios
+export interface CreateSubScenarioDto {
+  name: string;
+  state?: boolean;
+  hasCost?: boolean;
+  numberOfSpectators?: number;
+  numberOfPlayers?: number;
+  recommendations?: string;
+  scenarioId: number;
+  activityAreaId?: number;
+  fieldSurfaceTypeId?: number;
+}
+
+export interface UpdateSubScenarioDto {
+  name?: string;
+  state?: boolean;
+  hasCost?: boolean;
+  numberOfSpectators?: number;
+  numberOfPlayers?: number;
+  recommendations?: string;
+  activityAreaId?: number;
+  fieldSurfaceTypeId?: number;
+}
+
 export interface FieldSurfaceType {
   id: number;
   name: string;
@@ -163,8 +187,8 @@ export interface FieldSurfaceType {
 
 export interface SubScenarioImage {
   id: number;
-  path: string;
-  url: string;
+  path: string; // Ruta relativa de la imagen (/uploads/images/...)
+  url?: string; // URL completa (para compatibilidad)
   isFeature: boolean;
   displayOrder: number;
   subScenarioId: number;
@@ -285,15 +309,72 @@ export const subScenarioService = {
   getById: async (id: number): Promise<SubScenario> => {
     return fetchApi<SubScenario>(`/sub-scenarios/${id}`, { method: "GET" });
   },
-  create: async (data: Partial<SubScenario>): Promise<SubScenario> => {
-    return fetchApi<SubScenario>("/sub-scenarios", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+  create: async (data: CreateSubScenarioDto, images?: File[]): Promise<SubScenario> => {
+    // Si hay imágenes, usar FormData; si no, usar JSON
+    if (images && images.length > 0) {
+      const formData = new FormData();
+      
+      // Agregar campos del DTO asegurando tipos correctos
+      formData.append('name', data.name);
+      formData.append('state', String(data.state ?? false));
+      formData.append('hasCost', String(data.hasCost ?? false));
+      formData.append('numberOfSpectators', String(data.numberOfSpectators ?? 0));
+      formData.append('numberOfPlayers', String(data.numberOfPlayers ?? 0));
+      formData.append('scenarioId', String(data.scenarioId));
+      
+      if (data.recommendations) {
+        formData.append('recommendations', data.recommendations);
+      }
+      
+      if (data.activityAreaId !== undefined) {
+        formData.append('activityAreaId', String(data.activityAreaId));
+      }
+      
+      if (data.fieldSurfaceTypeId !== undefined) {
+        formData.append('fieldSurfaceTypeId', String(data.fieldSurfaceTypeId));
+      }
+      
+      // Agregar imágenes
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+      
+      // Usar fetch directamente para FormData (sin Content-Type)
+      const url = `${API_URL}/sub-scenarios`;
+      const headers: HeadersInit = {};
+      
+      // Agregar token de autenticación si existe
+      const token = localStorage.getItem("auth_token");
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message ||
+            `Error ${response.status}: ${response.statusText}`,
+        );
+      }
+      
+      return await response.json();
+    } else {
+      // Sin imágenes, usar JSON normal
+      return fetchApi<SubScenario>("/sub-scenarios", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    }
   },
   update: async (
     id: number,
-    data: Partial<SubScenario>,
+    data: UpdateSubScenarioDto,
   ): Promise<SubScenario> => {
     return fetchApi<SubScenario>(`/sub-scenarios/${id}`, {
       method: "PUT",
@@ -525,7 +606,17 @@ export const imageUtils = {
     subScenario?: SubScenario,
     defaultImage: string = "/placeholder.jpg",
   ): string => {
-    return subScenario?.imageGallery?.featured?.url || defaultImage;
+    const featured = subScenario?.imageGallery?.featured;
+    if (featured?.path) {
+      return `${API_URL}${featured.path}`;
+    }
+    return defaultImage;
+  },
+
+  // Obtiene la URL completa de una imagen
+  getImageUrl: (imagePath?: string): string => {
+    if (!imagePath) return "/placeholder.jpg";
+    return `${API_URL}${imagePath}`;
   },
 
   // Comprueba si un sub-escenario tiene imágenes

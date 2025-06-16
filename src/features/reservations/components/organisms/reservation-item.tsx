@@ -92,7 +92,6 @@ const getWeekDayNames = (weekDays: number[]) => {
   return weekDays.map(day => days[day]).join(", ");
 };
 
-/* ───────────────────────────  Componente  ───────────────────────────────── */
 export function ReservationItem({
   reservation,
   isActive,
@@ -100,15 +99,12 @@ export function ReservationItem({
   onModify,
   highlightManageButton = false,
 }: ReservationItemProps) {
-  /* ---------- Estado local ---------- */
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  /* ---------- Helpers ---------- */
   const timeSlot = reservation.timeSlot ?? reservation.timeslots?.[0] ?? undefined;
   const dateInfo = formatReservationDate(reservation);
 
-  /* ---------- Cancelación ---------- */
   const handleCancelReservation = async () => {
     setIsCancelling(true);
     try {

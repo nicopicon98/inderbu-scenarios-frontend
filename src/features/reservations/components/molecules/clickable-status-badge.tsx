@@ -81,8 +81,9 @@ export function ClickableStatusBadge({
   const currentState: ReservationStateDto | undefined = states.find(
     (s) => s.id === statusId
   );
+  
   /** 3. Determinar clave del catálogo */
-  const keyCurrent = currentState?.state ?? "PENDIENTE";
+  const keyCurrent = (currentState as any)?.name ?? (currentState as any)?.state ?? "PENDIENTE";
 
   // Información del estado seleccionado para el diálogo de confirmación
   const selectedStateInfo = useMemo(() => {
@@ -135,7 +136,7 @@ export function ClickableStatusBadge({
         : null;
 
       const state = states.find((s) => s.id === selectedState);
-      const key = (state as any).name ?? (state as any).state ?? "";
+      const key = (state as any)?.name ?? (state as any)?.state ?? "";
       const label = stateCatalog[key]?.label ?? key;
 
       toast.success(`Estado cambiado a ${label}`, {
@@ -193,7 +194,7 @@ export function ClickableStatusBadge({
             </div>
           ) : (
             states.map((state: ReservationStateDto) => {
-              // El backend devuelve { id, state }, pero admitimos también name
+              // El backend devuelve { id, name }, pero admitimos también state
               const key = (state as any).name ?? (state as any).state;
               const cat = stateCatalog[key] ?? {
                 label: key,
