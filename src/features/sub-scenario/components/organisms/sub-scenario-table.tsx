@@ -224,11 +224,17 @@ export function SubScenarioTable({
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious onClick={() => onPage(filters.page - 1)} />
+                <PaginationPrevious 
+                  onClick={() => filters.page > 1 && onPage(filters.page - 1)}
+                  className={filters.page <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
               </PaginationItem>
               {renderPaginationItems()}
               <PaginationItem>
-                <PaginationNext onClick={() => onPage(filters.page + 1)} />
+                <PaginationNext 
+                  onClick={() => meta && filters.page < meta.totalPages && onPage(filters.page + 1)}
+                  className={meta && filters.page >= meta.totalPages ? "pointer-events-none opacity-50" : ""}
+                />
               </PaginationItem>
             </PaginationContent>
           </Pagination>

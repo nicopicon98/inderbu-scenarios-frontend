@@ -32,7 +32,6 @@ export function useSubScenarioData() {
   const initialRender = useRef(true);
 
   // ─── Internal State (como useHomeData) ──────────────────────────────────────────────────────────────
-  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [subScenarios, setSubScenarios] = useState<SubScenario[]>([]);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -57,29 +56,23 @@ export function useSubScenarioData() {
 
   // ─── Sync URL with state on mount and URL changes ─────────────────────────────────────────────
   useEffect(() => {
-    setCurrentPage(urlFilters.page);
     setFilters(urlFilters);
   }, [searchParams]);
 
   // ─── Sync state with URL (cuando el estado interno cambia) ─────────────────────────────────────
-  useEffect(() => {
+  const updateUrl = useCallback((newFilters: FilterState) => {
     const params = new URLSearchParams();
     
-    if (currentPage > 1) params.set('page', currentPage.toString());
-    if (filters.limit !== 7) params.set('limit', filters.limit!.toString());
-    if (filters.search) params.set('search', filters.search);
-    if (filters.scenarioId) params.set('scenarioId', filters.scenarioId.toString());
-    if (filters.activityAreaId) params.set('activityAreaId', filters.activityAreaId.toString());
-    if (filters.neighborhoodId) params.set('neighborhoodId', filters.neighborhoodId.toString());
+    if (newFilters.page && newFilters.page > 1) params.set('page', newFilters.page.toString());
+    if (newFilters.limit !== 7) params.set('limit', newFilters.limit!.toString());
+    if (newFilters.search) params.set('search', newFilters.search);
+    if (newFilters.scenarioId) params.set('scenarioId', newFilters.scenarioId.toString());
+    if (newFilters.activityAreaId) params.set('activityAreaId', newFilters.activityAreaId.toString());
+    if (newFilters.neighborhoodId) params.set('neighborhoodId', newFilters.neighborhoodId.toString());
 
     const newUrl = params.toString() ? `/dashboard/sub-scenarios?${params.toString()}` : '/dashboard/sub-scenarios';
-    const currentUrl = `/dashboard/sub-scenarios?${searchParams.toString()}`;
-
-    // Solo actualizar URL si es diferente (evitar loops)
-    if (newUrl !== currentUrl && newUrl !== '/dashboard/sub-scenarios?') {
-      router.replace(newUrl, { scroll: false });
-    }
-  }, [currentPage, filters, router, searchParams]);
+    router.replace(newUrl, { scroll: false });
+  }, [router]);
 
   // ─── Initial bootstrap ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -114,12 +107,7 @@ export function useSubScenarioData() {
   const fetchSubScenarios = useCallback(async () => {
     setLoading(true);
     try {
-      const queryParams = {
-        ...filters,
-        page: currentPage,
-      };
-      
-      const res = await subScenarioService.getAll(queryParams);
+      const res = await subScenarioService.getAll(filters);
       setSubScenarios(res.data);
       setPageMeta(res.meta);
     } catch (err) {
@@ -128,7 +116,7 @@ export function useSubScenarioData() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [filters]);
 
   // ─── Effect para fetch SOLO en renders subsecuentes ───────────────────────────────────────────
   useEffect(() => {
@@ -144,22 +132,26 @@ export function useSubScenarioData() {
 
     // Solo hacer fetch si ya pasó el primer render
     fetchSubScenarios();
-  }, [currentPage, filters, fetchSubScenarios]);
+  }, [filters, fetchSubScenarios]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────────────────────────
   const onPageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+    const newFilters = { ...filters, page };
+    setFilters(newFilters);
+    updateUrl(newFilters);
+  }, [filters, updateUrl]);
 
   const onSearch = useCallback((q: string) => {
-    setFilters(prev => ({ ...prev, search: q }));
-    setCurrentPage(1); // Reset to page 1
-  }, []);
+    const newFilters = { ...filters, search: q, page: 1 };
+    setFilters(newFilters);
+    updateUrl(newFilters);
+  }, [filters, updateUrl]);
 
   const onFilterChange = useCallback((upd: Partial<FilterState>) => {
-    setFilters(prev => ({ ...prev, ...upd }));
-    setCurrentPage(1); // Reset to page 1
-  }, []);
+    const newFilters = { ...filters, ...upd, page: 1 };
+    setFilters(newFilters);
+    updateUrl(newFilters);
+  }, [filters, updateUrl]);
 
   // ─── CRUD actions ───────────────────────────────────────────────────────────
   const createSubScenario = async (
