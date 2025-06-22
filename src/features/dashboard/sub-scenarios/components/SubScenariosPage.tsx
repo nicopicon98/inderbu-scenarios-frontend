@@ -28,6 +28,7 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
     loading,
     filters,
     onPageChange,
+    onLimitChange,
     onSearch,
     onFilterChange
   } = useSubScenarioData();
@@ -87,10 +88,11 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
               meta={pageMeta}
               loading={loading}
               filters={{
-                page: filters.page || 1,
+                page: pageMeta?.page || 1,
                 search: filters.search || '',
               }}
-              onPage={onPageChange}
+              onPageChange={onPageChange}
+              onLimitChange={onLimitChange}
               onSearch={onSearch}
               onEdit={(row) => {
                 setSelected(row);
@@ -109,10 +111,11 @@ export function SubScenariosPage({ initialData }: SubScenariosPageProps) {
                 meta={pageMeta}
                 loading={loading}
                 filters={{
-                  page: filters.page || 1,
+                  page: pageMeta?.page || 1,
                   search: filters.search || '',
                 }}
-                onPage={onPageChange}
+                onPageChange={onPageChange}
+                onLimitChange={onLimitChange}
                 onSearch={onSearch}
                 onEdit={(row) => {
                   setSelected(row);

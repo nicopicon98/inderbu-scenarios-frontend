@@ -3,8 +3,6 @@
 import {
   ActivityArea,
   Neighborhood,
-  PageMeta,
-  PageOptions,
   Scenario,
   SubScenario,
   CreateSubScenarioDto,
@@ -14,25 +12,26 @@ import {
   scenarioService,
   subScenarioService,
 } from "@/services/api";
-import { useCallback, useEffect, useState, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import { useDashboardPagination, PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 
-export interface FilterState extends PageOptions {
+export interface SubScenarioFilters {
   search: string;
   scenarioId?: number;
   activityAreaId?: number;
   neighborhoodId?: number;
 }
 
-const EMPTY_FILTERS: FilterState = { search: "", page: 1, limit: 7 };
-
 export function useSubScenarioData() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const initialRender = useRef(true);
 
-  // ─── Internal State (como useHomeData) ──────────────────────────────────────────────────────────────
-  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  // ─── Use standardized pagination hook ─────────────────────────────────────────────────────────────
+  const pagination = useDashboardPagination({
+    baseUrl: '/dashboard/sub-scenarios',
+    defaultLimit: 7,
+  });
+
+  // ─── Internal State ────────────────────────────────────────────────────────────────────────────
   const [subScenarios, setSubScenarios] = useState<SubScenario[]>([]);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [activityAreas, setActivityAreas] = useState<ActivityArea[]>([]);
@@ -44,35 +43,13 @@ export function useSubScenarioData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ─── Extract filters from URL ───────────────────────────────────────────────────────────────────
-  const urlFilters = {
-    page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
-    limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : 7,
-    search: searchParams.get('search') || "",
-    scenarioId: searchParams.get('scenarioId') ? Number(searchParams.get('scenarioId')) : undefined,
-    activityAreaId: searchParams.get('activityAreaId') ? Number(searchParams.get('activityAreaId')) : undefined,
-    neighborhoodId: searchParams.get('neighborhoodId') ? Number(searchParams.get('neighborhoodId')) : undefined,
+  // ─── Extract specific filters from pagination ──────────────────────────────────────────────────
+  const filters: SubScenarioFilters = {
+    search: pagination.filters.search || "",
+    scenarioId: pagination.filters.scenarioId as number | undefined,
+    activityAreaId: pagination.filters.activityAreaId as number | undefined,
+    neighborhoodId: pagination.filters.neighborhoodId as number | undefined,
   };
-
-  // ─── Sync URL with state on mount and URL changes ─────────────────────────────────────────────
-  useEffect(() => {
-    setFilters(urlFilters);
-  }, [searchParams]);
-
-  // ─── Sync state with URL (cuando el estado interno cambia) ─────────────────────────────────────
-  const updateUrl = useCallback((newFilters: FilterState) => {
-    const params = new URLSearchParams();
-    
-    if (newFilters.page && newFilters.page > 1) params.set('page', newFilters.page.toString());
-    if (newFilters.limit !== 7) params.set('limit', newFilters.limit!.toString());
-    if (newFilters.search) params.set('search', newFilters.search);
-    if (newFilters.scenarioId) params.set('scenarioId', newFilters.scenarioId.toString());
-    if (newFilters.activityAreaId) params.set('activityAreaId', newFilters.activityAreaId.toString());
-    if (newFilters.neighborhoodId) params.set('neighborhoodId', newFilters.neighborhoodId.toString());
-
-    const newUrl = params.toString() ? `/dashboard/sub-scenarios?${params.toString()}` : '/dashboard/sub-scenarios';
-    router.replace(newUrl, { scroll: false });
-  }, [router]);
 
   // ─── Initial bootstrap ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -103,58 +80,56 @@ export function useSubScenarioData() {
     })();
   }, []);
 
-  // ─── Fetch subescenarios cuando cambia el estado interno ───────────────────────────────────────
+  // ─── Memoize query params to avoid infinite loops ─────────────────────────────────────────────
+  const queryParams = useMemo(() => ({
+    page: pagination.filters.page,
+    limit: pagination.filters.limit,
+    search: pagination.filters.search,
+    scenarioId: filters.scenarioId,
+    activityAreaId: filters.activityAreaId,
+    neighborhoodId: filters.neighborhoodId,
+  }), [
+    pagination.filters.page,
+    pagination.filters.limit, 
+    pagination.filters.search,
+    filters.scenarioId,
+    filters.activityAreaId,
+    filters.neighborhoodId
+  ]);
+
+  // ─── Fetch subescenarios cuando cambian los filtros ───────────────────────────────────────────
   const fetchSubScenarios = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await subScenarioService.getAll(filters);
+      const res = await subScenarioService.getAll(queryParams);
       setSubScenarios(res.data);
-      setPageMeta(res.meta);
+      // Build proper PageMeta with pagination utility
+      const meta = pagination.buildPageMeta(res.meta.totalItems);
+      setPageMeta(meta);
     } catch (err) {
       console.error(err);
       setError("Error al obtener sub-escenarios.");
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [queryParams, pagination.buildPageMeta]);
 
-  // ─── Effect para fetch SOLO en renders subsecuentes ───────────────────────────────────────────
+  // ─── Effect para fetch cuando cambian los filtros ─────────────────────────────────────────────
   useEffect(() => {
-    // Evitar fetch en el primer render (datos vienen del SSR si está disponible)
+    // Evitar fetch en el primer render si ya hay datos (SSR)
     if (initialRender.current) {
       initialRender.current = false;
-      // Solo hacer el fetch inicial si no hay datos
       if (subScenarios.length === 0) {
         fetchSubScenarios();
       }
       return;
     }
 
-    // Solo hacer fetch si ya pasó el primer render
     fetchSubScenarios();
-  }, [filters, fetchSubScenarios]);
-
-  // ─── Handlers ──────────────────────────────────────────────────────────────────────────────────
-  const onPageChange = useCallback((page: number) => {
-    const newFilters = { ...filters, page };
-    setFilters(newFilters);
-    updateUrl(newFilters);
-  }, [filters, updateUrl]);
-
-  const onSearch = useCallback((q: string) => {
-    const newFilters = { ...filters, search: q, page: 1 };
-    setFilters(newFilters);
-    updateUrl(newFilters);
-  }, [filters, updateUrl]);
-
-  const onFilterChange = useCallback((upd: Partial<FilterState>) => {
-    const newFilters = { ...filters, ...upd, page: 1 };
-    setFilters(newFilters);
-    updateUrl(newFilters);
-  }, [filters, updateUrl]);
+  }, [fetchSubScenarios]);
 
   // ─── CRUD actions ───────────────────────────────────────────────────────────
-  const createSubScenario = async (
+  const createSubScenario = useCallback(async (
     formData: Omit<SubScenario, "id"> & { images?: any[] },
   ) => {
     setLoading(true);
@@ -176,7 +151,7 @@ export function useSubScenarioData() {
       const imageFiles: File[] = formData.images?.map(img => img.file).filter(Boolean) || [];
       
       // Crear subescenario con imágenes en una sola llamada
-      const result = await subScenarioService.create(createDto, imageFiles);
+      await subScenarioService.create(createDto, imageFiles);
       
       // Refetch los datos actuales
       await fetchSubScenarios();
@@ -186,9 +161,9 @@ export function useSubScenarioData() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchSubScenarios]);
 
-  const updateSubScenario = async (id: number, formData: Partial<SubScenario>) => {
+  const updateSubScenario = useCallback(async (id: number, formData: Partial<SubScenario>) => {
     setLoading(true);
     try {
       // Filtrar solo los campos editables para el DTO de actualización
@@ -214,9 +189,13 @@ export function useSubScenarioData() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchSubScenarios]);
 
   return {
+    // Pagination from standardized hook
+    ...pagination,
+    
+    // Domain-specific state
     filters,
     subScenarios,
     scenarios,
@@ -226,9 +205,8 @@ export function useSubScenarioData() {
     pageMeta,
     loading,
     error,
-    onSearch,
-    onPageChange,
-    onFilterChange,
+    
+    // CRUD actions
     createSubScenario,
     updateSubScenario,
   };

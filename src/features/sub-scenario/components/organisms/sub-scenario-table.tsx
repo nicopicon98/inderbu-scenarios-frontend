@@ -1,22 +1,13 @@
 "use client";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination";
+import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { FileEdit, Loader2, MoreHorizontal } from "lucide-react";
-import { PageMeta, SubScenario } from "@/services/api";
+import { FileEdit, Loader2, Search } from "lucide-react";
+import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
+import { SubScenario } from "@/services/api";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
-import { Search } from "lucide-react";
-import { JSX } from "react";
 
 
 interface Column {
@@ -30,7 +21,8 @@ interface Props {
   meta: PageMeta | null;
   loading: boolean;
   filters: { page: number; search: string };
-  onPage(page: number): void;
+  onPageChange(page: number): void;
+  onLimitChange?(limit: number): void;
   onSearch(term: string): void;
   onEdit(row: SubScenario): void;
 }
@@ -40,7 +32,8 @@ export function SubScenarioTable({
   meta,
   loading,
   filters,
-  onPage,
+  onPageChange,
+  onLimitChange,
   onSearch,
   onEdit,
 }: Props) {
@@ -86,62 +79,6 @@ export function SubScenarioTable({
     },
   ];
 
-  // ─── Pagination helpers ─────────────────────────────────────────────────────
-  const renderPaginationItems = () => {
-    if (!meta) return null;
-
-    const items: JSX.Element[] = [];
-    const { page } = filters;
-    const total = meta.totalPages;
-
-    // first page
-    items.push(
-      <PaginationItem key={1}>
-        <PaginationLink isActive={page === 1} onClick={() => onPage(1)}>
-          1
-        </PaginationLink>
-      </PaginationItem>,
-    );
-
-    if (page > 3)
-      items.push(
-        <PaginationItem key="e1">
-          <PaginationEllipsis />
-        </PaginationItem>,
-      );
-    for (
-      let i = Math.max(2, page - 1);
-      i <= Math.min(total - 1, page + 1);
-      i++
-    ) {
-      items.push(
-        <PaginationItem key={i}>
-          <PaginationLink isActive={page === i} onClick={() => onPage(i)}>
-            {i}
-          </PaginationLink>
-        </PaginationItem>,
-      );
-    }
-    if (page < total - 2)
-      items.push(
-        <PaginationItem key="e2">
-          <PaginationEllipsis />
-        </PaginationItem>,
-      );
-    if (total > 1) {
-      items.push(
-        <PaginationItem key={total}>
-          <PaginationLink
-            isActive={page === total}
-            onClick={() => onPage(total)}
-          >
-            {total}
-          </PaginationLink>
-        </PaginationItem>,
-      );
-    }
-    return items;
-  };
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -214,31 +151,16 @@ export function SubScenarioTable({
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-4 py-2 border-t">
-          {meta && (
-            <span className="text-sm text-gray-500">
-              Mostrando {rows.length} de {meta.totalItems} (pág. {filters.page}/
-              {meta.totalPages})
-            </span>
-          )}
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => filters.page > 1 && onPage(filters.page - 1)}
-                  className={filters.page <= 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {renderPaginationItems()}
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={() => meta && filters.page < meta.totalPages && onPage(filters.page + 1)}
-                  className={meta && filters.page >= meta.totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+        {meta && (
+          <div className="border-t p-4">
+            <DashboardPagination
+              meta={meta}
+              onPageChange={onPageChange}
+              onLimitChange={onLimitChange}
+              showLimitSelector={!!onLimitChange}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
