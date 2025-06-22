@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination";
+import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
+import { useMultiEntityPagination } from "@/shared/hooks/use-dashboard-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -166,13 +159,74 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Local state from initial data
-  const [communes] = useState(initialData.communes);
-  const [neighborhoods] = useState(initialData.neighborhoods);
-  const [cities] = useState(initialData.cities);
-  const [communePageMeta] = useState(initialData.communePageMeta);
-  const [neighborhoodPageMeta] = useState(initialData.neighborhoodPageMeta);
-  const [allCommunes] = useState(initialData.communes); // For select options
+  // Use the data that comes from the server (already paginated and calculated)
+  const {
+    communes,
+    neighborhoods,
+    cities,
+    communePageMeta: serverCommunePageMeta,
+    neighborhoodPageMeta: serverNeighborhoodPageMeta,
+    communeFilters,
+    neighborhoodFilters
+  } = initialData;
+  
+  const allCommunes = communes; // For forms
+  
+  // Transform server PageMeta to match DashboardPagination expectations
+  // Calculate hasNext and hasPrev manually since server doesn't send them
+  const communePageMeta = serverCommunePageMeta ? {
+    page: serverCommunePageMeta.page,
+    limit: serverCommunePageMeta.limit,
+    totalItems: serverCommunePageMeta.totalItems,
+    totalPages: serverCommunePageMeta.totalPages,
+    hasNext: serverCommunePageMeta.page < serverCommunePageMeta.totalPages,
+    hasPrev: serverCommunePageMeta.page > 1,
+  } : null;
+  
+  const neighborhoodPageMeta = serverNeighborhoodPageMeta ? {
+    page: serverNeighborhoodPageMeta.page,
+    limit: serverNeighborhoodPageMeta.limit,
+    totalItems: serverNeighborhoodPageMeta.totalItems,
+    totalPages: serverNeighborhoodPageMeta.totalPages,
+    hasNext: serverNeighborhoodPageMeta.page < serverNeighborhoodPageMeta.totalPages,
+    hasPrev: serverNeighborhoodPageMeta.page > 1,
+  } : null;
+  
+  // Multi-entity pagination hook for URL state management
+  const {
+    updateEntityPage,
+  } = useMultiEntityPagination('/dashboard/locations', ['commune', 'neighborhood']);
+
+  // Pagination handlers with smooth navigation like sub-scenarios
+  const handleCommunePageChange = (newPage: number) => {
+    updateEntityPage('commune', newPage);
+  };
+
+  const handleNeighborhoodPageChange = (newPage: number) => {
+    updateEntityPage('neighborhood', newPage);
+  };
+
+  const handleCommuneLimitChange = (newLimit: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('communeLimit', newLimit.toString());
+    params.set('communePage', '1'); // Reset to first page
+    
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
+  };
+
+  const handleNeighborhoodLimitChange = (newLimit: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('neighborhoodLimit', newLimit.toString());
+    params.set('neighborhoodPage', '1'); // Reset to first page
+    
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
+  };
+
+
+  // Loading state
+  const [loading, setLoading] = useState(false);
 
   // UI state
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "communes");
@@ -210,17 +264,17 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Extract filters from URL
-  const communeFilters = {
-    page: searchParams.get('communePage') ? Number(searchParams.get('communePage')) : 1,
-    limit: searchParams.get('communeLimit') ? Number(searchParams.get('communeLimit')) : 10,
-    search: searchParams.get('communeSearch') || "",
-  };
+  // const communeFilters = {
+  //   page: searchParams.get('communePage') ? Number(searchParams.get('communePage')) : 1,
+  //   limit: searchParams.get('communeLimit') ? Number(searchParams.get('communeLimit')) : 10,
+  //   search: searchParams.get('communeSearch') || "",
+  // };
 
-  const neighborhoodFilters = {
-    page: searchParams.get('neighborhoodPage') ? Number(searchParams.get('neighborhoodPage')) : 1,
-    limit: searchParams.get('neighborhoodLimit') ? Number(searchParams.get('neighborhoodLimit')) : 10,
-    search: searchParams.get('neighborhoodSearch') || "",
-  };
+  // const neighborhoodFilters = {
+  //   page: searchParams.get('neighborhoodPage') ? Number(searchParams.get('neighborhoodPage')) : 1,
+  //   limit: searchParams.get('neighborhoodLimit') ? Number(searchParams.get('neighborhoodLimit')) : 10,
+  //   search: searchParams.get('neighborhoodSearch') || "",
+  // };
 
   // Validation functions
   const validateCommuneForm = (data: CommuneFormData): CommuneFormErrors => {
@@ -496,40 +550,6 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     []
   );
 
-  // Navigation handlers
-  const handleCommuneSearch = (searchTerm: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchTerm) {
-      params.set('communeSearch', searchTerm);
-    } else {
-      params.delete('communeSearch');
-    }
-    params.set('communePage', '1');
-    router.push(`/dashboard/locations?${params.toString()}`);
-  };
-
-  const handleNeighborhoodSearch = (searchTerm: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchTerm) {
-      params.set('neighborhoodSearch', searchTerm);
-    } else {
-      params.delete('neighborhoodSearch');
-    }
-    params.set('neighborhoodPage', '1');
-    router.push(`/dashboard/locations?${params.toString()}`);
-  };
-
-  const handleCommunePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('communePage', newPage.toString());
-    router.push(`/dashboard/locations?${params.toString()}`);
-  };
-
-  const handleNeighborhoodPageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('neighborhoodPage', newPage.toString());
-    router.push(`/dashboard/locations?${params.toString()}`);
-  };
 
   const handleOpenCommuneEdit = (commune: Commune) => {
     setSelectedCommune(commune);
@@ -551,73 +571,6 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
     setIsNeighborhoodEditOpen(true);
   };
 
-  // Render pagination helper
-  const renderPaginationItems = (
-    currentPage: number,
-    totalPages: number,
-    onPageChange: (page: number) => void
-  ) => {
-    const items = [];
-
-    items.push(
-      <PaginationItem key="page-1">
-        <PaginationLink
-          isActive={currentPage === 1}
-          onClick={() => onPageChange(1)}
-        >
-          1
-        </PaginationLink>
-      </PaginationItem>
-    );
-
-    if (currentPage > 3) {
-      items.push(
-        <PaginationItem key="ellipsis-1">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    for (
-      let i = Math.max(2, currentPage - 1);
-      i <= Math.min(totalPages - 1, currentPage + 1);
-      i++
-    ) {
-      items.push(
-        <PaginationItem key={`page-${i}`}>
-          <PaginationLink
-            isActive={currentPage === i}
-            onClick={() => onPageChange(i)}
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    if (currentPage < totalPages - 2 && totalPages > 4) {
-      items.push(
-        <PaginationItem key="ellipsis-2">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    if (totalPages > 1) {
-      items.push(
-        <PaginationItem key={`page-${totalPages}`}>
-          <PaginationLink
-            isActive={currentPage === totalPages}
-            onClick={() => onPageChange(totalPages)}
-          >
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return items;
-  };
 
   return (
     <div className="space-y-6">
@@ -699,7 +652,19 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {communes.length > 0 ? (
+                    {loading ? (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center"
+                        >
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                            Cargando comunas…
+                          </div>
+                        </td>
+                      </tr>
+                    ) : communes.length > 0 ? (
                       communes.map((commune) => (
                         <tr
                           key={commune.id}
@@ -764,47 +729,13 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
 
               {/* Paginación para Comunas */}
               {communePageMeta && (
-                <div className="flex items-center justify-between px-4 py-2 border-t">
-                  <div className="text-sm text-gray-500">
-                    Mostrando{" "}
-                    <span className="font-medium">{communes.length}</span> de{" "}
-                    <span className="font-medium">
-                      {communePageMeta.totalItems}
-                    </span>{" "}
-                    comunas (Página {communeFilters.page} de{" "}
-                    {communePageMeta.totalPages})
-                  </div>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => {
-                            if (communePageMeta?.hasPreviousPage) {
-                              handleCommunePageChange(communeFilters.page - 1);
-                            }
-                          }}
-                        />
-                      </PaginationItem>
-                      {renderPaginationItems(
-                        communeFilters.page,
-                        communePageMeta.totalPages,
-                        handleCommunePageChange
-                      )}
-                      <PaginationItem>
-                        {communePageMeta?.hasNextPage ? (
-                          <PaginationNext
-                            onClick={() =>
-                              handleCommunePageChange(communeFilters.page + 1)
-                            }
-                          />
-                        ) : (
-                          <span className="pointer-events-none opacity-50">
-                            <PaginationNext onClick={() => {}} />
-                          </span>
-                        )}
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                <div className="border-t p-4">
+                  <DashboardPagination
+                    meta={communePageMeta}
+                    onPageChange={handleCommunePageChange}
+                    onLimitChange={handleCommuneLimitChange}
+                    showLimitSelector={true}
+                  />
                 </div>
               )}
             </CardContent>
@@ -853,7 +784,19 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {neighborhoods.length > 0 ? (
+                    {loading ? (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center"
+                        >
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                            Cargando barrios…
+                          </div>
+                        </td>
+                      </tr>
+                    ) : neighborhoods.length > 0 ? (
                       neighborhoods.map((neighborhood) => (
                         <tr
                           key={neighborhood.id}
@@ -922,52 +865,13 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
 
               {/* Paginación para Barrios */}
               {neighborhoodPageMeta && (
-                <div className="flex items-center justify-between px-4 py-2 border-t">
-                  <div className="text-sm text-gray-500">
-                    Mostrando{" "}
-                    <span className="font-medium">{neighborhoods.length}</span>{" "}
-                    de{" "}
-                    <span className="font-medium">
-                      {neighborhoodPageMeta.totalItems}
-                    </span>{" "}
-                    barrios (Página {neighborhoodFilters.page} de{" "}
-                    {neighborhoodPageMeta.totalPages})
-                  </div>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => {
-                            if (neighborhoodPageMeta?.hasPreviousPage) {
-                              handleNeighborhoodPageChange(
-                                neighborhoodFilters.page - 1
-                              );
-                            }
-                          }}
-                        />
-                      </PaginationItem>
-                      {renderPaginationItems(
-                        neighborhoodFilters.page,
-                        neighborhoodPageMeta.totalPages,
-                        handleNeighborhoodPageChange
-                      )}
-                      <PaginationItem>
-                        {neighborhoodPageMeta?.hasNextPage ? (
-                          <PaginationNext
-                            onClick={() =>
-                              handleNeighborhoodPageChange(
-                                neighborhoodFilters.page + 1
-                              )
-                            }
-                          />
-                        ) : (
-                          <span className="pointer-events-none opacity-50">
-                            <PaginationNext onClick={() => {}} />
-                          </span>
-                        )}
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                <div className="border-t p-4">
+                  <DashboardPagination
+                    meta={neighborhoodPageMeta}
+                    onPageChange={handleNeighborhoodPageChange}
+                    onLimitChange={handleNeighborhoodLimitChange}
+                    showLimitSelector={true}
+                  />
                 </div>
               )}
             </CardContent>

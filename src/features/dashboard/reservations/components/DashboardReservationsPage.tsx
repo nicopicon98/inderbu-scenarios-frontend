@@ -2,12 +2,13 @@
 
 import { ReservationDetailsModal } from "@/features/reservations/components/organisms/reservation-details-modal";
 import { CreateReservationModal } from "@/features/reservations/components/organisms/create-reservation-modal";
-import { ReservationsTable } from "@/features/reservations/components/organisms/reservations-table";
+import { DashboardReservationsTable } from "./organisms/dashboard-reservations-table";
+import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
 import { FiltersCard } from "@/features/reservations/components/molecules/filters-card";
 import { StatsGrid } from "@/features/reservations/components/molecules/stats-grid";
 import { ReservationDto } from "@/services/reservation.service";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Filter, Plus, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -19,56 +20,56 @@ interface DashboardReservationsPageProps {
 
 export function DashboardReservationsPage({ initialData }: DashboardReservationsPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+
+  // Pagination and filters using standardized hook
+  const {
+    filters: paginationFilters,
+    onPageChange,
+    onLimitChange,
+    onSearch,
+    onFilterChange,
+    buildPageMeta,
+  } = useDashboardReservationsData();
 
   // Local state from initial data
   const [reservations] = useState<ReservationDto[]>(initialData.reservations);
   const [stats] = useState(initialData.stats);
-  const [meta] = useState(initialData.meta);
+  
+  // Build page meta from initial data
+  const pageMeta = buildPageMeta(initialData.meta.totalItems);
 
   // UI state
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewingDetails, setViewingDetails] = useState<ReservationDto | null>(null);
 
-  // Extract filters from URL
-  const filters = {
-    scenarioId: searchParams.get('scenarioId') ? Number(searchParams.get('scenarioId')) : undefined,
-    activityAreaId: searchParams.get('activityAreaId') ? Number(searchParams.get('activityAreaId')) : undefined,
-    neighborhoodId: searchParams.get('neighborhoodId') ? Number(searchParams.get('neighborhoodId')) : undefined,
-    userId: searchParams.get('userId') ? Number(searchParams.get('userId')) : undefined,
-    dateFrom: searchParams.get('dateFrom') || undefined,
-    dateTo: searchParams.get('dateTo') || undefined,
+  // Extract advanced filters from URL (non-pagination filters)
+  const advancedFilters = {
+    scenarioId: paginationFilters.scenarioId,
+    activityAreaId: paginationFilters.activityAreaId,
+    neighborhoodId: paginationFilters.neighborhoodId,
+    userId: paginationFilters.userId,
+    dateFrom: paginationFilters.dateFrom,
+    dateTo: paginationFilters.dateTo,
   };
 
   // Check for active filters
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined);
+  const hasActiveFilters = Object.values(advancedFilters).some(value => value !== undefined);
 
   const handleFiltersChange = (newFilters: any) => {
-    const params = new URLSearchParams();
-    
-    // Add pagination
-    params.set('page', '1');
-    params.set('limit', '7');
-    
-    // Add filters
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, String(value));
-      }
-    });
-
-    router.push(`/dashboard?${params.toString()}`);
+    onFilterChange(newFilters);
   };
 
   const clearFilters = () => {
-    router.push('/dashboard?page=1&limit=7');
-  };
-
-  const changePage = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`/dashboard?${params.toString()}`);
+    onFilterChange({ 
+      scenarioId: undefined,
+      activityAreaId: undefined,
+      neighborhoodId: undefined,
+      userId: undefined,
+      dateFrom: undefined,
+      dateTo: undefined,
+      search: ""
+    });
   };
 
   const refetch = () => {
@@ -83,7 +84,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
           <h1 className="text-2xl font-bold tracking-tight">Reservas</h1>
           {hasActiveFilters && (
             <p className="text-sm text-gray-600 mt-1">
-              Mostrando {meta.totalItems} de {meta.totalItems} reservas con filtros aplicados
+              Mostrando {pageMeta?.totalItems} de {pageMeta?.totalItems} reservas con filtros aplicados
             </p>
           )}
         </div>
@@ -131,19 +132,23 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
 
       <FiltersCard
         open={showFilters}
-        filters={filters}
+        filters={advancedFilters}
         onFiltersChange={handleFiltersChange}
         onClearFilters={clearFilters}
       />
 
-      <ReservationsTable
+      <DashboardReservationsTable
         reservations={reservations}
-        isLoading={false}
+        meta={pageMeta}
+        loading={false}
+        filters={{
+          page: pageMeta?.page || 1,
+          search: paginationFilters.search || '',
+        }}
+        onPageChange={onPageChange}
+        onLimitChange={onLimitChange}
+        onSearch={onSearch}
         onEdit={setViewingDetails}
-        page={meta.page}
-        pageSize={meta.limit}
-        totalItems={meta.totalItems}
-        onPageChange={changePage}
       />
 
       <ReservationDetailsModal

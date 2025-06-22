@@ -1,19 +1,23 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { UserDrawer } from "@/features/dashboard/components/user-drawer";
-import { FilterToolbar } from "@/shared/ui/filter-toolbar";
-import { Download, FileEdit, Plus } from "lucide-react";
-import { StatusBadge } from "@/shared/ui/status-badge";
-import { DataTable } from "@/shared/ui/data-table";
-import { Button } from "@/shared/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { Badge } from "@/shared/ui/badge";
-import { toast } from "sonner";
-import { ClientsDataResponse } from "../application/GetClientsDataUseCase";
-import { User } from "../domain/repositories/IUserRepository";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { createUserAction, updateUserAction, getUserByIdAction } from "../actions/user.actions";
+import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
+import { useDashboardPagination } from "@/shared/hooks/use-dashboard-pagination";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { ClientsDataResponse } from "../application/GetClientsDataUseCase";
+import { UserDrawer } from "@/features/dashboard/components/user-drawer";
+import { Download, FileEdit, Plus, Search } from "lucide-react";
+import { User } from "../domain/repositories/IUserRepository";
+import { StatusBadge } from "@/shared/ui/status-badge";
+import { Button } from "@/shared/ui/button";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
+import { useState } from "react";
+import { toast } from "sonner";
+
 
 interface ClientsPageProps {
   initialData: ClientsDataResponse;
@@ -21,85 +25,45 @@ interface ClientsPageProps {
 
 export function ClientsPage({ initialData }: ClientsPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  
+  // Pagination and filters using standardized hook
+  const {
+    filters,
+    onPageChange,
+    onLimitChange,
+    onSearch,
+    onFilterChange,
+    buildPageMeta,
+  } = useDashboardPagination({
+    baseUrl: '/dashboard/clients',
+    defaultLimit: 10,
+  });
 
   // Local state from initial data
   const [users] = useState(initialData.users);
   const [roles] = useState(initialData.roles);
   const [neighborhoods] = useState(initialData.neighborhoods);
-  const [meta] = useState(initialData.meta);
   const [filterOptions] = useState(initialData.filterOptions);
+
+  // Build page meta from initial data
+  const pageMeta = buildPageMeta(initialData.meta.totalItems);
 
   // UI state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Extract current filters from URL
-  const currentFilters = {
-    search: searchParams.get('search') || "",
-    roleId: searchParams.get('roleId') || "",
-    neighborhoodId: searchParams.get('neighborhoodId') || "",
-    isActive: searchParams.get('isActive') || "",
+  // Handle filter changes
+  const handleRoleChange = (roleId: string) => {
+    onFilterChange({ roleId: roleId === 'all' ? undefined : roleId || undefined });
   };
 
-  // Current page and pagination
-  const currentPage = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
-  const pageSize = searchParams.get('limit') ? Number(searchParams.get('limit')) : 10;
-
-  // Filter options for FilterToolbar
-  const filterOptionsForToolbar = [
-    {
-      id: "search",
-      label: "Buscar",
-      type: "text" as const,
-      placeholder: "Nombre, Email o DNI",
-    },
-    {
-      id: "roleId",
-      label: "Rol",
-      type: "select" as const,
-      placeholder: "Todos los roles…",
-      options: filterOptions.roles,
-    },
-    {
-      id: "neighborhoodId",
-      label: "Barrio",
-      type: "select" as const,
-      placeholder: "Todos los barrios…",
-      options: filterOptions.neighborhoods,
-    },
-    {
-      id: "isActive",
-      label: "Estado",
-      type: "select" as const,
-      placeholder: "Todos los estados…",
-      options: filterOptions.status,
-    },
-  ];
-
-  // Navigation handlers
-  const handleSearch = (searchFilters: Record<string, string>) => {
-    const params = new URLSearchParams();
-    
-    // Add filters
-    Object.entries(searchFilters).forEach(([key, value]) => {
-      if (value && value !== '') {
-        params.set(key, value);
-      }
-    });
-
-    // Reset to page 1
-    params.set('page', '1');
-    params.set('limit', pageSize.toString());
-
-    router.push(`/dashboard/clients?${params.toString()}`);
+  const handleNeighborhoodChange = (neighborhoodId: string) => {
+    onFilterChange({ neighborhoodId: neighborhoodId === 'all' ? undefined : neighborhoodId || undefined });
   };
 
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`/dashboard/clients?${params.toString()}`);
+  const handleStatusChange = (isActive: string) => {
+    onFilterChange({ isActive: isActive === 'all' ? undefined : isActive || undefined });
   };
 
   // User management handlers
@@ -247,6 +211,114 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
     },
   ];
 
+  // Render table component
+  const renderTable = (data: User[], showPagination: boolean = true) => (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle>Listado de Usuarios</CardTitle>
+            <Badge variant="outline">{data.length}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                placeholder="Buscar usuarios..."
+                value={filters.search || ''}
+                onChange={(e) => onSearch(e.target.value)}
+              />
+            </div>
+            <Select value={filters.roleId?.toString() || 'all'} onValueChange={handleRoleChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filtrar por rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                {filterOptions.roles.map((role) => (
+                  <SelectItem key={role.value} value={role.value}>
+                    {role.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filters.neighborhoodId?.toString() || 'all'} onValueChange={handleNeighborhoodChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filtrar por barrio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los barrios</SelectItem>
+                {filterOptions.neighborhoods.map((neighborhood) => (
+                  <SelectItem key={neighborhood.value} value={neighborhood.value}>
+                    {neighborhood.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filters.isActive?.toString() || 'all'} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {filterOptions.status.map((status) => (
+                  <SelectItem key={status.value} value={status.value}>
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                {columns.map((col) => (
+                  <th key={col.id} className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.length ? (
+                data.map((user) => (
+                  <tr key={user.id} className="border-b hover:bg-gray-50">
+                    {columns.map((col) => (
+                      <td key={col.id} className="px-4 py-3 text-sm">
+                        {col.cell(user)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length} className="p-8 text-center text-sm text-gray-500">
+                    No se encontraron usuarios
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {showPagination && (
+          <div className="border-t p-4">
+            <DashboardPagination
+              meta={pageMeta}
+              onPageChange={onPageChange}
+              onLimitChange={onLimitChange}
+              showLimitSelector={true}
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   // Filter users by role for tabs
   const filterUsersByRole = (roleName: string) => {
     return users.filter((user) => user.role?.name === roleName);
@@ -254,101 +326,57 @@ export function ClientsPage({ initialData }: ClientsPageProps) {
 
   return (
     <>
-      <FilterToolbar filters={filterOptionsForToolbar} onSearch={handleSearch} />
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Gestión de Usuarios
+          </h1>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Button onClick={handleCreateUser}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Usuario
+            </Button>
+          </div>
+        </div>
 
-      <div className="bg-white rounded-md border p-4 mb-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <h2 className="text-lg font-semibold">Listado de Usuarios</h2>
-          <Badge variant="outline" className="ml-2">
-            {meta.totalItems}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-          <Button onClick={handleCreateUser}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Usuario
-          </Button>
-        </div>
+        {/* Tabs */}
+        <Tabs defaultValue="all" className="w-full">
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="all">Todos</TabsTrigger>
+              <TabsTrigger value="admin">Administradores</TabsTrigger>
+              <TabsTrigger value="independiente">Independientes</TabsTrigger>
+              <TabsTrigger value="club-deportivo">Clubes Deportivos</TabsTrigger>
+              <TabsTrigger value="entrenador">Entrenadores</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="all" className="mt-0">
+            {renderTable(users, true)}
+          </TabsContent>
+
+          <TabsContent value="admin" className="mt-0">
+            {renderTable(filterUsersByRole("admin"), false)}
+          </TabsContent>
+
+          <TabsContent value="independiente" className="mt-0">
+            {renderTable(filterUsersByRole("independiente"), false)}
+          </TabsContent>
+
+          <TabsContent value="club-deportivo" className="mt-0">
+            {renderTable(filterUsersByRole("club-deportivo"), false)}
+          </TabsContent>
+
+          <TabsContent value="entrenador" className="mt-0">
+            {renderTable(filterUsersByRole("entrenador"), false)}
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <Tabs defaultValue="all" className="mb-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl mb-4">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="admin">Administradores</TabsTrigger>
-          <TabsTrigger value="independiente">Independientes</TabsTrigger>
-          <TabsTrigger value="club-deportivo">Clubes Deportivos</TabsTrigger>
-          <TabsTrigger value="entrenador">Entrenadores</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all">
-          <DataTable
-            data={users}
-            columns={columns}
-            totalItems={meta.totalItems}
-            pageSize={pageSize}
-            currentPage={currentPage}
-            totalPages={meta.totalPages}
-            onPageChange={handlePageChange}
-            isLoading={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="admin">
-          <DataTable
-            data={filterUsersByRole("admin")}
-            columns={columns}
-            totalItems={filterUsersByRole("admin").length}
-            pageSize={pageSize}
-            currentPage={1}
-            totalPages={Math.ceil(filterUsersByRole("admin").length / pageSize)}
-            onPageChange={handlePageChange}
-            isLoading={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="independiente">
-          <DataTable
-            data={filterUsersByRole("independiente")}
-            columns={columns}
-            totalItems={filterUsersByRole("independiente").length}
-            pageSize={pageSize}
-            currentPage={1}
-            totalPages={Math.ceil(filterUsersByRole("independiente").length / pageSize)}
-            onPageChange={handlePageChange}
-            isLoading={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="club-deportivo">
-          <DataTable
-            data={filterUsersByRole("club-deportivo")}
-            columns={columns}
-            totalItems={filterUsersByRole("club-deportivo").length}
-            pageSize={pageSize}
-            currentPage={1}
-            totalPages={Math.ceil(filterUsersByRole("club-deportivo").length / pageSize)}
-            onPageChange={handlePageChange}
-            isLoading={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="entrenador">
-          <DataTable
-            data={filterUsersByRole("entrenador")}
-            columns={columns}
-            totalItems={filterUsersByRole("entrenador").length}
-            pageSize={pageSize}
-            currentPage={1}
-            totalPages={Math.ceil(filterUsersByRole("entrenador").length / pageSize)}
-            onPageChange={handlePageChange}
-            isLoading={false}
-          />
-        </TabsContent>
-      </Tabs>
 
       {/* User Drawer */}
       <UserDrawer

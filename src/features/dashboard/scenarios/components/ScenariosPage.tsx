@@ -1,15 +1,6 @@
 "use client";
 
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -39,16 +30,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { ScenariosTable } from "./organisms/scenarios-table";
+import { useScenariosData } from "../hooks/use-scenarios-data";
 import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { memo, useCallback, useState, useTransition } from "react";
 import { Textarea } from "@/shared/ui/textarea";
 import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ScenariosDataResponse } from "../application/GetScenariosDataUseCase";
 import { createScenarioAction, updateScenarioAction } from "../actions/scenario.actions";
 import { Scenario, CreateScenarioDto, UpdateScenarioDto } from "@/services/api";
@@ -162,13 +154,24 @@ interface ScenariosPageProps {
 
 export function ScenariosPage({ initialData }: ScenariosPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  // Pagination and filters using standardized hook
+  const {
+    filters,
+    onPageChange,
+    onLimitChange,
+    onSearch,
+    onFilterChange,
+    buildPageMeta,
+  } = useScenariosData();
 
   // Local state from initial data
   const [scenarios] = useState(initialData.scenarios);
   const [neighborhoods] = useState(initialData.neighborhoods);
-  const [pageMeta] = useState(initialData.meta);
+
+  // Build page meta from initial data
+  const pageMeta = buildPageMeta(initialData.meta.totalItems);
 
   // UI state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -193,14 +196,6 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Extract filters from URL
-  const filters = {
-    page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
-    limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : 7,
-    search: searchParams.get('search') || "",
-    neighborhoodId: searchParams.get('neighborhoodId') ? Number(searchParams.get('neighborhoodId')) : undefined,
-  };
 
   // Función de validación
   const validateForm = (data: FormData): FormErrors => {
@@ -389,39 +384,13 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
     []
   );
 
-  // Navigation handlers
-  const handleSearch = (searchTerm: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchTerm) {
-      params.set('search', searchTerm);
-    } else {
-      params.delete('search');
-    }
-    params.set('page', '1');
-    router.push(`/dashboard/scenarios?${params.toString()}`);
-  };
-
+  // Navigation handlers - now using standardized hooks
   const handleFiltersChange = (newFilters: any) => {
-    const params = new URLSearchParams();
-    
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(key, String(value));
-      }
-    });
-
-    params.set('page', '1');
-    router.push(`/dashboard/scenarios?${params.toString()}`);
+    onFilterChange(newFilters);
   };
 
   const clearFilters = () => {
-    router.push('/dashboard/scenarios?page=1&limit=7');
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`/dashboard/scenarios?${params.toString()}`);
+    onFilterChange({ search: "", neighborhoodId: undefined });
   };
 
   const handleOpenDrawer = (scenario: Scenario) => {
@@ -436,142 +405,6 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
     setIsDrawerOpen(true);
   };
 
-  // Render paginación
-  const renderPaginationItems = () => {
-    if (!pageMeta) return null;
-
-    const items = [];
-    const currentPage = filters.page;
-    const totalPages = pageMeta.totalPages;
-
-    // Primera página
-    items.push(
-      <PaginationItem key="page-1">
-        <PaginationLink
-          isActive={currentPage === 1}
-          onClick={() => handlePageChange(1)}
-        >
-          1
-        </PaginationLink>
-      </PaginationItem>
-    );
-
-    // Elipsis inicial
-    if (currentPage > 3) {
-      items.push(
-        <PaginationItem key="ellipsis-1">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    // Páginas intermedias
-    for (
-      let i = Math.max(2, currentPage - 1);
-      i <= Math.min(totalPages - 1, currentPage + 1);
-      i++
-    ) {
-      items.push(
-        <PaginationItem key={`page-${i}`}>
-          <PaginationLink
-            isActive={currentPage === i}
-            onClick={() => handlePageChange(i)}
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    // Elipsis final
-    if (currentPage < totalPages - 2 && totalPages > 4) {
-      items.push(
-        <PaginationItem key="ellipsis-2">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    // Última página
-    if (totalPages > 1) {
-      items.push(
-        <PaginationItem key={`page-${totalPages}`}>
-          <PaginationLink
-            isActive={currentPage === totalPages}
-            onClick={() => handlePageChange(totalPages)}
-          >
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return items;
-  };
-
-  // Columnas para la tabla
-  const columns = [
-    {
-      id: "neighborhood",
-      header: "Barrio",
-      cell: (row: Scenario) => (
-        <span>{row.neighborhood?.name || "No asignado"}</span>
-      ),
-    },
-    {
-      id: "name",
-      header: "Nombre",
-      cell: (row: Scenario) => <span>{row.name}</span>,
-    },
-    {
-      id: "address",
-      header: "Dirección",
-      cell: (row: Scenario) => <span>{row.address}</span>,
-    },
-    {
-      id: "status",
-      header: "Estado",
-      cell: (row: Scenario) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800`}
-        >
-          Activo
-        </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "Acciones",
-      cell: (row: Scenario) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleOpenDrawer(row)}
-            className="h-8 px-2 py-0"
-          >
-            <FileEdit className="h-4 w-4 mr-1" />
-            Abrir
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-              <DropdownMenuItem>Editar</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                Desactivar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -623,134 +456,39 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
 
         {/* Tab All */}
         <TabsContent value="all" className="mt-0">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CardTitle>Listado de Escenarios</CardTitle>
-                  <Badge variant="outline" className="ml-2">
-                    {pageMeta?.totalItems || 0}
-                  </Badge>
-                </div>
-                <div className="relative w-64">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar escenario..."
-                    className="pl-8"
-                    value={filters.search}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      {columns.map((column) => (
-                        <th
-                          key={column.id}
-                          className="px-4 py-3 text-left text-sm font-medium text-gray-500"
-                        >
-                          {column.header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {scenarios.length > 0 ? (
-                      scenarios.map((scenario) => (
-                        <tr
-                          key={scenario.id}
-                          className="border-b hover:bg-gray-50"
-                        >
-                          {columns.map((column) => (
-                            <td
-                              key={`${scenario.id}-${column.id}`}
-                              className="px-4 py-3 text-sm"
-                            >
-                              {column.cell(scenario)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={columns.length}
-                          className="px-4 py-8 text-center text-sm text-gray-500"
-                        >
-                          No se encontraron escenarios con los filtros aplicados.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Paginación */}
-              <div className="flex items-center justify-between px-4 py-2 border-t">
-                <div className="text-sm text-gray-500">
-                  {pageMeta && (
-                    <>
-                      Mostrando{" "}
-                      <span className="font-medium">{scenarios.length}</span> de{" "}
-                      <span className="font-medium">{pageMeta.totalItems}</span>{" "}
-                      escenarios (Página {filters.page} de {pageMeta.totalPages})
-                    </>
-                  )}
-                </div>
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => {
-                          if (pageMeta?.hasPreviousPage) {
-                            handlePageChange(filters.page - 1);
-                          }
-                        }}
-                      />
-                    </PaginationItem>
-                    {renderPaginationItems()}
-                    <PaginationItem>
-                      {pageMeta?.hasNextPage ? (
-                        <PaginationNext
-                          onClick={() => handlePageChange(filters.page + 1)}
-                        />
-                      ) : (
-                        <span className="pointer-events-none opacity-50">
-                          <PaginationNext onClick={() => {}} />
-                        </span>
-                      )}
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            </CardContent>
-          </Card>
+          <ScenariosTable
+            rows={scenarios}
+            meta={pageMeta}
+            loading={false}
+            filters={{
+              page: pageMeta?.page || 1,
+              search: filters.search || '',
+            }}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+            onSearch={onSearch}
+            onEdit={handleOpenDrawer}
+          />
         </TabsContent>
 
-        {/* Otros tabs - simplificados */}
-        {["active", "inactive"].map((key) => (
-          <TabsContent key={key} value={key} className="mt-0">
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CardTitle>Escenarios {key === "active" ? "Activos" : "Inactivos"}</CardTitle>
-                    <Badge variant="outline" className="ml-2">
-                      {scenarios.length}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="px-4 py-8 text-center text-sm text-gray-500">
-                  Funcionalidad de filtrado por estado próximamente.
-                </div>
-              </CardContent>
-            </Card>
+        {/* Filtered tabs reuse same table but pre-filtered in memory */}
+        {["active", "inactive"].map((k) => (
+          <TabsContent key={k} value={k} className="mt-0">
+            <ScenariosTable
+              rows={scenarios.filter(
+                (r) => r.state === (k === "active"),
+              )}
+              meta={pageMeta}
+              loading={false}
+              filters={{
+                page: pageMeta?.page || 1,
+                search: filters.search || '',
+              }}
+              onPageChange={onPageChange}
+              onLimitChange={onLimitChange}
+              onSearch={onSearch}
+              onEdit={handleOpenDrawer}
+            />
           </TabsContent>
         ))}
       </Tabs>
