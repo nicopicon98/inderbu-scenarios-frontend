@@ -79,7 +79,9 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   };
 
   const refetch = () => {
-    router.refresh();
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   return (
@@ -166,8 +168,11 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
         open={creating}
         onClose={() => setCreating(false)}
         onSuccess={() => {
-          refetch();
           setCreating(false);
+          // Give cache invalidation time to process before refresh
+          setTimeout(() => {
+            refetch();
+          }, 100);
         }}
       />
     </section>

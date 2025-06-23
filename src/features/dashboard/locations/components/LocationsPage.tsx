@@ -1,7 +1,5 @@
 "use client";
 
-import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
-import { useMultiEntityPagination } from "@/shared/hooks/use-dashboard-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { Commune, Neighborhood, CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from "@/services/api";
 import {
   Building2,
   Download,
@@ -26,20 +25,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { createNeighborhoodAction, updateNeighborhoodAction } from "../actions/neighborhood.actions";
+import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
+import { createCommuneAction, updateCommuneAction } from "../actions/commune.actions";
+import { useMultiEntityPagination } from "@/shared/hooks/use-dashboard-pagination";
+import { LocationsDataResponse } from "../application/GetLocationsDataUseCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { City } from "../domain/repositories/ILocationRepository";
+import { useRouter, useSearchParams } from "next/navigation";
 import { memo, useCallback, useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
-import { LocationsDataResponse } from "../application/GetLocationsDataUseCase";
-import { createCommuneAction, updateCommuneAction } from "../actions/commune.actions";
-import { createNeighborhoodAction, updateNeighborhoodAction } from "../actions/neighborhood.actions";
-import { Commune, Neighborhood, CreateCommuneDto, CreateNeighborhoodDto, UpdateCommuneDto, UpdateNeighborhoodDto } from "@/services/api";
-import { City } from "../domain/repositories/ILocationRepository";
+
 
 // COMPONENTES VALIDADOS REUTILIZABLES
 interface ValidatedInputProps {
@@ -336,7 +337,7 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
         setCreateCommuneData({ name: "", cityId: "" });
         setIsCommuneModalOpen(false);
         toast.success("Comuna creada exitosamente", {
-          description: `${result.data.name} ha sido registrada en el sistema.`,
+          description: `${(result.data as { name: string }).name} ha sido registrada en el sistema.`,
         });
         router.refresh();
       } else {
@@ -572,6 +573,21 @@ export function LocationsPage({ initialData }: LocationsPageProps) {
   };
 
 
+  function handleCommuneSearch(value: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('communeSearch', value);
+    params.set('communePage', '1'); // Reset to first page on new search
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
+  }
+  
+  function handleNeighborhoodSearch(value: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('neighborhoodSearch', value);
+    params.set('neighborhoodPage', '1'); // Reset to first page on new search
+    const queryString = params.toString();
+    router.push(`/dashboard/locations?${queryString}`);
+  }
   return (
     <div className="space-y-6">
       {/* Header */}

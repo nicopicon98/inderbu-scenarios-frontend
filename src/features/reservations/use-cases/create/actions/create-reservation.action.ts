@@ -41,10 +41,13 @@ export async function createReservationAction(
       revalidateTag('timeslots');
     }
 
-    // If we have userId from result, invalidate user reservations
-    // if (result.reservation?.userId) {
-    //   revalidateTag(`user-${result.reservation.userId}-reservations`);
-    // }
+    // Invalidate user-specific reservations cache
+    if (result.userId) {
+      revalidateTag(`user-${result.userId}-reservations`);
+    }
+    
+    // Also invalidate all users cache for dashboard view (userId=0)
+    revalidateTag(`user-0-reservations`);
 
     console.log('Reservation created successfully:', result);
 
