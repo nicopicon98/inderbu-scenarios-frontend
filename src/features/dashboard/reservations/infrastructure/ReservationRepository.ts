@@ -34,7 +34,7 @@ export class ReservationRepository implements IReservationRepository {
   
   async getAllWithPagination(filters: ReservationFilters): Promise<PaginatedReservations> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -46,7 +46,7 @@ export class ReservationRepository implements IReservationRepository {
         }
       });
 
-      // ✅ CORRECTO - Usar el endpoint correcto: /reservations (no /reservations/paginated)
+      // CORRECTO - Usar el endpoint correcto: /reservations (no /reservations/paginated)
       const endpoint = `/reservations${params.toString() ? '?' + params.toString() : ''}`;
 
       // Direct API call with authentication
@@ -60,7 +60,7 @@ export class ReservationRepository implements IReservationRepository {
         };
       }>(endpoint);
 
-      // ✅ CORRECTO - Normalizar datos igual que el service original
+      // CORRECTO - Normalizar datos igual que el service original
       return {
         data: response.data.map(normalizeReservation),
         meta: response.meta,
@@ -73,7 +73,7 @@ export class ReservationRepository implements IReservationRepository {
 
   async getAll(filters: Record<string, any> = {}): Promise<ReservationDto[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -90,7 +90,7 @@ export class ReservationRepository implements IReservationRepository {
       // Direct API call with authentication
       const response = await httpClient.get<{ data: any[] }>(endpoint);
 
-      // ✅ CORRECTO - Normalizar datos igual que el service original
+      // CORRECTO - Normalizar datos igual que el service original
       return response.data.map(normalizeReservation);
     } catch (error) {
       console.error('Error in ReservationRepository.getAll:', error);
@@ -100,7 +100,7 @@ export class ReservationRepository implements IReservationRepository {
 
   async updateState(reservationId: number, reservationStateId: number): Promise<ReservationDto> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -110,7 +110,7 @@ export class ReservationRepository implements IReservationRepository {
         { reservationStateId }
       );
 
-      // ✅ CORRECTO - Normalizar datos igual que el service original
+      // CORRECTO - Normalizar datos igual que el service original
       return normalizeReservation(result);
     } catch (error) {
       console.error('Error in ReservationRepository.updateState:', error);

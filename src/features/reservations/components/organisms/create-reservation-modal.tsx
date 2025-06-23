@@ -21,8 +21,9 @@ import ScenarioService, {
   ScenarioDto,
   SubScenarioDto,
 } from "@/services/scenario.service";
-import TimeSlotService, { TimeSlotDto } from "@/services/time-slot.service";
-import ReservationService from "@/services/reservation.service";
+import { createReservationRepository } from "@/entities/reservation/infrastructure/reservation-repository.adapter";
+import { ClientHttpClientFactory } from "@/shared/api/http-client-client";
+import { createReservationAction, CreateReservationResult } from "../../use-cases/create/actions/create-reservation.action";
 import UserService, { UserDto } from "@/services/user.service";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "@/shared/ui/textarea";
@@ -33,6 +34,7 @@ import { Label } from "@/shared/ui/label";
 import { Modal } from "@/shared/ui/modal";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
+import { TimeSlotDto } from "@/services/reservation.service";
 
 
 
@@ -307,11 +309,24 @@ export const CreateReservationModal = ({
 
     (async () => {
       try {
-        const slots = await ReservationService.getAvailableTimeSlots(
+        // Use DDD repository pattern for timeslots with cookies authentication
+        const httpClient = ClientHttpClientFactory.createClientWithCookies();
+        const repository = createReservationRepository(httpClient);
+        
+        const slots = await repository.getAvailableTimeSlots(
           parseInt(subScenarioId),
           reservationDate,
         );
-        setAvailableTimeSlots(slots);
+        
+        // Convert TimeslotResponseDto[] to match component interface
+        const convertedSlots = slots.map(slot => ({
+          id: slot.id,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          available: slot.isAvailable, // Map isAvailable to available
+        }));
+        
+        setAvailableTimeSlots(convertedSlots);
       } catch (error) {
         console.error("Error al cargar horarios disponibles:", error);
         toast.error("No se pudieron cargar los horarios disponibles");
@@ -329,22 +344,31 @@ export const CreateReservationModal = ({
     }
     setLoading(true);
     try {
-      await ReservationService.createReservation({
+      // Use DDD server action instead of legacy service
+      const result: CreateReservationResult = await createReservationAction({
         subScenarioId: parseInt(subScenarioId),
-        timeSlotId: parseInt(timeSlotId),
-        reservationDate,
+        timeSlotIds: [parseInt(timeSlotId)],
+        reservationRange: {
+          initialDate: reservationDate,
+        },
         comments: comments || undefined,
       });
-      toast.success("Reserva creada correctamente.");
-
-      // Llamar al callback de éxito si existe
-      if (onSuccess) {
-        onSuccess();
+      
+      if (result.success) {
+        toast.success(result.message || "Reserva creada correctamente.");
+        
+        // Llamar al callback de éxito si existe
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          onClose();
+        }
       } else {
-        onClose();
+        toast.error(result.error || "No se pudo crear la reserva");
       }
     } catch (err: any) {
-      toast.error(err.message ?? "No se pudo crear la reserva");
+      console.error('Create reservation exception:', err);
+      toast.error(err.message ?? "Ocurrió un error al crear la reserva");
     } finally {
       setLoading(false);
     }

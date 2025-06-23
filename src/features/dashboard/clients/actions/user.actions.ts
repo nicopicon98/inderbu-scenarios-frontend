@@ -7,7 +7,7 @@ import { createServerAuthContext } from '@/shared/api/server-auth';
 
 export async function createUserAction(data: CreateUserDto) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -35,7 +35,7 @@ export async function updateUserAction(
   data: UpdateUserDto
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -60,7 +60,7 @@ export async function updateUserAction(
 
 export async function getUserByIdAction(id: number) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 

@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import type { ReservationDto } from "@/services/reservation.service";
-import ReservationService from "@/services/reservation.service";
+import { updateReservationStateAction, UpdateReservationResult } from "../../use-cases/update/actions/update-reservation.action";
 import { formatDate } from "@/utils/reservation.utils";
 import { toast } from "@/shared/hooks/use-toast";
 import { Textarea } from "@/shared/ui/textarea";
@@ -59,19 +59,30 @@ export const EditReservationDrawer = ({
   const handleSave = async () => {
     if (!reservation) return;
     try {
-      await ReservationService.updateReservationState(
+      // Use DDD server action instead of legacy service
+      const result: UpdateReservationResult = await updateReservationStateAction(
         reservation.id,
-        editing.reservationStateId,
+        { reservationStateId: editing.reservationStateId }
       );
-      toast({
-        title: "Éxito",
-        description: "Reserva actualizada correctamente.",
-      });
-      onClose(); // container volverá a refrescar la lista
+      
+      if (result.success) {
+        toast({
+          title: "Éxito",
+          description: result.message || "Reserva actualizada correctamente.",
+        });
+        onClose(); // container volverá a refrescar la lista
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "No se pudo actualizar la reserva.",
+          variant: "destructive",
+        });
+      }
     } catch (err: any) {
+      console.error('Update reservation exception:', err);
       toast({
         title: "Error",
-        description: err.message ?? "No se pudo actualizar la reserva.",
+        description: err.message ?? "Ocurrió un error al actualizar la reserva.",
         variant: "destructive",
       });
     }

@@ -17,7 +17,7 @@ export class UserRepository implements IUserRepository {
   
   async getAllWithPagination(filters: UserFilters): Promise<PaginatedUsers> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -54,7 +54,7 @@ export class UserRepository implements IUserRepository {
 
   async getByRoleWithPagination(roleId: number, filters: Omit<UserFilters, 'roleId'>): Promise<PaginatedUsers> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -91,7 +91,7 @@ export class UserRepository implements IUserRepository {
 
   async getById(id: number): Promise<User> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -112,7 +112,7 @@ export class UserRepository implements IUserRepository {
 
   async create(data: CreateUserDto): Promise<User> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -132,7 +132,7 @@ export class UserRepository implements IUserRepository {
 
   async update(id: number, data: UpdateUserDto): Promise<User> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -155,7 +155,7 @@ export class RoleRepository implements IRoleRepository {
   
   async getAll(): Promise<Role[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -186,7 +186,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
   
   async getAll(): Promise<Neighborhood[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 

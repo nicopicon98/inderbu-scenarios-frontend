@@ -1,5 +1,3 @@
-import { HttpClient } from "@/shared/api/types";
-import { PaginatedApiResponse, SimpleApiResponse } from "@/shared/api/types";
 import {
   CreateReservationDto,
   CreateReservationResponseDto,
@@ -10,6 +8,8 @@ import {
   TimeslotResponseDto,
   UpdateReservationStateCommand,
 } from "../model/types";
+import { PaginatedApiResponse, SimpleApiResponse } from "@/shared/api/types";
+import { HttpClient } from "@/shared/api/types";
 
 // Interfaces para nueva API de disponibilidad
 interface AvailabilityConfiguration {
@@ -175,7 +175,7 @@ export class ApiReservationRepository implements ReservationRepository {
   async create(
     command: CreateReservationDto
   ): Promise<CreateReservationResponseDto> {
-    console.log("🚀 Repository: Creating reservation with command:", command);
+    console.log("Repository: Creating reservation with command:", command);
 
     // Backend returns: { statusCode, message, data: CreateReservationResponseDto }
     const response = await this.httpClient.post<
@@ -301,7 +301,7 @@ export class ApiReservationRepository implements ReservationRepository {
 
       return response.data;
     } catch (error) {
-      console.error(`❌ Error fetching availability configuration:`, error);
+      console.error(`Error fetching availability configuration:`, error);
       throw error;
     }
   }
@@ -341,7 +341,7 @@ export class ApiReservationRepository implements ReservationRepository {
 
       return timeslots;
     } catch (error) {
-      console.error(`❌ Error in getAvailableTimeSlots:`, error);
+      console.error(`Error in getAvailableTimeSlots:`, error);
       throw error;
     }
   }

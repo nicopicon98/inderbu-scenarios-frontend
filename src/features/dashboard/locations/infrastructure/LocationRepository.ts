@@ -25,7 +25,7 @@ export class CommuneRepository implements ICommuneRepository {
   
   async getAllWithPagination(filters: CommuneFilters): Promise<PaginatedCommunes> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -64,7 +64,7 @@ export class CommuneRepository implements ICommuneRepository {
 
   async getAll(): Promise<Commune[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -80,7 +80,7 @@ export class CommuneRepository implements ICommuneRepository {
 
   async create(data: CreateCommuneDto): Promise<Commune> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -95,7 +95,7 @@ export class CommuneRepository implements ICommuneRepository {
 
   async update(id: number, data: UpdateCommuneDto): Promise<Commune> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -113,7 +113,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
   
   async getAllWithPagination(filters: NeighborhoodFilters): Promise<PaginatedNeighborhoods> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -152,7 +152,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
 
   async getAll(): Promise<Neighborhood[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -168,7 +168,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
 
   async create(data: CreateNeighborhoodDto): Promise<Neighborhood> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -183,7 +183,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
 
   async update(id: number, data: UpdateNeighborhoodDto): Promise<Neighborhood> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -201,7 +201,7 @@ export class CityRepository implements ICityRepository {
   
   async getAll(): Promise<City[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 

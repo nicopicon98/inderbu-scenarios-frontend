@@ -9,7 +9,7 @@ export async function createSubScenarioAction(
   data: Omit<SubScenario, "id"> & { images?: any[] }
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -56,7 +56,7 @@ export async function updateSubScenarioAction(
   data: Partial<SubScenario>
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 

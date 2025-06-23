@@ -174,7 +174,7 @@ export function ReservationItem({
           <div className="absolute top-2 right-2 z-20">
             <div className="backdrop-blur-sm rounded-lg shadow-lg">
               <StatusBadge
-                status={reservation.reservationState.state}
+                status={reservation.reservationState.state!}
                 size="sm"
                 variant="default"
               />

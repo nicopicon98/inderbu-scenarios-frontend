@@ -151,7 +151,7 @@ const ReservationService = {
     
     if (!res.ok) {
       const errorText = await res.text();
-      console.error('❌ Error response:', errorText);
+      console.error('Error response:', errorText);
       throw new Error(`Error ${res.status}: ${res.statusText}`);
     }
     

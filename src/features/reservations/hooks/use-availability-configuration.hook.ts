@@ -106,7 +106,7 @@ export function useAvailabilityConfiguration(
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al consultar disponibilidad';
-      console.error(`❌ Error checking availability:`, err);
+      console.error(`Error checking availability:`, err);
       setError(errorMessage);
       setData(null);
     } finally {

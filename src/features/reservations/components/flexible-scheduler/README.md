@@ -6,13 +6,13 @@ Este módulo ha sido refactorizado desde un archivo monolítico de más de 800 l
 
 ## 🔗 Nueva Funcionalidad: URL Persistence
 
-### ✅ ¿Qué se persiste en la URL?
+### ¿Qué se persiste en la URL?
 
 - **📅 Fechas**: `date` (inicial) y `endDate` (final)
 - **📆 Modo**: `single` o `range`
 - **🗓️ Días de semana**: `weekdays=1,2,3,4,5` (L-V)
 
-### ❌ ¿Qué NO se persiste?
+### ¿Qué NO se persiste?
 
 - **🚫 timeSlotIds**: Son muy volátiles y harían URLs feas
 - **🚫 Estado temporal**: Como períodos expandidos o loading
@@ -201,33 +201,33 @@ Configuración de días de la semana.
 
 El archivo original `components/flexible-scheduler.tsx` ahora re-exporta el nuevo componente, manteniendo **compatibilidad hacia atrás** sin romper imports existentes.
 
-## 🚀 Beneficios
+## Beneficios
 
-### ✅ Mantenibilidad
+### Mantenibilidad
 
 - Código más fácil de entender y modificar
 - Cambios aislados no afectan otros módulos
 - Estructura predecible y consistente
 
-### ✅ Testabilidad
+### Testabilidad
 
 - Cada unidad puede testearse independientemente
 - Funciones puras fáciles de testear
 - Mocks más sencillos para componentes aislados
 
-### ✅ Reusabilidad
+### Reusabilidad
 
 - Componentes y hooks reutilizables
 - Utilidades compartibles entre módulos
 - Constantes centralizadas
 
-### ✅ Escalabilidad
+### Escalabilidad
 
 - Fácil agregar nuevas funcionalidades
 - Estructura preparada para crecimiento
 - Separación clara de responsabilidades
 
-### ✅ Developer Experience
+### Developer Experience
 
 - Intellisense más preciso
 - Navegación de código más eficiente
@@ -284,8 +284,8 @@ import { TimeSlotButton } from "./components/atoms/time-slot-button";
 
 ### 🎨 Simplificación de UI (v2.0)
 
-- **❌ Eliminado**: Botón "Mostrar/Ocultar opciones"
-- **✅ Mejorado**: "Seleccionar días específicos" aparece automáticamente cuando "Reservar varios días" está ON
+- **Eliminado**: Botón "Mostrar/Ocultar opciones"
+- **Mejorado**: "Seleccionar días específicos" aparece automáticamente cuando "Reservar varios días" está ON
 - **🎯 Resultado**: UI más limpia e intuitiva
 - **🔗 Impacto URL**: Ya no se persiste `advanced=true` en la URL
 

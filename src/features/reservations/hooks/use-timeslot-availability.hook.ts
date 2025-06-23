@@ -66,7 +66,7 @@ export function useTimeslotAvailability(options: UseAvailabilityOptions): UseAva
       
       // SAFETY: Verificar que result sea un array
       if (!Array.isArray(result)) {
-        console.error(`❌ Expected array but got:`, result);
+        console.error(`Expected array but got:`, result);
         throw new Error(`Invalid response format: expected array, got ${typeof result}`);
       }
       
@@ -78,7 +78,7 @@ export function useTimeslotAvailability(options: UseAvailabilityOptions): UseAva
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al consultar disponibilidad';
-      console.error(`❌ Error fetching availability:`, err);
+      console.error(`Error fetching availability:`, err);
       
       setError(errorMessage);
       setAvailableSlots([]);

@@ -177,10 +177,10 @@ export const FiltersCard = ({
 
         <CardContent>
           <div className="bg-white rounded-xl border border-gray-200/60 p-6 shadow-sm backdrop-blur-sm">
-            {/* Fila principal */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            {/* Primera fila: Escenario, Actividad, Barrio */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
               {/* Escenario */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Escenario
                 </label>
@@ -197,7 +197,7 @@ export const FiltersCard = ({
               </div>
 
               {/* Área deportiva */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Actividad
                 </label>
@@ -214,7 +214,7 @@ export const FiltersCard = ({
               </div>
 
               {/* Barrio */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Barrio
                 </label>
@@ -229,9 +229,12 @@ export const FiltersCard = ({
                   className="w-full"
                 />
               </div>
+            </div>
 
+            {/* Segunda fila: Usuario, Fecha Desde, Fecha Hasta */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Usuario */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Usuario
                 </label>
@@ -248,7 +251,7 @@ export const FiltersCard = ({
               </div>
 
               {/* FECHA DESDE */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Fecha Desde
                 </label>
@@ -265,7 +268,7 @@ export const FiltersCard = ({
               </div>
 
               {/* FECHA HASTA */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Fecha Hasta
                 </label>

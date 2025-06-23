@@ -7,7 +7,7 @@ import { createServerAuthContext } from '@/shared/api/server-auth';
 
 export async function createCommuneAction(data: CreateCommuneDto) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -35,7 +35,7 @@ export async function updateCommuneAction(
   data: UpdateCommuneDto
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 

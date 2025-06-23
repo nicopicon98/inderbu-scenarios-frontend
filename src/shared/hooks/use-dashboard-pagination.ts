@@ -87,7 +87,13 @@ export function useDashboardPagination(config: PaginationConfig) {
     const queryString = params.toString();
     const newUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     
+    // Navigate to new URL and refresh SSR data
     router.push(newUrl);
+    
+    // Force SSR re-execution for server components
+    setTimeout(() => {
+      router.refresh();
+    }, 50);
   }, [router, baseUrl, defaultLimit]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────

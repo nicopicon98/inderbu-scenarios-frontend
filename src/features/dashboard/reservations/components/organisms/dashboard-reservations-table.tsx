@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useCallback, useState, useEffect } from "react";
+import { useMemo,  useEffect, useState } from "react";
 import { DashboardPagination } from "@/shared/components/organisms/dashboard-pagination";
 import { ClickableStatusBadge } from "@/features/reservations/components/molecules/clickable-status-badge";
 import type { ReservationDto } from "@/services/reservation.service";
-import { formatDate, reservationStateById } from "@/utils/utils";
+import { reservationStateById } from "@/utils/utils";
 import { PageMeta } from "@/shared/hooks/use-dashboard-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";

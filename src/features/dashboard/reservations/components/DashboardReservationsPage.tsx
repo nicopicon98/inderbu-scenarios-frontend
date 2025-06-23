@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { Filter, Plus, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 interface DashboardReservationsPageProps {
   initialData: DashboardReservationsResponse;
@@ -20,6 +20,7 @@ interface DashboardReservationsPageProps {
 
 export function DashboardReservationsPage({ initialData }: DashboardReservationsPageProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   // Pagination and filters using standardized hook
   const {
@@ -31,9 +32,9 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
     buildPageMeta,
   } = useDashboardReservationsData();
 
-  // Local state from initial data
-  const [reservations] = useState<ReservationDto[]>(initialData.reservations);
-  const [stats] = useState(initialData.stats);
+  // Use initial data directly (will update on SSR re-render)
+  const reservations = initialData.reservations;
+  const stats = initialData.stats;
   
   // Build page meta from initial data
   const pageMeta = buildPageMeta(initialData.meta.totalItems);
@@ -57,18 +58,22 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
   const hasActiveFilters = Object.values(advancedFilters).some(value => value !== undefined);
 
   const handleFiltersChange = (newFilters: any) => {
-    onFilterChange(newFilters);
+    startTransition(() => {
+      onFilterChange(newFilters);
+    });
   };
 
   const clearFilters = () => {
-    onFilterChange({ 
-      scenarioId: undefined,
-      activityAreaId: undefined,
-      neighborhoodId: undefined,
-      userId: undefined,
-      dateFrom: undefined,
-      dateTo: undefined,
-      search: ""
+    startTransition(() => {
+      onFilterChange({ 
+        scenarioId: undefined,
+        activityAreaId: undefined,
+        neighborhoodId: undefined,
+        userId: undefined,
+        dateFrom: undefined,
+        dateTo: undefined,
+        search: ""
+      });
     });
   };
 
@@ -140,7 +145,7 @@ export function DashboardReservationsPage({ initialData }: DashboardReservations
       <DashboardReservationsTable
         reservations={reservations}
         meta={pageMeta}
-        loading={false}
+        loading={isPending}
         filters={{
           page: pageMeta?.page || 1,
           search: paginationFilters.search || '',

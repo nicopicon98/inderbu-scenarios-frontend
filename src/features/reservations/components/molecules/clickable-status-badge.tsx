@@ -15,9 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import ReservationService, {
-  ReservationStateDto,
-} from "@/services/reservation.service";
+import { ReservationStateDto } from "@/services/reservation.service";
+import { updateReservationStateAction, UpdateReservationResult } from "../../use-cases/update/actions/update-reservation.action";
 import { useReservationStates } from "../../hooks/use-reservation-state.hook";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
@@ -124,31 +123,36 @@ export function ClickableStatusBadge({
 
   /** 6. Acción al confirmar cambio de estado */
   const handleConfirmStatusChange = async () => {
-    if (selectedState === null) return;
+    if (selectedState === null || !reservationId) return;
 
     try {
       setIsUpdating(true);
-      reservationId
-        ? await ReservationService.updateReservationState(
-            reservationId,
-            selectedState
-          )
-        : null;
+      
+      // Use DDD server action instead of legacy service
+      const result: UpdateReservationResult = await updateReservationStateAction(
+        reservationId,
+        { reservationStateId: selectedState }
+      );
 
-      const state = states.find((s) => s.id === selectedState);
-      const key = (state as any)?.name ?? (state as any)?.state ?? "";
-      const label = stateCatalog[key]?.label ?? key;
+      if (result.success) {
+        const state = states.find((s) => s.id === selectedState);
+        const key = (state as any)?.name ?? (state as any)?.state ?? "";
+        const label = stateCatalog[key]?.label ?? key;
 
-      toast.success(`Estado cambiado a ${label}`, {
-        description: `La reserva #${reservationId} ahora está ${label.toLowerCase()}.`,
-      });
+        toast.success(`Estado cambiado a ${label}`, {
+          description: `La reserva #${reservationId} ahora está ${label.toLowerCase()}.`,
+        });
 
-      onStatusChange?.(selectedState);
+        onStatusChange?.(selectedState);
+      } else {
+        toast.error("Error al cambiar el estado", {
+          description: result.error || "No se pudo actualizar el estado de la reserva. Intenta de nuevo.",
+        });
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Update reservation state exception:', err);
       toast.error("Error al cambiar el estado", {
-        description:
-          "No se pudo actualizar el estado de la reserva. Intenta de nuevo.",
+        description: err instanceof Error ? err.message : "No se pudo actualizar el estado de la reserva. Intenta de nuevo.",
       });
     } finally {
       setIsUpdating(false);

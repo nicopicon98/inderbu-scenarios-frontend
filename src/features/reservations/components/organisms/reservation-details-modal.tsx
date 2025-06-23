@@ -189,7 +189,7 @@ export const ReservationDetailsModal = ({
                   </Label>{" "}
                   {reservation.subScenario?.scenarioName || "Sin escenario"}
                 </p>
-                <p>
+                <div>
                   <Label className="text-xs text-muted-foreground">Costo</Label>{" "}
                   {reservation.subScenario?.hasCost ? (
                     <Badge
@@ -206,7 +206,7 @@ export const ReservationDetailsModal = ({
                       Gratuito
                     </Badge>
                   )}
-                </p>
+                </div>
               </div>
             </section>
 
@@ -218,7 +218,7 @@ export const ReservationDetailsModal = ({
               </header>
               <div className="space-y-2 text-sm">
                 {/* Fechas principales */}
-                <p className="flex items-center gap-1">
+                <div className="flex items-center gap-1">
                   <CalendarCheck className="h-4 w-4 text-gray-500" />
                   {reservation.type === "SINGLE"
                     ? fmtDate(reservation.initialDate)
@@ -226,7 +226,7 @@ export const ReservationDetailsModal = ({
                         reservation.finalDate!
                       )}`}
                   <ReservationTypeIndicator type={reservation.type} />
-                </p>
+                </div>
 
                 {/* Datos extra para RANGE */}
                 {reservation.type === "RANGE" && (
@@ -241,16 +241,16 @@ export const ReservationDetailsModal = ({
                 )}
 
                 {/* Horarios */}
-                <p className="flex items-center gap-1">
+                <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-gray-500" />
                   <TimeSlotDisplay reservation={reservation} />
-                </p>
+                </div>
 
                 {/* Creación */}
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <CalendarClock className="h-3 w-3" />
                   Creada: {fmtDate(reservation.createdAt)}
-                </p>
+                </div>
               </div>
             </section>
 

@@ -19,7 +19,7 @@ export class ScenarioRepository implements IScenarioRepository {
   
   async getAllWithPagination(filters: ScenariosFilters): Promise<PaginatedScenarios> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -44,7 +44,7 @@ export class ScenarioRepository implements IScenarioRepository {
 
   async create(data: CreateScenarioDto): Promise<Scenario> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -59,7 +59,7 @@ export class ScenarioRepository implements IScenarioRepository {
 
   async update(id: number, data: UpdateScenarioDto): Promise<Scenario> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -77,7 +77,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
   
   async getAll(): Promise<Neighborhood[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 

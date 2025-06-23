@@ -7,7 +7,7 @@ import { createServerAuthContext } from '@/shared/api/server-auth';
 
 export async function createNeighborhoodAction(data: CreateNeighborhoodDto) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -35,7 +35,7 @@ export async function updateNeighborhoodAction(
   data: UpdateNeighborhoodDto
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 

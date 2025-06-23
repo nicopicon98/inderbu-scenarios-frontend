@@ -9,7 +9,7 @@ export async function updateReservationStateAction(
   reservationStateId: number
 ) {
   try {
-    // ✅ CORRECTO - Con autenticación desde servidor
+    // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
 

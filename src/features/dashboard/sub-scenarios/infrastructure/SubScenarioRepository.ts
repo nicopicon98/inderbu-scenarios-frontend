@@ -23,7 +23,7 @@ export class SubScenarioRepository implements ISubScenarioRepository {
   
   async getAllWithPagination(filters: SubScenariosFilters): Promise<PaginatedSubScenarios> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -50,7 +50,7 @@ export class SubScenarioRepository implements ISubScenarioRepository {
 
   async create(data: Omit<SubScenario, "id"> & { images?: any[] }): Promise<SubScenario> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -86,7 +86,7 @@ export class SubScenarioRepository implements ISubScenarioRepository {
 
   async update(id: number, data: Partial<SubScenario>): Promise<SubScenario> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -104,7 +104,7 @@ export class ScenarioRepository implements IScenarioRepository {
   
   async getAllWithLimit(limit: number): Promise<Scenario[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -122,7 +122,7 @@ export class ActivityAreaRepository implements IActivityAreaRepository {
   
   async getAll(): Promise<ActivityArea[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
@@ -142,7 +142,7 @@ export class NeighborhoodRepository implements INeighborhoodRepository {
   
   async getAll(): Promise<Neighborhood[]> {
     try {
-      // ✅ CORRECTO - Con autenticación desde servidor
+      // CORRECTO - Con autenticación desde servidor
       const authContext = createServerAuthContext();
       const httpClient = ClientHttpClientFactory.createClient(authContext);
 
