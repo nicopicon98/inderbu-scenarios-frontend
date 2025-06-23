@@ -2,17 +2,18 @@
 
 import { ReservationDetailsModal } from "@/features/reservations/components/organisms/reservation-details-modal";
 import { CreateReservationModal } from "@/features/reservations/components/organisms/create-reservation-modal";
-import { DashboardReservationsTable } from "./organisms/dashboard-reservations-table";
-import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { DashboardReservationsResponse } from "../application/GetDashboardReservationsUseCase";
+import { useDashboardReservationsData } from "../hooks/use-dashboard-reservations-data";
 import { FiltersCard } from "@/features/reservations/components/molecules/filters-card";
+import { DashboardReservationsTable } from "./organisms/dashboard-reservations-table";
 import { StatsGrid } from "@/features/reservations/components/molecules/stats-grid";
 import { ReservationDto } from "@/services/reservation.service";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Filter, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { useState, useTransition } from "react";
+
 
 interface DashboardReservationsPageProps {
   initialData: DashboardReservationsResponse;
@@ -20,7 +21,7 @@ interface DashboardReservationsPageProps {
 
 export function DashboardReservationsPage({ initialData }: DashboardReservationsPageProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition(); // For handling async state updates
 
   // Pagination and filters using standardized hook
   const {

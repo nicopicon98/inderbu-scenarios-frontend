@@ -1,21 +1,11 @@
 "use client";
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import {
   Download,
-  FileEdit,
   Filter,
   Loader2,
   MapPin,
-  MoreHorizontal,
   Plus,
-  Search,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,26 +14,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import { ScenariosTable } from "./organisms/scenarios-table";
-import { useScenariosData } from "../hooks/use-scenarios-data";
 import { ScenariosFiltersCard } from "@/features/scenarios/components/molecules/ScenariosFiltersCard";
+import { createScenarioAction, updateScenarioAction } from "../actions/scenario.actions";
+import { Scenario, CreateScenarioDto, UpdateScenarioDto } from "@/services/api";
+import { ScenariosDataResponse } from "../application/GetScenariosDataUseCase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { memo, useCallback, useState, useTransition } from "react";
+import { useScenariosData } from "../hooks/use-scenarios-data";
+import { ScenariosTable } from "./organisms/scenarios-table";
 import { Textarea } from "@/shared/ui/textarea";
 import { Button } from "@/shared/ui/button";
+import { useRouter } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { ScenariosDataResponse } from "../application/GetScenariosDataUseCase";
-import { createScenarioAction, updateScenarioAction } from "../actions/scenario.actions";
-import { Scenario, CreateScenarioDto, UpdateScenarioDto } from "@/services/api";
 
 // COMPONENTES VALIDADOS REUTILIZABLES
 interface ValidatedInputProps {
@@ -261,7 +245,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
 
         // Mostrar notificación de éxito
         toast.success("Escenario creado exitosamente", {
-          description: `${result.data.name} ha sido registrado en el sistema.`,
+          description: `${(result.data as Scenario).name} ha sido registrado en el sistema.`,
         });
 
         // Recargar página
@@ -323,6 +307,9 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
         return;
       }
 
+      console.log("Updating scenario with data:", updateData);
+      console.log("Selected scenario ID:", selectedScenario.id);
+
       // Usar server action
       const result = await updateScenarioAction(selectedScenario.id, updateData);
 
@@ -333,7 +320,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
 
         // Mostrar notificación de éxito
         toast.success("Escenario actualizado exitosamente", {
-          description: `${result.data.name} ha sido actualizado.`,
+          description: `${(result.data as Scenario).name} ha sido actualizado.`,
         });
 
         // Recargar página
@@ -432,7 +419,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
       {/* Filtros */}
       <ScenariosFiltersCard
         open={showFilters}
-        filters={filters}
+        filters={filters as any}
         onFiltersChange={handleFiltersChange}
         onClearFilters={clearFilters}
       />
@@ -476,7 +463,7 @@ export function ScenariosPage({ initialData }: ScenariosPageProps) {
           <TabsContent key={k} value={k} className="mt-0">
             <ScenariosTable
               rows={scenarios.filter(
-                (r) => r.state === (k === "active"),
+                (r) => r.status === k,
               )}
               meta={pageMeta}
               loading={false}

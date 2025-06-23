@@ -38,6 +38,8 @@ export async function updateScenarioAction(
     // CORRECTO - Con autenticación desde servidor
     const authContext = createServerAuthContext();
     const httpClient = ClientHttpClientFactory.createClient(authContext);
+    
+    console.log('Data:', data);
 
     // Direct API call with authentication
     const updated = await httpClient.put(`/scenarios/${id}`, data);
